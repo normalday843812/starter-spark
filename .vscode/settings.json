@@ -1,0 +1,9 @@
+{
+    "chat.mcp.serverSampling": {
+        "starter-spark/.vscode/mcp.json: motion": {
+            "allowedModels": [
+                "copilot/claude-sonnet-4.5"
+            ]
+        }
+    }
+}
