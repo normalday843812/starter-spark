@@ -1,0 +1,222 @@
+import { stripe } from "@/lib/stripe"
+import { supabaseAdmin } from "@/lib/supabase/admin"
+import { NextResponse } from "next/server"
+import Stripe from "stripe"
+import crypto from "crypto"
+
+// Generate a unique license code (format: XXXX-XXXX-XXXX-XXXX)
+function generateLicenseCode(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789" // Removed ambiguous characters
+  const segments = 4
+  const segmentLength = 4
+
+  const parts: string[] = []
+  for (let i = 0; i < segments; i++) {
+    let segment = ""
+    for (let j = 0; j < segmentLength; j++) {
+      segment += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    parts.push(segment)
+  }
+
+  return parts.join("-")
+}
+
+// Generate a secure claim token
+function generateClaimToken(): string {
+  return crypto.randomBytes(32).toString("hex")
+}
+
+export async function POST(request: Request) {
+  const body = await request.text()
+  const signature = request.headers.get("stripe-signature")
+
+  if (!signature) {
+    console.error("Missing Stripe signature")
+    return NextResponse.json(
+      { error: "Missing signature" },
+      { status: 400 }
+    )
+  }
+
+  let event: Stripe.Event
+
+  try {
+    event = stripe.webhooks.constructEvent(
+      body,
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET!
+    )
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error"
+    console.error(`Webhook signature verification failed: ${message}`)
+    return NextResponse.json(
+      { error: `Webhook Error: ${message}` },
+      { status: 400 }
+    )
+  }
+
+  // Handle the event
+  switch (event.type) {
+    case "checkout.session.completed": {
+      const session = event.data.object as Stripe.Checkout.Session
+
+      // Idempotency check: See if we already processed this session
+      const { data: existingLicense } = await supabaseAdmin
+        .from("licenses")
+        .select("id")
+        .eq("stripe_session_id", session.id)
+        .single()
+
+      if (existingLicense) {
+        console.log(`Session ${session.id} already processed, skipping`)
+        return NextResponse.json({ received: true, status: "already_processed" })
+      }
+
+      // Get customer email from session
+      const customerEmail = session.customer_details?.email || session.customer_email
+
+      if (!customerEmail) {
+        console.error("No customer email found in session")
+        return NextResponse.json(
+          { error: "No customer email" },
+          { status: 400 }
+        )
+      }
+
+      // Parse items from metadata
+      const itemsJson = session.metadata?.items
+      if (!itemsJson) {
+        console.error("No items metadata in session")
+        return NextResponse.json(
+          { error: "No items metadata" },
+          { status: 400 }
+        )
+      }
+
+      let items: { slug: string; quantity: number }[]
+      try {
+        items = JSON.parse(itemsJson)
+      } catch {
+        console.error("Failed to parse items metadata")
+        return NextResponse.json(
+          { error: "Invalid items metadata" },
+          { status: 400 }
+        )
+      }
+
+      // Filter out shipping item
+      const productItems = items.filter(item => item.slug !== "shipping")
+
+      // Look up products by slug
+      const slugs = productItems.map(item => item.slug)
+      const { data: products, error: productsError } = await supabaseAdmin
+        .from("products")
+        .select("id, slug, name")
+        .in("slug", slugs)
+
+      if (productsError || !products) {
+        console.error("Error fetching products:", productsError)
+        return NextResponse.json(
+          { error: "Failed to fetch products" },
+          { status: 500 }
+        )
+      }
+
+      // Create a map of slug -> product
+      const productMap = new Map(products.map(p => [p.slug, p]))
+
+      // Check if customer already has an account
+      const { data: existingProfile } = await supabaseAdmin
+        .from("profiles")
+        .select("id")
+        .eq("email", customerEmail)
+        .single()
+
+      const ownerId = existingProfile?.id || null
+
+      // Create licenses for each item
+      const licensesToCreate: {
+        code: string
+        product_id: string
+        owner_id: string | null
+        source: string
+        stripe_session_id: string
+        customer_email: string
+        claim_token: string | null
+      }[] = []
+
+      for (const item of productItems) {
+        const product = productMap.get(item.slug)
+        if (!product) {
+          console.error(`Product not found for slug: ${item.slug}`)
+          continue
+        }
+
+        // Create one license per quantity
+        for (let i = 0; i < item.quantity; i++) {
+          const code = generateLicenseCode()
+          // Only generate claim token if not already claimed (no owner)
+          const claimToken = ownerId ? null : generateClaimToken()
+
+          licensesToCreate.push({
+            code,
+            product_id: product.id,
+            owner_id: ownerId,
+            source: "online_purchase",
+            stripe_session_id: session.id,
+            customer_email: customerEmail,
+            claim_token: claimToken,
+          })
+        }
+      }
+
+      if (licensesToCreate.length === 0) {
+        console.log("No licenses to create")
+        return NextResponse.json({ received: true, status: "no_licenses" })
+      }
+
+      // Insert all licenses
+      const { data: createdLicenses, error: insertError } = await supabaseAdmin
+        .from("licenses")
+        .insert(licensesToCreate)
+        .select()
+
+      if (insertError) {
+        console.error("Error creating licenses:", insertError)
+        return NextResponse.json(
+          { error: "Failed to create licenses" },
+          { status: 500 }
+        )
+      }
+
+      console.log(`Created ${createdLicenses.length} licenses for session ${session.id}`)
+
+      // TODO: Send email with license codes and claim links
+      // For now, log the claim links for testing
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+
+      for (const license of createdLicenses) {
+        if (license.claim_token) {
+          console.log(`Claim link for ${license.code}: ${siteUrl}/claim/${license.claim_token}`)
+        }
+      }
+
+      // If customer already has account, licenses are auto-claimed
+      if (ownerId) {
+        console.log(`Licenses auto-claimed for existing user ${ownerId}`)
+      }
+
+      return NextResponse.json({
+        received: true,
+        status: "licenses_created",
+        count: createdLicenses.length,
+      })
+    }
+
+    default:
+      console.log(`Unhandled event type: ${event.type}`)
+  }
+
+  return NextResponse.json({ received: true })
+}

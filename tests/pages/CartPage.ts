@@ -1,0 +1,131 @@
+import { Page, Locator, expect } from "@playwright/test"
+
+/**
+ * Page Object Model for the Cart Page
+ */
+export class CartPage {
+  readonly page: Page
+
+  // Page elements
+  readonly pageTitle: Locator
+  readonly continueShoppingLink: Locator
+  readonly emptyCartMessage: Locator
+  readonly browseKitsButton: Locator
+
+  // Cart items section
+  readonly itemCount: Locator
+  readonly clearCartButton: Locator
+  readonly cartItems: Locator
+
+  // Order summary
+  readonly orderSummary: Locator
+  readonly subtotal: Locator
+  readonly shipping: Locator
+  readonly total: Locator
+  readonly checkoutButton: Locator
+
+  // Trust signals
+  readonly freeShippingNote: Locator
+  readonly secureCheckoutNote: Locator
+  readonly charityNote: Locator
+
+  constructor(page: Page) {
+    this.page = page
+
+    // Page
+    this.pageTitle = page.getByRole("heading", { name: /your cart/i })
+    this.continueShoppingLink = page.getByRole("link", { name: /continue shopping/i })
+    this.emptyCartMessage = page.getByText(/your cart is empty/i)
+    this.browseKitsButton = page.getByRole("link", { name: /browse kits/i })
+
+    // Cart items
+    this.itemCount = page.locator("text=/\\d+ items?/")
+    this.clearCartButton = page.getByRole("button", { name: /clear cart/i })
+    this.cartItems = page.locator('[class*="divide-y"] > div')
+
+    // Order summary
+    this.orderSummary = page.getByRole("heading", { name: /order summary/i })
+    this.subtotal = page.getByText(/subtotal/i)
+    this.shipping = page.getByText(/shipping/i).first()
+    this.total = page.locator("text=/^Total$/i")
+    this.checkoutButton = page.getByRole("button", { name: /checkout/i })
+
+    // Trust signals
+    this.freeShippingNote = page.getByText(/free shipping on orders/i)
+    this.secureCheckoutNote = page.getByText(/secure checkout with stripe/i)
+    this.charityNote = page.getByText(/70%.*supports/i)
+  }
+
+  async goto() {
+    await this.page.goto("/cart")
+  }
+
+  async expectPageLoaded() {
+    await expect(this.pageTitle).toBeVisible()
+  }
+
+  async expectEmptyCart() {
+    await expect(this.emptyCartMessage).toBeVisible()
+    await expect(this.browseKitsButton).toBeVisible()
+  }
+
+  async expectItemsInCart() {
+    await expect(this.orderSummary).toBeVisible()
+    await expect(this.checkoutButton).toBeVisible()
+  }
+
+  async getCartItemCount(): Promise<number> {
+    const countText = await this.itemCount.textContent()
+    const match = countText?.match(/(\d+)/)
+    return match ? parseInt(match[1], 10) : 0
+  }
+
+  async clearCart() {
+    if (await this.clearCartButton.isVisible()) {
+      await this.clearCartButton.click()
+    }
+  }
+
+  async removeItem(index: number = 0) {
+    const removeButtons = this.page.getByLabel("Remove item")
+    await removeButtons.nth(index).click()
+  }
+
+  async increaseItemQuantity(index: number = 0) {
+    const increaseButtons = this.page.getByLabel("Increase quantity")
+    await increaseButtons.nth(index).click()
+  }
+
+  async decreaseItemQuantity(index: number = 0) {
+    const decreaseButtons = this.page.getByLabel("Decrease quantity")
+    await decreaseButtons.nth(index).click()
+  }
+
+  async getSubtotal(): Promise<number> {
+    const subtotalRow = this.page.locator("text=Subtotal").locator("..").locator("span").last()
+    const text = await subtotalRow.textContent()
+    return parseFloat(text?.replace("$", "") || "0")
+  }
+
+  async getTotal(): Promise<number> {
+    const totalElement = this.page.locator("text=/^\\$\\d+\\.\\d{2}$/").last()
+    const text = await totalElement.textContent()
+    return parseFloat(text?.replace("$", "") || "0")
+  }
+
+  async isFreeShipping(): Promise<boolean> {
+    const shippingText = this.page.getByText("FREE")
+    return await shippingText.isVisible()
+  }
+
+  async proceedToCheckout() {
+    await this.checkoutButton.click()
+    // Should redirect to Stripe, so we wait for navigation
+    await this.page.waitForURL(/stripe\.com|checkout/, { timeout: 10000 })
+  }
+
+  async clickContinueShopping() {
+    await this.continueShoppingLink.click()
+    await this.page.waitForURL("**/shop")
+  }
+}

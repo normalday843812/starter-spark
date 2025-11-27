@@ -18,7 +18,6 @@ export function ProductCard({
   slug,
   name,
   price,
-  image,
   inStock,
   badge,
 }: ProductCardProps) {

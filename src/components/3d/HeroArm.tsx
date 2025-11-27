@@ -1,6 +1,6 @@
 "use client"
 
-import { useGLTF, Stage, OrbitControls, PerspectiveCamera, Environment, Grid } from "@react-three/drei"
+import { useGLTF, Stage, OrbitControls, PerspectiveCamera, Grid } from "@react-three/drei"
 import { Canvas } from "@react-three/fiber"
 import { Suspense } from "react"
 

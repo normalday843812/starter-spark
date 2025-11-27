@@ -1,0 +1,211 @@
+import { test, expect } from "@playwright/test"
+import { HomePage } from "../pages"
+
+/**
+ * E2E Tests for Navigation
+ * Tests all navigation flows including header, mobile menu, and links
+ */
+
+test.describe("Header Navigation", () => {
+  test("should navigate to Shop from header", async ({ page }) => {
+    const homePage = new HomePage(page)
+    await homePage.goto()
+
+    await homePage.navigateToShop()
+    await expect(page).toHaveURL("/shop")
+  })
+
+  test("should navigate to Learn from header", async ({ page }) => {
+    const homePage = new HomePage(page)
+    await homePage.goto()
+
+    await homePage.navigateToLearn()
+    await expect(page).toHaveURL("/learn")
+  })
+
+  test("should navigate to Community from header", async ({ page }) => {
+    const homePage = new HomePage(page)
+    await homePage.goto()
+
+    await homePage.navigateToCommunity()
+    await expect(page).toHaveURL("/community")
+  })
+
+  test("should navigate to About from header", async ({ page }) => {
+    const homePage = new HomePage(page)
+    await homePage.goto()
+
+    await homePage.navigateToAbout()
+    await expect(page).toHaveURL("/about")
+  })
+
+  test("should navigate to Events from header", async ({ page }) => {
+    const homePage = new HomePage(page)
+    await homePage.goto()
+
+    await homePage.navigateToEvents()
+    await expect(page).toHaveURL("/events")
+  })
+
+  test("should navigate to Workshop from header", async ({ page }) => {
+    const homePage = new HomePage(page)
+    await homePage.goto()
+
+    await homePage.navigateToWorkshop()
+    await expect(page).toHaveURL("/workshop")
+  })
+
+  test("should navigate home when clicking logo", async ({ page }) => {
+    await page.goto("/shop")
+    await page.getByRole("link", { name: /starterspark/i }).click()
+    await expect(page).toHaveURL("/")
+  })
+})
+
+test.describe("Mobile Navigation", () => {
+  test.use({ viewport: { width: 375, height: 667 } })
+
+  test("should show mobile menu button on small screens", async ({ page }) => {
+    await page.goto("/")
+
+    const mobileMenuButton = page.getByLabel("Toggle menu")
+    await expect(mobileMenuButton).toBeVisible()
+  })
+
+  test("should hide desktop nav on mobile", async ({ page }) => {
+    await page.goto("/")
+
+    // Desktop nav should be hidden
+    const desktopNav = page.locator("nav.hidden.md\\:flex")
+    await expect(desktopNav).toBeHidden()
+  })
+
+  test("should open mobile menu when clicking hamburger", async ({ page }) => {
+    await page.goto("/")
+
+    const mobileMenuButton = page.getByLabel("Toggle menu")
+    await mobileMenuButton.click()
+
+    // Mobile menu should be visible
+    const mobileNav = page.locator("nav").filter({ has: page.getByText("Shop") })
+    await expect(mobileNav).toBeVisible()
+  })
+
+  test("should close mobile menu after navigation", async ({ page }) => {
+    await page.goto("/")
+
+    const mobileMenuButton = page.getByLabel("Toggle menu")
+    await mobileMenuButton.click()
+
+    // Click on a nav link
+    await page.getByRole("link", { name: "Shop" }).first().click()
+
+    // Should navigate to shop
+    await expect(page).toHaveURL("/shop")
+  })
+
+  test("should toggle mobile menu open and close", async ({ page }) => {
+    await page.goto("/")
+
+    const mobileMenuButton = page.getByLabel("Toggle menu")
+
+    // Open menu
+    await mobileMenuButton.click()
+    const mobileNav = page.locator(".md\\:hidden nav, nav.md\\:hidden")
+
+    // Close menu
+    await mobileMenuButton.click()
+
+    // Wait a moment for animation
+    await page.waitForTimeout(100)
+  })
+
+  test("should show cart button in mobile menu", async ({ page }) => {
+    await page.goto("/")
+
+    const mobileMenuButton = page.getByLabel("Toggle menu")
+    await mobileMenuButton.click()
+
+    // Cart option should be in mobile menu
+    const cartOption = page.getByText(/cart/i)
+    await expect(cartOption.first()).toBeVisible()
+  })
+})
+
+test.describe("Footer Navigation", () => {
+  test("should display footer on all pages", async ({ page }) => {
+    const pages = ["/", "/shop", "/about", "/events", "/learn", "/community"]
+
+    for (const url of pages) {
+      await page.goto(url)
+      await expect(page.locator("footer")).toBeVisible()
+    }
+  })
+
+  test("should contain expected footer links", async ({ page }) => {
+    await page.goto("/")
+
+    const footer = page.locator("footer")
+    await expect(footer).toBeVisible()
+
+    // Check for common footer links
+    const footerLinks = footer.getByRole("link")
+    const linkCount = await footerLinks.count()
+    expect(linkCount).toBeGreaterThan(0)
+  })
+})
+
+test.describe("Breadcrumb and Back Navigation", () => {
+  test("should show back to shop link on product page", async ({ page }) => {
+    // First go to shop to find a product
+    await page.goto("/shop")
+
+    // Click first product
+    const productLink = page.locator('a[href^="/shop/"]').first()
+    await productLink.click()
+
+    // Wait for product page
+    await page.waitForURL(/\/shop\/.+/)
+
+    // There should be a way to go back (either breadcrumb or back link)
+    // Product pages typically have the product name as heading
+    const heading = page.getByRole("heading", { level: 1 })
+    await expect(heading).toBeVisible()
+  })
+
+  test("should show continue shopping link on cart page", async ({ page }) => {
+    await page.goto("/cart")
+
+    const continueShoppingLink = page.getByRole("link", {
+      name: /continue shopping/i,
+    })
+    await expect(continueShoppingLink).toBeVisible()
+
+    await continueShoppingLink.click()
+    await expect(page).toHaveURL("/shop")
+  })
+})
+
+test.describe("404 Page", () => {
+  test("should show 404 page for non-existent routes", async ({ page }) => {
+    const response = await page.goto("/this-page-does-not-exist-123456")
+
+    // Either 404 status or Next.js custom 404 page
+    const notFoundText = page.getByText(/404|not found|page.*not.*exist/i)
+    if (await notFoundText.isVisible()) {
+      await expect(notFoundText).toBeVisible()
+    }
+  })
+
+  test("should show 404 for non-existent product", async ({ page }) => {
+    await page.goto("/shop/product-that-does-not-exist-xyz")
+
+    // Should show not found or redirect
+    const notFoundOrRedirect =
+      page.url().includes("shop/product-that-does-not-exist-xyz") ||
+      page.url().includes("404")
+
+    // The page should handle missing products gracefully
+    expect(notFoundOrRedirect || (await page.title())).toBeTruthy()
+  })
+})

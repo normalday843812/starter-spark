@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { Footer } from "@/components/layout/Footer"
 import { Button } from "@/components/ui/button"
 import { useCartStore, selectCartTotal, selectCartCount } from "@/store/cart"
@@ -12,16 +13,44 @@ import {
   CreditCard,
   Truck,
   Shield,
+  Loader2,
 } from "lucide-react"
 import Link from "next/link"
 
 export default function CartPage() {
+  const [isLoading, setIsLoading] = useState(false)
   const items = useCartStore((state) => state.items)
   const removeItem = useCartStore((state) => state.removeItem)
   const updateQuantity = useCartStore((state) => state.updateQuantity)
   const clearCart = useCartStore((state) => state.clearCart)
   const total = useCartStore(selectCartTotal)
   const count = useCartStore(selectCartCount)
+
+  const handleCheckout = async () => {
+    setIsLoading(true)
+    try {
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ items }),
+      })
+
+      const data = await response.json()
+
+      if (data.url) {
+        // Redirect to Stripe Checkout
+        window.location.href = data.url
+      } else {
+        console.error("No checkout URL returned")
+        setIsLoading(false)
+      }
+    } catch (error) {
+      console.error("Checkout error:", error)
+      setIsLoading(false)
+    }
+  }
 
   const shipping = total >= 75 ? 0 : 9.99
   const grandTotal = total + shipping
@@ -200,9 +229,22 @@ export default function CartPage() {
                   </div>
 
                   {/* Checkout Button */}
-                  <Button className="w-full h-14 bg-cyan-700 hover:bg-cyan-600 text-white font-mono text-lg">
-                    <CreditCard className="w-5 h-5 mr-2" />
-                    Checkout
+                  <Button
+                    onClick={handleCheckout}
+                    disabled={isLoading}
+                    className="w-full h-14 bg-cyan-700 hover:bg-cyan-600 text-white font-mono text-lg disabled:opacity-50"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="w-5 h-5 mr-2" />
+                        Checkout
+                      </>
+                    )}
                   </Button>
 
                   {/* Trust Signals */}

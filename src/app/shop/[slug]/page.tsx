@@ -1,3 +1,4 @@
+import { createClient } from "@/lib/supabase/server"
 import { Footer } from "@/components/layout/Footer"
 import { ProductGallery, BuyBox, ProductTabs } from "@/components/commerce"
 import { ArrowLeft } from "lucide-react"
@@ -5,101 +6,19 @@ import Link from "next/link"
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
-// Mock product data - will be replaced with Supabase fetch
-const products: Record<
-  string,
-  {
+// Type for product specs JSONB
+interface ProductSpecs {
+  modelPath?: string
+  category?: string
+  badge?: string | null
+  inStock?: boolean
+  learningOutcomes?: string[]
+  includedItems?: Array<{
+    quantity: number
     name: string
-    price: number
-    originalPrice?: number
-    inStock: boolean
-    modelPath?: string
     description: string
-    learningOutcomes: string[]
-    includedItems: Array<{
-      quantity: number
-      name: string
-      description: string
-    }>
-    specs: Array<{ label: string; value: string }>
-  }
-> = {
-  "4dof-arm": {
-    name: "4DOF Robotic Arm Kit",
-    price: 49,
-    inStock: true,
-    modelPath: "/assets/3d/arm/arm.glb",
-    description:
-      "Build a fully functional robotic arm from scratch. This kit teaches mechanical assembly, electronics wiring, and Arduino programming—skills that transfer directly to real engineering projects. Each kit includes everything you need: pre-cut acrylic parts, high-torque servos, an Arduino Nano, and our step-by-step digital curriculum with interactive wiring diagrams. No prior experience required.",
-    learningOutcomes: [
-      "Mechanical assembly and precision tolerances",
-      "Servo motor control and PWM signal generation",
-      "Arduino programming fundamentals (variables, loops, functions)",
-      "Basic forward kinematics concepts",
-      "Circuit wiring and power management",
-      "Debugging and troubleshooting techniques",
-    ],
-    includedItems: [
-      {
-        quantity: 1,
-        name: "Arduino Nano",
-        description: "ATmega328P microcontroller with USB",
-      },
-      {
-        quantity: 3,
-        name: "MG996R Servo",
-        description: "High-torque metal gear servo (13kg/cm)",
-      },
-      {
-        quantity: 2,
-        name: "SG90 Servo",
-        description: "Micro servo for gripper mechanism",
-      },
-      {
-        quantity: 1,
-        name: "Acrylic Chassis Set",
-        description: "Pre-cut laser-cut acrylic parts (6 pieces)",
-      },
-      {
-        quantity: 1,
-        name: "Breadboard",
-        description: "400-point solderless breadboard",
-      },
-      {
-        quantity: 1,
-        name: "Jumper Wire Pack",
-        description: "40 male-to-male jumper wires",
-      },
-      {
-        quantity: 1,
-        name: "USB Cable",
-        description: "Mini USB to USB-A cable for programming",
-      },
-      {
-        quantity: 1,
-        name: "Hardware Kit",
-        description: "Screws, nuts, and standoffs (assorted)",
-      },
-      {
-        quantity: 1,
-        name: "License Card",
-        description: "Access code for online curriculum",
-      },
-    ],
-    specs: [
-      { label: "Microcontroller", value: "Arduino Nano (ATmega328P)" },
-      { label: "Operating Voltage", value: "5V" },
-      { label: "Servos", value: "2× SG90, 3× MG996R" },
-      { label: "Degrees of Freedom", value: "4 (Base, Shoulder, Elbow, Gripper)" },
-      { label: "Max Reach", value: "~25cm" },
-      { label: "Payload Capacity", value: "~100g at full extension" },
-      { label: "Power Supply", value: "4× AA batteries (not included)" },
-      { label: "Assembled Dimensions", value: "15 × 10 × 25 cm" },
-      { label: "Kit Weight", value: "450g" },
-      { label: "Build Time", value: "~3 hours" },
-      { label: "Recommended Age", value: "10+" },
-    ],
-  },
+  }>
+  technicalSpecs?: Array<{ label: string; value: string }>
 }
 
 type PageParams = Promise<{ slug: string }>
@@ -110,7 +29,13 @@ export async function generateMetadata({
   params: PageParams
 }): Promise<Metadata> {
   const { slug } = await params
-  const product = products[slug]
+  const supabase = await createClient()
+
+  const { data: product } = await supabase
+    .from("products")
+    .select("name, description")
+    .eq("slug", slug)
+    .single()
 
   if (!product) {
     return { title: "Product Not Found" }
@@ -118,7 +43,7 @@ export async function generateMetadata({
 
   return {
     title: product.name,
-    description: product.description.slice(0, 160),
+    description: product.description?.slice(0, 160) || "",
   }
 }
 
@@ -128,11 +53,28 @@ export default async function ProductDetailPage({
   params: PageParams
 }) {
   const { slug } = await params
-  const product = products[slug]
+  const supabase = await createClient()
 
-  if (!product) {
+  // Fetch product from database
+  const { data: product, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("slug", slug)
+    .single()
+
+  if (error || !product) {
     notFound()
   }
+
+  const specs = product.specs as ProductSpecs | null
+
+  // Extract data from specs with defaults
+  const modelPath = specs?.modelPath
+  const inStock = specs?.inStock ?? true
+  const learningOutcomes = specs?.learningOutcomes || []
+  const includedItems = specs?.includedItems || []
+  const technicalSpecs = specs?.technicalSpecs || []
+  const price = Math.round(product.price_cents / 100)
 
   return (
     <main className="min-h-screen bg-slate-50">
@@ -156,7 +98,7 @@ export default async function ProductDetailPage({
             {/* Left - Gallery (60%) */}
             <div className="w-full lg:w-3/5">
               <ProductGallery
-                modelPath={product.modelPath}
+                modelPath={modelPath}
                 productName={product.name}
               />
             </div>
@@ -166,9 +108,8 @@ export default async function ProductDetailPage({
               <BuyBox
                 slug={slug}
                 name={product.name}
-                price={product.price}
-                originalPrice={product.originalPrice}
-                inStock={product.inStock}
+                price={price}
+                inStock={inStock}
               />
             </div>
           </div>
@@ -179,10 +120,10 @@ export default async function ProductDetailPage({
       <section className="pb-24 px-6 lg:px-20 bg-white border-t border-slate-200">
         <div className="max-w-7xl mx-auto pt-12">
           <ProductTabs
-            description={product.description}
-            learningOutcomes={product.learningOutcomes}
-            includedItems={product.includedItems}
-            specs={product.specs}
+            description={product.description || ""}
+            learningOutcomes={learningOutcomes}
+            includedItems={includedItems}
+            specs={technicalSpecs}
           />
         </div>
       </section>

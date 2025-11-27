@@ -1,0 +1,189 @@
+"use client"
+
+import { useState } from "react"
+import Link from "next/link"
+import {
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  Home,
+  Menu,
+  X,
+} from "lucide-react"
+
+interface LessonSidebarProps {
+  product: string
+  currentLesson: string
+  course: {
+    title: string
+    modules: {
+      title: string
+      lessons: { slug: string; title: string }[]
+    }[]
+  }
+}
+
+export function LessonSidebar({
+  product,
+  currentLesson,
+  course,
+}: LessonSidebarProps) {
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [expandedModules, setExpandedModules] = useState<Set<number>>(
+    new Set([0, 1, 2]) // All expanded by default
+  )
+
+  const toggleModule = (index: number) => {
+    setExpandedModules((prev) => {
+      const next = new Set(prev)
+      if (next.has(index)) {
+        next.delete(index)
+      } else {
+        next.add(index)
+      }
+      return next
+    })
+  }
+
+  // Find current module index
+  const currentModuleIndex = course.modules.findIndex((mod) =>
+    mod.lessons.some((l) => l.slug === currentLesson)
+  )
+
+  const SidebarContent = () => (
+    <>
+      {/* Header */}
+      <div className="p-4 border-b border-slate-200">
+        <Link
+          href={`/learn/${product}`}
+          className="flex items-center gap-2 text-sm text-slate-600 hover:text-cyan-700 mb-2"
+        >
+          <Home className="w-4 h-4" />
+          <span>Course Overview</span>
+        </Link>
+        <h2 className="font-mono text-lg text-slate-900 font-bold">
+          {course.title}
+        </h2>
+      </div>
+
+      {/* Progress */}
+      <div className="p-4 border-b border-slate-100">
+        <div className="flex items-center justify-between text-xs mb-2">
+          <span className="text-slate-500">Progress</span>
+          <span className="font-mono text-slate-700">0%</span>
+        </div>
+        <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-cyan-700 rounded-full transition-all"
+            style={{ width: "0%" }}
+          />
+        </div>
+      </div>
+
+      {/* Modules */}
+      <nav className="flex-1 overflow-y-auto">
+        {course.modules.map((module, moduleIndex) => {
+          const isExpanded = expandedModules.has(moduleIndex)
+          const isCurrentModule = moduleIndex === currentModuleIndex
+
+          return (
+            <div key={moduleIndex} className="border-b border-slate-100">
+              <button
+                onClick={() => toggleModule(moduleIndex)}
+                className={`w-full flex items-center justify-between p-4 text-left transition-colors ${
+                  isCurrentModule
+                    ? "bg-cyan-50 text-cyan-700"
+                    : "hover:bg-slate-50"
+                }`}
+              >
+                <span className="font-mono text-sm font-medium">
+                  {module.title}
+                </span>
+                {isExpanded ? (
+                  <ChevronDown className="w-4 h-4 text-slate-400" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-slate-400" />
+                )}
+              </button>
+
+              {isExpanded && (
+                <div className="pb-2">
+                  {module.lessons.map((lesson) => {
+                    const isCurrent = lesson.slug === currentLesson
+                    const isCompleted = false // TODO: track completion
+
+                    return (
+                      <Link
+                        key={lesson.slug}
+                        href={`/learn/${product}/${lesson.slug}`}
+                        onClick={() => setMobileOpen(false)}
+                        className={`flex items-center gap-3 px-4 py-2 text-sm transition-colors ${
+                          isCurrent
+                            ? "bg-cyan-700 text-white"
+                            : "text-slate-600 hover:text-cyan-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        {isCompleted ? (
+                          <CheckCircle2
+                            className={`w-4 h-4 flex-shrink-0 ${
+                              isCurrent ? "text-white" : "text-green-500"
+                            }`}
+                          />
+                        ) : (
+                          <div
+                            className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${
+                              isCurrent
+                                ? "border-white bg-white/20"
+                                : "border-slate-300"
+                            }`}
+                          />
+                        )}
+                        <span className="truncate">{lesson.title}</span>
+                      </Link>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </nav>
+    </>
+  )
+
+  return (
+    <>
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:flex lg:flex-col lg:w-72 lg:fixed lg:inset-y-0 lg:left-0 bg-white border-r border-slate-200 pt-16">
+        <SidebarContent />
+      </aside>
+
+      {/* Mobile Sidebar Toggle */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        className="lg:hidden fixed bottom-6 right-6 z-50 w-12 h-12 bg-cyan-700 text-white rounded-full shadow-lg flex items-center justify-center"
+      >
+        <Menu className="w-5 h-5" />
+      </button>
+
+      {/* Mobile Sidebar Overlay */}
+      {mobileOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 flex">
+          <div
+            className="fixed inset-0 bg-slate-900/50"
+            onClick={() => setMobileOpen(false)}
+          />
+          <aside className="relative w-80 max-w-[85vw] bg-white flex flex-col">
+            <button
+              onClick={() => setMobileOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <SidebarContent />
+          </aside>
+        </div>
+      )}
+    </>
+  )
+}

@@ -34,6 +34,7 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.0",
     "@chromatic-com/playwright": "^0.12.7",
     "@playwright/test": "^1.57.0",
     "@tailwindcss/postcss": "^4",

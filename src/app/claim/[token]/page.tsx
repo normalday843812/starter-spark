@@ -1,0 +1,199 @@
+import { createClient } from "@/lib/supabase/server"
+import { supabaseAdmin } from "@/lib/supabase/admin"
+import { Footer } from "@/components/layout/Footer"
+import { Button } from "@/components/ui/button"
+import { Package, CheckCircle, AlertCircle, ArrowRight, LogIn } from "lucide-react"
+import Link from "next/link"
+import { redirect } from "next/navigation"
+import { ClaimButton } from "./ClaimButton"
+
+export const metadata = {
+  title: "Claim Your Kit - StarterSpark Robotics",
+  description: "Claim your StarterSpark robotics kit license.",
+}
+
+interface ClaimPageProps {
+  params: Promise<{ token: string }>
+}
+
+export default async function ClaimPage({ params }: ClaimPageProps) {
+  const { token } = await params
+
+  // Look up the license by claim token
+  const { data: license, error } = await supabaseAdmin
+    .from("licenses")
+    .select(`
+      id,
+      code,
+      owner_id,
+      customer_email,
+      product:products(name, slug, description)
+    `)
+    .eq("claim_token", token)
+    .single()
+
+  // Check if user is logged in
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  // Invalid or missing token
+  if (error || !license) {
+    return (
+      <main className="min-h-screen bg-slate-50">
+        <section className="pt-32 pb-24 px-6 lg:px-20">
+          <div className="max-w-md mx-auto text-center">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-red-100 flex items-center justify-center">
+              <AlertCircle className="w-10 h-10 text-red-500" />
+            </div>
+            <h1 className="font-mono text-2xl text-slate-900 mb-2">
+              Invalid Claim Link
+            </h1>
+            <p className="text-slate-600 mb-8">
+              This claim link is invalid or has already been used. If you purchased
+              a kit, check your email for a valid claim link or contact support.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/shop">
+                <Button className="bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
+                  <Package className="w-4 h-4 mr-2" />
+                  Shop Kits
+                </Button>
+              </Link>
+              <Link href="/workshop">
+                <Button
+                  variant="outline"
+                  className="border-slate-200 hover:border-cyan-700 text-slate-600 hover:text-cyan-700 font-mono"
+                >
+                  Go to Workshop
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+        <Footer />
+      </main>
+    )
+  }
+
+  // Already claimed
+  if (license.owner_id) {
+    return (
+      <main className="min-h-screen bg-slate-50">
+        <section className="pt-32 pb-24 px-6 lg:px-20">
+          <div className="max-w-md mx-auto text-center">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-green-100 flex items-center justify-center">
+              <CheckCircle className="w-10 h-10 text-green-500" />
+            </div>
+            <h1 className="font-mono text-2xl text-slate-900 mb-2">
+              Already Claimed
+            </h1>
+            <p className="text-slate-600 mb-8">
+              This kit has already been claimed. If you own this kit, you can
+              access it in your Workshop.
+            </p>
+            <Link href="/workshop">
+              <Button className="bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
+                Go to Workshop
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Link>
+          </div>
+        </section>
+        <Footer />
+      </main>
+    )
+  }
+
+  const product = license.product as { name: string; slug: string; description: string | null } | null
+
+  // Not logged in - redirect to login with claim token
+  if (!user) {
+    return (
+      <main className="min-h-screen bg-slate-50">
+        <section className="pt-32 pb-24 px-6 lg:px-20">
+          <div className="max-w-lg mx-auto">
+            <div className="text-center mb-8">
+              <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-cyan-100 flex items-center justify-center">
+                <Package className="w-10 h-10 text-cyan-700" />
+              </div>
+              <h1 className="font-mono text-2xl text-slate-900 mb-2">
+                Claim Your Kit
+              </h1>
+              <p className="text-slate-600">
+                Sign in to claim your purchase and access learning materials.
+              </p>
+            </div>
+
+            <div className="bg-white rounded border border-slate-200 p-6 mb-6">
+              <h2 className="font-mono text-lg text-slate-900 mb-2">
+                {product?.name || "Robotics Kit"}
+              </h2>
+              {product?.description && (
+                <p className="text-sm text-slate-600 mb-4">{product.description}</p>
+              )}
+              <div className="flex items-center gap-2 text-sm text-slate-500 font-mono">
+                <span className="px-2 py-1 bg-slate-100 rounded">
+                  Code: {license.code}
+                </span>
+              </div>
+            </div>
+
+            <Link href={`/login?claim=${token}`}>
+              <Button className="w-full bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
+                <LogIn className="w-4 h-4 mr-2" />
+                Sign In to Claim
+              </Button>
+            </Link>
+
+            <p className="text-center text-sm text-slate-500 mt-4">
+              We&apos;ll send you a magic link - no password needed.
+            </p>
+          </div>
+        </section>
+        <Footer />
+      </main>
+    )
+  }
+
+  // User is logged in - show claim confirmation
+  return (
+    <main className="min-h-screen bg-slate-50">
+      <section className="pt-32 pb-24 px-6 lg:px-20">
+        <div className="max-w-lg mx-auto">
+          <div className="text-center mb-8">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-cyan-100 flex items-center justify-center">
+              <Package className="w-10 h-10 text-cyan-700" />
+            </div>
+            <h1 className="font-mono text-2xl text-slate-900 mb-2">
+              Claim Your Kit
+            </h1>
+            <p className="text-slate-600">
+              Ready to add this kit to your account.
+            </p>
+          </div>
+
+          <div className="bg-white rounded border border-slate-200 p-6 mb-6">
+            <h2 className="font-mono text-lg text-slate-900 mb-2">
+              {product?.name || "Robotics Kit"}
+            </h2>
+            {product?.description && (
+              <p className="text-sm text-slate-600 mb-4">{product.description}</p>
+            )}
+            <div className="flex items-center gap-2 text-sm text-slate-500 font-mono">
+              <span className="px-2 py-1 bg-slate-100 rounded">
+                Code: {license.code}
+              </span>
+            </div>
+          </div>
+
+          <ClaimButton token={token} />
+
+          <p className="text-center text-sm text-slate-500 mt-4">
+            This will link the kit to your account: {user.email}
+          </p>
+        </div>
+      </section>
+      <Footer />
+    </main>
+  )
+}

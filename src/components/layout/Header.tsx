@@ -11,6 +11,7 @@ const navLinks = [
   { href: "/learn", label: "Learn" },
   { href: "/community", label: "Community" },
   { href: "/about", label: "About" },
+  { href: "/events", label: "Events" },
 ]
 
 export function Header() {
@@ -103,6 +104,16 @@ export function Header() {
               </Link>
             ))}
             <div className="pt-4 border-t border-slate-200 space-y-3">
+              <button
+                onClick={() => {
+                  openCart()
+                  setMobileMenuOpen(false)
+                }}
+                className="w-full flex items-center justify-center gap-2 py-2 font-mono text-sm text-slate-600 hover:text-cyan-700 transition-colors"
+              >
+                <ShoppingCart className="w-5 h-5" />
+                Cart {cartCount > 0 && `(${cartCount})`}
+              </button>
               <Link href="/workshop" className="block">
                 <Button
                   variant="outline"
