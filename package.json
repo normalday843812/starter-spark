@@ -9,7 +9,11 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@radix-ui/react-slot": "^1.2.4",
+    "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.4.0",
+    "@supabase/ssr": "^0.8.0",
+    "@supabase/supabase-js": "^2.86.0",
     "@types/three": "^0.181.0",
     "@xyflow/react": "^12.9.3",
     "class-variance-authority": "^0.7.1",
