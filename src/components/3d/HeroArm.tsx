@@ -14,7 +14,7 @@ export default function HeroArm({ className }: { className?: string }) {
     <div className={className}>
       <Canvas shadows dpr={[1, 2]} gl={{ antialias: true }}>
         <Suspense fallback={null}>
-          <PerspectiveCamera makeDefault position={[4, 3, 4]} fov={45} />
+          <PerspectiveCamera makeDefault position={[5, 3.5, 5]} fov={40} />
           
           {/* Blueprint Grid Floor (Light Mode) */}
           <Grid 
@@ -36,7 +36,7 @@ export default function HeroArm({ className }: { className?: string }) {
             shadows="contact"
             adjustCamera={false}
           >
-            <Model />
+            <Model scale={0.85} />
           </Stage>
 
           <OrbitControls 

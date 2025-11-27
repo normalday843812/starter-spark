@@ -1,12 +1,22 @@
 import { Footer } from "@/components/layout/Footer"
-import { HeroSection, MissionSection, TechSpecsSection } from "@/components/marketing"
+import {
+  HeroSection,
+  DifferentiatorsSection,
+  ProductSpotlightSection,
+  LearningPreviewSection,
+  MissionImpactSection,
+  EventsPreviewSection,
+} from "@/components/marketing"
 
 export default function Home() {
   return (
     <main className="min-h-screen">
       <HeroSection />
-      <MissionSection />
-      <TechSpecsSection />
+      <DifferentiatorsSection />
+      <ProductSpotlightSection />
+      <LearningPreviewSection />
+      <MissionImpactSection />
+      <EventsPreviewSection />
       <Footer />
     </main>
   )

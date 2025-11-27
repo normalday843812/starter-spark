@@ -1,0 +1,4 @@
+export { AboutHero } from "./AboutHero"
+export { AboutStory } from "./AboutStory"
+export { AboutTeam } from "./AboutTeam"
+export { AboutGallery } from "./AboutGallery"

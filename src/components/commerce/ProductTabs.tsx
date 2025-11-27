@@ -1,0 +1,196 @@
+"use client"
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { FileDown } from "lucide-react"
+import { Button } from "@/components/ui/button"
+
+interface ProductTabsProps {
+  description: string
+  learningOutcomes: string[]
+  includedItems: Array<{
+    quantity: number
+    name: string
+    description: string
+  }>
+  specs: Array<{
+    label: string
+    value: string
+  }>
+}
+
+export function ProductTabs({
+  description,
+  learningOutcomes,
+  includedItems,
+  specs,
+}: ProductTabsProps) {
+  return (
+    <Tabs defaultValue="overview" className="w-full">
+      <TabsList className="w-full justify-start border-b border-slate-200 bg-transparent h-auto p-0 rounded-none">
+        <TabsTrigger
+          value="overview"
+          className="font-mono text-sm data-[state=active]:text-cyan-700 data-[state=active]:border-b-2 data-[state=active]:border-cyan-700 rounded-none px-6 py-3 data-[state=active]:shadow-none"
+        >
+          Overview
+        </TabsTrigger>
+        <TabsTrigger
+          value="included"
+          className="font-mono text-sm data-[state=active]:text-cyan-700 data-[state=active]:border-b-2 data-[state=active]:border-cyan-700 rounded-none px-6 py-3 data-[state=active]:shadow-none"
+        >
+          What&apos;s Included
+        </TabsTrigger>
+        <TabsTrigger
+          value="specs"
+          className="font-mono text-sm data-[state=active]:text-cyan-700 data-[state=active]:border-b-2 data-[state=active]:border-cyan-700 rounded-none px-6 py-3 data-[state=active]:shadow-none"
+        >
+          Technical Specs
+        </TabsTrigger>
+      </TabsList>
+
+      {/* Overview Tab */}
+      <TabsContent value="overview" className="pt-8">
+        <div className="max-w-3xl">
+          <div className="prose prose-slate max-w-none">
+            <p className="text-lg text-slate-600 leading-relaxed">
+              {description}
+            </p>
+          </div>
+
+          {/* Learning Outcomes */}
+          <div className="mt-8">
+            <h3 className="font-mono text-lg text-slate-900 mb-4">
+              What You&apos;ll Learn
+            </h3>
+            <ul className="space-y-3">
+              {learningOutcomes.map((outcome, idx) => (
+                <li key={idx} className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded bg-cyan-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-cyan-700 font-mono text-xs">
+                      {idx + 1}
+                    </span>
+                  </div>
+                  <span className="text-slate-600">{outcome}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Quick Stats */}
+          <div className="mt-8 grid grid-cols-3 gap-4">
+            {[
+              { label: "Build Time", value: "~3 hours" },
+              { label: "Skill Level", value: "Beginner" },
+              { label: "Age Range", value: "10+" },
+            ].map((stat) => (
+              <div
+                key={stat.label}
+                className="p-4 bg-slate-50 rounded border border-slate-200 text-center"
+              >
+                <p className="text-sm text-slate-500 mb-1">{stat.label}</p>
+                <p className="font-mono text-slate-900">{stat.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </TabsContent>
+
+      {/* What's Included Tab */}
+      <TabsContent value="included" className="pt-8">
+        <div className="max-w-4xl">
+          {/* Knolling Photo Placeholder */}
+          <div className="relative aspect-[2/1] mb-8 bg-gradient-to-br from-slate-50 to-slate-100 rounded border border-slate-200 overflow-hidden">
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <div className="w-20 h-20 mb-4 rounded-full bg-slate-200 flex items-center justify-center">
+                <svg
+                  className="w-10 h-10 text-slate-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+              </div>
+              <p className="text-slate-500 font-mono text-sm">Knolling Photo</p>
+              <p className="text-slate-400 text-xs mt-1">
+                All components laid flat
+              </p>
+            </div>
+          </div>
+
+          {/* Inventory Table */}
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="font-mono text-slate-500 w-20">
+                  Qty
+                </TableHead>
+                <TableHead className="font-mono text-slate-500">
+                  Component
+                </TableHead>
+                <TableHead className="font-mono text-slate-500">
+                  Description
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {includedItems.map((item, idx) => (
+                <TableRow key={idx}>
+                  <TableCell className="font-mono text-slate-900">
+                    {item.quantity}×
+                  </TableCell>
+                  <TableCell className="font-medium text-slate-900">
+                    {item.name}
+                  </TableCell>
+                  <TableCell className="text-slate-600">
+                    {item.description}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </TabsContent>
+
+      {/* Technical Specs Tab */}
+      <TabsContent value="specs" className="pt-8">
+        <div className="max-w-2xl">
+          <div className="bg-white rounded border border-slate-200 overflow-hidden">
+            {specs.map((spec, idx) => (
+              <div
+                key={spec.label}
+                className={`flex justify-between p-4 ${
+                  idx !== specs.length - 1 ? "border-b border-slate-100" : ""
+                }`}
+              >
+                <span className="text-slate-500">{spec.label}</span>
+                <span className="font-mono text-slate-900">{spec.value}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Download Datasheet */}
+          <Button
+            variant="outline"
+            className="mt-6 border-slate-200 text-slate-600 hover:text-cyan-700 hover:border-cyan-700 font-mono"
+          >
+            <FileDown className="w-4 h-4 mr-2" />
+            Download Datasheet (PDF)
+          </Button>
+        </div>
+      </TabsContent>
+    </Tabs>
+  )
+}

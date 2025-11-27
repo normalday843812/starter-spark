@@ -44,20 +44,22 @@ export function HeroSection() {
           {/* Decorative Line */}
           <div className="absolute -left-6 top-0 w-1 h-full bg-gradient-to-b from-cyan-700 to-transparent opacity-30 hidden lg:block" />
           
-          <h1 className="font-mono text-6xl lg:text-8xl font-bold tracking-tighter text-slate-900 mb-6 leading-none">
-            BUILD<span className="text-cyan-700">.</span><br />
-            CODE<span className="text-cyan-700">.</span><br />
-            IGNITE<span className="text-amber-500">_</span>
+          <p className="text-sm font-mono text-cyan-700 mb-4 tracking-wide">
+            Robotics Education from Hawaii
+          </p>
+
+          <h1 className="font-mono text-5xl lg:text-7xl font-bold tracking-tighter text-slate-900 mb-6 leading-[1.1]">
+            Learn Engineering<br />
+            <span className="text-cyan-700">By Building</span>
           </h1>
-          
-          <div className="flex items-center gap-4 text-slate-600 font-mono text-sm mb-8">
-             <span className="px-2 py-1 border border-slate-200 text-cyan-700 bg-cyan-50">v1.0</span>
-             <span className="text-slate-400">Open Source Hardware</span>
-          </div>
-          
-          <p className="text-lg text-slate-600 max-w-md leading-relaxed font-sans border-l-2 border-slate-200 pl-6">
-            Precision robotics kits for the next generation of engineers. 
-            Designed in Hawaii.
+
+          <p className="text-lg text-slate-600 max-w-lg leading-relaxed font-sans mb-4">
+            Complete robotics kits with step-by-step guides, wiring simulators,
+            and community support. No prior experience needed—just curiosity.
+          </p>
+
+          <p className="text-sm text-slate-400 font-mono">
+            v1.0 • Open Source Hardware • 70% to STEM Charities
           </p>
         </motion.div>
 

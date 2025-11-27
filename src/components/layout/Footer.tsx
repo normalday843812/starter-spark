@@ -1,53 +1,144 @@
 import { Button } from "@/components/ui/button"
 import { TechInput } from "@/components/ui/TechInput"
-import { Github, Instagram, Twitter } from "lucide-react"
+import { Github, Instagram, Youtube, Heart } from "lucide-react"
 import Link from "next/link"
+
+// Custom X (Twitter) icon since lucide doesn't have it
+function XIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  )
+}
 
 export function Footer() {
   return (
-    <footer className="bg-slate-50 border-t border-slate-200 py-16 px-6 lg:px-20 font-mono text-xs">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-12">
-        <div className="col-span-1 lg:col-span-2">
-          <h3 className="text-2xl font-bold text-slate-900 mb-4 tracking-tighter">
-            STARTER<span className="text-cyan-700">SPARK</span>
-          </h3>
-          <p className="text-slate-600 max-w-sm mb-6 leading-relaxed font-sans">
-            Open-source robotics education.
-            <br />
-            Honolulu, HI.
-          </p>
-          <div className="flex gap-4">
-             <Button variant="ghost" size="icon" aria-label="GitHub" className="text-slate-500 hover:text-cyan-700 hover:bg-slate-100"><Github className="w-4 h-4" /></Button>
-             <Button variant="ghost" size="icon" aria-label="Twitter" className="text-slate-500 hover:text-cyan-700 hover:bg-slate-100"><Twitter className="w-4 h-4" /></Button>
-             <Button variant="ghost" size="icon" aria-label="Instagram" className="text-slate-500 hover:text-cyan-700 hover:bg-slate-100"><Instagram className="w-4 h-4" /></Button>
+    <footer className="bg-white border-t border-slate-200">
+      {/* Charity Banner */}
+      <div className="bg-amber-50 border-b border-amber-200 py-4 px-6 lg:px-20">
+        <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 text-sm">
+          <Heart className="w-4 h-4 text-amber-600" />
+          <span className="text-slate-600">
+            <span className="font-mono text-amber-600 font-semibold">70%</span> of every purchase goes directly to Hawaii STEM charities
+          </span>
+        </div>
+      </div>
+
+      <div className="py-16 px-6 lg:px-20">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
+          {/* Brand Column */}
+          <div className="lg:col-span-2">
+            <h3 className="text-2xl font-bold text-slate-900 mb-4 tracking-tighter font-mono">
+              STARTER<span className="text-cyan-700">SPARK</span>
+            </h3>
+            <p className="text-slate-600 max-w-sm mb-6 leading-relaxed text-sm">
+              Open-source robotics education designed by students, for students.
+              Building the next generation of Hawaii&apos;s engineers.
+            </p>
+            <div className="flex gap-3">
+              <Link href="https://github.com/normalday843812" target="_blank" rel="noopener noreferrer">
+                <Button variant="ghost" size="icon" aria-label="GitHub" className="text-slate-500 hover:text-cyan-700 hover:bg-slate-100">
+                  <Github className="w-4 h-4" />
+                </Button>
+              </Link>
+              <Link href="https://x.com/AlQaholic00" target="_blank" rel="noopener noreferrer">
+                <Button variant="ghost" size="icon" aria-label="X" className="text-slate-500 hover:text-cyan-700 hover:bg-slate-100">
+                  <XIcon className="w-4 h-4" />
+                </Button>
+              </Link>
+              <div className="relative group">
+                <Button variant="ghost" size="icon" aria-label="Instagram" className="text-slate-400 cursor-not-allowed" disabled>
+                  <Instagram className="w-4 h-4" />
+                </Button>
+                <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-slate-400 font-mono whitespace-nowrap">
+                  PLACEHOLDER
+                </span>
+              </div>
+              <Link href="https://www.youtube.com/@CrustySofa" target="_blank" rel="noopener noreferrer">
+                <Button variant="ghost" size="icon" aria-label="YouTube" className="text-slate-500 hover:text-cyan-700 hover:bg-slate-100">
+                  <Youtube className="w-4 h-4" />
+                </Button>
+              </Link>
+            </div>
           </div>
-        </div>
 
-        <div>
-          <h4 className="text-cyan-700 mb-6 uppercase tracking-wider">Navigate</h4>
-          <ul className="space-y-3 text-slate-600">
-            <li><Link href="/shop" className="hover:text-slate-900 transition-colors decoration-slate-300 hover:underline underline-offset-4">Shop</Link></li>
-            <li><Link href="/learn" className="hover:text-slate-900 transition-colors decoration-slate-300 hover:underline underline-offset-4">Learn</Link></li>
-            <li><Link href="/community" className="hover:text-slate-900 transition-colors decoration-slate-300 hover:underline underline-offset-4">Community</Link></li>
-          </ul>
-        </div>
+          {/* Products Column */}
+          <div>
+            <h4 className="font-mono text-sm text-cyan-700 mb-4 uppercase tracking-wider">Products</h4>
+            <ul className="space-y-3 text-sm text-slate-600">
+              <li>
+                <Link href="/shop/4dof-arm" className="hover:text-slate-900 transition-colors">
+                  4DOF Robotic Arm
+                </Link>
+              </li>
+              <li>
+                <Link href="/shop" className="hover:text-slate-900 transition-colors">
+                  All Kits
+                </Link>
+              </li>
+              <li>
+                <Link href="/shop/spare-parts" className="hover:text-slate-900 transition-colors">
+                  Spare Parts
+                </Link>
+              </li>
+            </ul>
+          </div>
 
-        <div>
-          <h4 className="text-cyan-700 mb-6 uppercase tracking-wider">Newsletter</h4>
-          <div className="space-y-4">
-            <div className="flex gap-0">
-               <TechInput placeholder="EMAIL_ADDRESS" className="h-10 bg-white border-r-0 focus:ring-0" />
-               <Button className="bg-cyan-700 hover:bg-cyan-600 text-white hover:text-white rounded-l-none border border-l-0 border-cyan-700">
-                 SUBMIT
-               </Button>
+          {/* Learn Column */}
+          <div>
+            <h4 className="font-mono text-sm text-cyan-700 mb-4 uppercase tracking-wider">Learn</h4>
+            <ul className="space-y-3 text-sm text-slate-600">
+              <li>
+                <Link href="/learn" className="hover:text-slate-900 transition-colors">
+                  Documentation
+                </Link>
+              </li>
+              <li>
+                <Link href="/community" className="hover:text-slate-900 transition-colors">
+                  The Lab (Q&A)
+                </Link>
+              </li>
+              <li>
+                <Link href="/events" className="hover:text-slate-900 transition-colors">
+                  Workshops
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Newsletter Column */}
+          <div>
+            <h4 className="font-mono text-sm text-cyan-700 mb-4 uppercase tracking-wider">Stay Updated</h4>
+            <p className="text-sm text-slate-600 mb-4">
+              Get notified about new kits and workshops.
+            </p>
+            <div className="space-y-3">
+              <TechInput placeholder="your@email.com" className="h-10 bg-slate-50 text-sm" />
+              <Button className="w-full bg-cyan-700 hover:bg-cyan-600 text-white font-mono text-sm">
+                Subscribe
+              </Button>
             </div>
           </div>
         </div>
       </div>
-      
-      <div className="max-w-7xl mx-auto mt-16 pt-8 border-t border-slate-200 flex justify-between text-slate-500">
-        <p>StarterSpark Robotics</p>
-        <p>Est. 2025</p>
+
+      {/* Bottom Bar */}
+      <div className="border-t border-slate-200 py-6 px-6 lg:px-20">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
+          <p className="font-mono">&copy; 2025 StarterSpark Robotics. Honolulu, HI.</p>
+          <div className="flex gap-6">
+            <Link href="/privacy" className="hover:text-slate-900 transition-colors">
+              Privacy
+            </Link>
+            <Link href="/terms" className="hover:text-slate-900 transition-colors">
+              Terms
+            </Link>
+            <Link href="/about" className="hover:text-slate-900 transition-colors">
+              About
+            </Link>
+          </div>
+        </div>
       </div>
     </footer>
   )
