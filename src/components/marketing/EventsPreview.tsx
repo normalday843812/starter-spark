@@ -95,40 +95,43 @@ export function EventsPreviewSection({
             {hasWorkshops ? (
               <div className="space-y-4">
                 {workshops.map((workshop) => (
-                  <Card
+                  <Link
                     key={workshop.id}
-                    className="bg-white border-slate-200 hover:border-cyan-200 transition-colors"
+                    href="/events"
+                    className="block cursor-pointer"
                   >
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <p className="font-mono text-sm text-cyan-700 mb-1">
-                            {formatEventDate(workshop.event_date)}
-                          </p>
-                          <h4 className="font-medium text-slate-900 mb-2">
-                            {workshop.title}
-                          </h4>
-                          <div className="flex items-center gap-1 text-sm text-slate-500">
-                            <MapPin className="w-3.5 h-3.5" />
-                            {workshop.location}
+                    <Card className="bg-white border-slate-200 hover:border-cyan-200 transition-colors">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <p className="font-mono text-sm text-cyan-700 mb-1">
+                              {formatEventDate(workshop.event_date)}
+                            </p>
+                            <h4 className="font-medium text-slate-900 mb-2">
+                              {workshop.title}
+                            </h4>
+                            <div className="flex items-center gap-1 text-sm text-slate-500">
+                              <MapPin className="w-3.5 h-3.5" />
+                              {workshop.location}
+                            </div>
                           </div>
+                          {workshop.capacity && (
+                            <div className="text-right">
+                              <span
+                                className={`text-xs font-mono px-2 py-1 rounded ${
+                                  workshop.capacity <= 5
+                                    ? "bg-amber-100 text-amber-700"
+                                    : "bg-green-100 text-green-700"
+                                }`}
+                              >
+                                {workshop.capacity} spots
+                              </span>
+                            </div>
+                          )}
                         </div>
-                        {workshop.capacity && (
-                          <div className="text-right">
-                            <span
-                              className={`text-xs font-mono px-2 py-1 rounded ${
-                                workshop.capacity <= 5
-                                  ? "bg-amber-100 text-amber-700"
-                                  : "bg-green-100 text-green-700"
-                              }`}
-                            >
-                              {workshop.capacity} spots
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  </Link>
                 ))}
               </div>
             ) : (

@@ -77,16 +77,10 @@ export function MissionImpactSection({ stats }: MissionImpactSectionProps) {
             {/* The Story */}
             <div className="space-y-4 text-slate-600 leading-relaxed">
               <p>
-                StarterSpark was born in the robotics lab at Punahou School. As
-                members of the FTC team, we saw firsthand how robotics could
-                transform a student&apos;s relationship with engineering—but we also
-                saw the barriers: expensive kits, confusing documentation, and a
-                steep learning curve.
+                Description
               </p>
               <p>
-                We built the kit we wished existed when we started: affordable,
-                complete, and designed from day one for learning. Real components,
-                real code, real skills—not just toys.
+                Description
               </p>
             </div>
 
@@ -168,7 +162,7 @@ export function MissionImpactSection({ stats }: MissionImpactSectionProps) {
                       </p>
                     </div>
                   </div>
-                  {/* Uncomment when you have actual images */}
+                  {/* Uncomment when we have actual images */}
                   {/* <Image
                     src={`/assets/images/outreach-${idx + 1}.jpg`}
                     alt={label}
