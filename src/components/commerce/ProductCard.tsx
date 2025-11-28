@@ -35,7 +35,7 @@ export function ProductCard({
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <div className="w-16 h-16 mb-3 rounded-full bg-slate-200 flex items-center justify-center">
                   <svg
-                    className="w-8 h-8 text-slate-400"
+                    className="w-8 h-8 text-slate-500"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -48,7 +48,7 @@ export function ProductCard({
                     />
                   </svg>
                 </div>
-                <p className="text-slate-400 font-mono text-xs">Product Image</p>
+                <p className="text-slate-500 font-mono text-xs">Product Image</p>
               </div>
 
               {/* Badge */}

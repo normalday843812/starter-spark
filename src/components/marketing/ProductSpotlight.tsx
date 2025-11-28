@@ -71,7 +71,7 @@ export function ProductSpotlightSection() {
                   <p className="text-slate-500 font-mono text-sm">
                     {currentThumb.label}
                   </p>
-                  <p className="text-slate-400 text-xs mt-1">
+                  <p className="text-slate-500 text-xs mt-1">
                     {currentThumb.description}
                   </p>
                 </div>
@@ -92,7 +92,7 @@ export function ProductSpotlightSection() {
                 >
                   <span
                     className={`text-[10px] font-mono ${
-                      selectedImage === idx ? "text-cyan-700" : "text-slate-400"
+                      selectedImage === idx ? "text-cyan-700" : "text-slate-500"
                     }`}
                   >
                     {thumb.label.split(" ")[0]}

@@ -13,6 +13,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { ForumFilters } from "./ForumFilters"
+import { Suspense } from "react"
 
 export const metadata = {
   title: "The Lab - Community Q&A",
@@ -122,7 +123,7 @@ export default async function CommunityPage({
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Sidebar */}
-            <aside className="w-full lg:w-64 flex-shrink-0">
+            <div className="w-full lg:w-64 flex-shrink-0">
               {/* Ask Question CTA */}
               <Link href="/community/new">
                 <Button className="w-full bg-cyan-700 hover:bg-cyan-600 text-white font-mono mb-6">
@@ -132,14 +133,16 @@ export default async function CommunityPage({
               </Link>
 
               {/* Filters */}
-              <ForumFilters
-                products={products || []}
-                availableTags={availableTags}
-                currentStatus={params.status}
-                currentTag={params.tag}
-                currentProduct={params.product}
-              />
-            </aside>
+              <Suspense fallback={<div className="animate-pulse bg-slate-100 rounded h-48" />}>
+                <ForumFilters
+                  products={products || []}
+                  availableTags={availableTags}
+                  currentStatus={params.status}
+                  currentTag={params.tag}
+                  currentProduct={params.product}
+                />
+              </Suspense>
+            </div>
 
             {/* Question List */}
             <div className="flex-1">
@@ -179,13 +182,13 @@ export default async function CommunityPage({
                                   {post.upvotes || 0}
                                 </span>
                               </div>
-                              <div className="flex items-center gap-1 text-slate-400">
+                              <div className="flex items-center gap-1 text-slate-500">
                                 <MessageSquare className="w-4 h-4" />
                                 <span className="font-mono text-sm">
                                   {commentCount}
                                 </span>
                               </div>
-                              <div className="flex items-center gap-1 text-slate-400">
+                              <div className="flex items-center gap-1 text-slate-500">
                                 <Eye className="w-3 h-3" />
                                 <span className="font-mono text-xs">
                                   {post.view_count}
@@ -258,9 +261,9 @@ export default async function CommunityPage({
               ) : (
                 <div className="bg-white border border-slate-200 rounded p-12 text-center">
                   <MessageSquare className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                  <h3 className="font-mono text-lg text-slate-900 mb-2">
+                  <p className="font-mono text-lg font-semibold text-slate-900 mb-2">
                     No questions yet
-                  </h3>
+                  </p>
                   <p className="text-slate-600 mb-6">
                     Be the first to ask a question and get help from the
                     community.

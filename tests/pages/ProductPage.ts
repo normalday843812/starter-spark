@@ -96,8 +96,8 @@ export class ProductPage {
   async addToCart(quantity: number = 1) {
     await this.setQuantity(quantity)
     await this.addToCartBtn.click()
-    // Wait for cart to open
-    await this.page.waitForTimeout(300)
+    // Wait for cart dialog to open
+    await this.page.getByRole("dialog").waitFor({ state: "visible", timeout: 3000 })
   }
 
   async expectAddToCartEnabled() {

@@ -1,8 +1,13 @@
 import { createClient } from "@/lib/supabase/server"
 import { supabaseAdmin } from "@/lib/supabase/admin"
 import { NextResponse } from "next/server"
+import { rateLimit } from "@/lib/rate-limit"
 
 export async function POST(request: Request) {
+  // Rate limit: 5 requests per minute
+  const rateLimitResponse = await rateLimit(request, "claimLicense")
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     // Get the user from the session
     const supabase = await createClient()

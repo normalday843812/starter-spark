@@ -141,15 +141,15 @@ export default async function CoursePage({
 
               <div className="flex flex-wrap items-center gap-6 text-sm text-slate-600">
                 <div className="flex items-center gap-2">
-                  <Target className="w-4 h-4 text-slate-400" />
+                  <Target className="w-4 h-4 text-slate-500" />
                   <span className="capitalize">{course.difficulty}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-slate-400" />
+                  <Clock className="w-4 h-4 text-slate-500" />
                   <span>{formatDuration(course.duration_minutes)}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 text-slate-400" />
+                  <BookOpen className="w-4 h-4 text-slate-500" />
                   <span>{totalLessons} lessons</span>
                 </div>
               </div>
@@ -183,7 +183,7 @@ export default async function CoursePage({
               ) : (
                 <>
                   <div className="flex items-center gap-3 mb-4">
-                    <Package className="w-5 h-5 text-slate-400" />
+                    <Package className="w-5 h-5 text-slate-500" />
                     <span className="text-sm text-slate-600">
                       Kit required to access lessons
                     </span>
@@ -248,7 +248,7 @@ export default async function CoursePage({
                           ) : isAccessible ? (
                             <div className="w-5 h-5 rounded-full border-2 border-slate-300" />
                           ) : (
-                            <Lock className="w-5 h-5 text-slate-400" />
+                            <Lock className="w-5 h-5 text-slate-500" />
                           )}
                         </div>
 
@@ -279,13 +279,13 @@ export default async function CoursePage({
                         </div>
 
                         {/* Duration */}
-                        <div className="flex-shrink-0 text-sm text-slate-400 font-mono">
+                        <div className="flex-shrink-0 text-sm text-slate-500 font-mono">
                           {lesson.duration_minutes} min
                         </div>
 
                         {/* Arrow */}
                         {isAccessible && (
-                          <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                          <ChevronRight className="w-4 h-4 text-slate-500 flex-shrink-0" />
                         )}
                       </div>
                     )

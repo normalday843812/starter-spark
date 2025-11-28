@@ -33,7 +33,7 @@ export function CartSheet() {
         {items.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center py-12">
             <div className="w-16 h-16 mb-4 rounded-full bg-slate-100 flex items-center justify-center">
-              <ShoppingBag className="w-8 h-8 text-slate-400" />
+              <ShoppingBag className="w-8 h-8 text-slate-500" />
             </div>
             <p className="text-slate-600 mb-4">Your cart is empty</p>
             <Button
@@ -56,7 +56,7 @@ export function CartSheet() {
                 >
                   {/* Image Placeholder */}
                   <div className="w-20 h-20 rounded bg-white border border-slate-200 flex items-center justify-center flex-shrink-0">
-                    <span className="text-slate-400 text-[10px] font-mono">
+                    <span className="text-slate-500 text-[10px] font-mono">
                       Image
                     </span>
                   </div>
@@ -95,7 +95,7 @@ export function CartSheet() {
                       </button>
                       <button
                         onClick={() => removeItem(item.slug)}
-                        className="ml-auto p-1.5 text-slate-400 hover:text-red-600 transition-colors"
+                        className="ml-auto p-1.5 text-slate-500 hover:text-red-600 transition-colors"
                         aria-label="Remove item"
                       >
                         <Trash2 className="w-4 h-4" />

@@ -142,7 +142,7 @@ export function AnswerForm({ postId }: AnswerFormProps) {
         onChange={(e) => setContent(e.target.value)}
         placeholder="Write your answer... (Markdown supported)"
         rows={8}
-        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-cyan-700 focus:bg-white resize-y min-h-[150px]"
+        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded text-slate-700 placeholder:text-slate-500 focus:outline-none focus:border-cyan-700 focus:bg-white resize-y min-h-[150px]"
       />
 
       {/* Error Message */}

@@ -61,7 +61,7 @@ export function BuyBox({
       <div className="flex items-baseline gap-3">
         <span className="text-4xl font-mono text-amber-600">${price}</span>
         {originalPrice && originalPrice > price && (
-          <span className="text-xl font-mono text-slate-400 line-through">
+          <span className="text-xl font-mono text-slate-500 line-through">
             ${originalPrice}
           </span>
         )}
@@ -116,7 +116,7 @@ export function BuyBox({
 
       {/* Charity Notice */}
       <div className="p-3 bg-amber-50 rounded border border-amber-200 text-sm text-slate-600">
-        <span className="font-mono text-amber-600 font-semibold">70%</span> of
+        <span className="font-mono text-amber-700 font-semibold">70%</span> of
         your purchase supports Hawaii STEM education.
       </div>
     </div>

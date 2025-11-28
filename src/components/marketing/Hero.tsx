@@ -58,7 +58,7 @@ export function HeroSection() {
             and community support. No prior experience needed—just curiosity.
           </p>
 
-          <p className="text-sm text-slate-400 font-mono">
+          <p className="text-sm text-slate-500 font-mono">
             v1.0 • Open Source Hardware • 70% to STEM Charities
           </p>
         </motion.div>

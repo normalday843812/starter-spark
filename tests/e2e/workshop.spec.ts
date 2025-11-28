@@ -207,7 +207,7 @@ test.describe("Workshop - Error Handling", () => {
     await page.goto("/workshop")
 
     // Page should render something even if data is missing
-    await expect(page.locator("main, body")).toBeVisible()
+    await expect(page.locator("body")).toBeVisible()
   })
 })
 
@@ -217,7 +217,7 @@ test.describe("Workshop - Responsive Design", () => {
     await page.goto("/workshop")
 
     // Page should still be functional
-    await expect(page.locator("main, body")).toBeVisible()
+    await expect(page.locator("body")).toBeVisible()
   })
 
   test("should be usable on tablet viewport", async ({ page }) => {
@@ -225,7 +225,7 @@ test.describe("Workshop - Responsive Design", () => {
     await page.goto("/workshop")
 
     // Page should still be functional
-    await expect(page.locator("main, body")).toBeVisible()
+    await expect(page.locator("body")).toBeVisible()
   })
 
   test("should be usable on desktop viewport", async ({ page }) => {
@@ -233,6 +233,6 @@ test.describe("Workshop - Responsive Design", () => {
     await page.goto("/workshop")
 
     // Page should still be functional
-    await expect(page.locator("main, body")).toBeVisible()
+    await expect(page.locator("body")).toBeVisible()
   })
 })

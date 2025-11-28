@@ -20,7 +20,7 @@ export function Footer() {
         <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 text-sm">
           <Heart className="w-4 h-4 text-amber-600" />
           <span className="text-slate-600">
-            <span className="font-mono text-amber-600 font-semibold">70%</span> of every purchase goes directly to Hawaii STEM charities
+            <span className="font-mono text-amber-700 font-semibold">70%</span> of every purchase goes directly to Hawaii STEM charities
           </span>
         </div>
       </div>
@@ -29,9 +29,9 @@ export function Footer() {
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
           {/* Brand Column */}
           <div className="lg:col-span-2">
-            <h3 className="text-2xl font-bold text-slate-900 mb-4 tracking-tighter font-mono">
+            <p className="text-2xl font-bold text-slate-900 mb-4 tracking-tighter font-mono">
               STARTER<span className="text-cyan-700">SPARK</span>
-            </h3>
+            </p>
             <p className="text-slate-600 max-w-sm mb-6 leading-relaxed text-sm">
               Open-source robotics education designed by students, for students.
               Building the next generation of Hawaii&apos;s engineers.
@@ -48,10 +48,10 @@ export function Footer() {
                 </Button>
               </Link>
               <div className="relative group">
-                <Button variant="ghost" size="icon" aria-label="Instagram" className="text-slate-400 cursor-not-allowed" disabled>
+                <Button variant="ghost" size="icon" aria-label="Instagram" className="text-slate-500 cursor-not-allowed" disabled>
                   <Instagram className="w-4 h-4" />
                 </Button>
-                <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-slate-400 font-mono whitespace-nowrap">
+                <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-slate-500 font-mono whitespace-nowrap">
                   PLACEHOLDER
                 </span>
               </div>
@@ -65,7 +65,7 @@ export function Footer() {
 
           {/* Products Column */}
           <div>
-            <h4 className="font-mono text-sm text-cyan-700 mb-4 uppercase tracking-wider">Products</h4>
+            <p className="font-mono text-sm text-cyan-700 mb-4 uppercase tracking-wider">Products</p>
             <ul className="space-y-3 text-sm text-slate-600">
               <li>
                 <Link href="/shop/4dof-arm" className="hover:text-slate-900 transition-colors">
@@ -87,7 +87,7 @@ export function Footer() {
 
           {/* Learn Column */}
           <div>
-            <h4 className="font-mono text-sm text-cyan-700 mb-4 uppercase tracking-wider">Learn</h4>
+            <p className="font-mono text-sm text-cyan-700 mb-4 uppercase tracking-wider">Learn</p>
             <ul className="space-y-3 text-sm text-slate-600">
               <li>
                 <Link href="/learn" className="hover:text-slate-900 transition-colors">
@@ -109,7 +109,7 @@ export function Footer() {
 
           {/* Newsletter Column */}
           <div>
-            <h4 className="font-mono text-sm text-cyan-700 mb-4 uppercase tracking-wider">Stay Updated</h4>
+            <p className="font-mono text-sm text-cyan-700 mb-4 uppercase tracking-wider">Stay Updated</p>
             <p className="text-sm text-slate-600 mb-4">
               Get notified about new kits and workshops.
             </p>

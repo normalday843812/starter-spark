@@ -100,9 +100,9 @@ export function LessonSidebar({
                   {module.title}
                 </span>
                 {isExpanded ? (
-                  <ChevronDown className="w-4 h-4 text-slate-400" />
+                  <ChevronDown className="w-4 h-4 text-slate-500" />
                 ) : (
-                  <ChevronRight className="w-4 h-4 text-slate-400" />
+                  <ChevronRight className="w-4 h-4 text-slate-500" />
                 )}
               </button>
 
@@ -176,7 +176,7 @@ export function LessonSidebar({
           <aside className="relative w-80 max-w-[85vw] bg-white flex flex-col">
             <button
               onClick={() => setMobileOpen(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+              className="absolute top-4 right-4 text-slate-500 hover:text-slate-600"
             >
               <X className="w-5 h-5" />
             </button>

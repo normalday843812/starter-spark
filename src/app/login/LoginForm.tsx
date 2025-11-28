@@ -101,7 +101,7 @@ export function LoginForm({ redirectTo, claimToken }: LoginFormProps) {
           Email address
         </label>
         <div className="relative">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
           <Input
             id="email"
             type="email"

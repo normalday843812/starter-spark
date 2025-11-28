@@ -65,13 +65,13 @@ function getEventTypeLabel(type: string): string {
 
 function getEventTypeColor(type: string): string {
   const colors: Record<string, string> = {
-    workshop: "bg-slate-100 text-slate-500",
-    competition: "bg-slate-100 text-slate-500",
-    meetup: "bg-slate-100 text-slate-500",
-    exhibition: "bg-slate-100 text-slate-500",
-    other: "bg-slate-100 text-slate-500",
+    workshop: "bg-slate-100 text-slate-600",
+    competition: "bg-slate-100 text-slate-600",
+    meetup: "bg-slate-100 text-slate-600",
+    exhibition: "bg-slate-100 text-slate-600",
+    other: "bg-slate-100 text-slate-600",
   }
-  return colors[type] || "bg-slate-100 text-slate-500"
+  return colors[type] || "bg-slate-100 text-slate-600"
 }
 
 function PastEventCard({ event }: { event: Event }) {
@@ -108,7 +108,7 @@ function PastEventCard({ event }: { event: Event }) {
           </h3>
 
           {/* Meta info */}
-          <div className="flex flex-wrap gap-4 text-sm text-slate-400">
+          <div className="flex flex-wrap gap-4 text-sm text-slate-500">
             <div className="flex items-center gap-1.5">
               <MapPin className="w-4 h-4" />
               <span>{event.location}</span>

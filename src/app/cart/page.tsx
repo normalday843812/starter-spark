@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Footer } from "@/components/layout/Footer"
 import { Button } from "@/components/ui/button"
 import { useCartStore, selectCartTotal, selectCartCount } from "@/store/cart"
@@ -19,12 +19,18 @@ import Link from "next/link"
 
 export default function CartPage() {
   const [isLoading, setIsLoading] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
   const items = useCartStore((state) => state.items)
   const removeItem = useCartStore((state) => state.removeItem)
   const updateQuantity = useCartStore((state) => state.updateQuantity)
   const clearCart = useCartStore((state) => state.clearCart)
   const total = useCartStore(selectCartTotal)
   const count = useCartStore(selectCartCount)
+
+  // Fix hydration mismatch with Zustand persist
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const handleCheckout = async () => {
     setIsLoading(true)
@@ -55,6 +61,39 @@ export default function CartPage() {
   const shipping = total >= 75 ? 0 : 9.99
   const grandTotal = total + shipping
 
+  // Show loading state during hydration to prevent mismatch
+  if (!isMounted) {
+    return (
+      <main className="min-h-screen bg-slate-50">
+        <section className="pt-32 pb-8 px-6 lg:px-20">
+          <div className="max-w-7xl mx-auto">
+            <Link
+              href="/shop"
+              className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-cyan-700 transition-colors mb-4"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Continue Shopping
+            </Link>
+            <h1 className="font-mono text-4xl font-bold text-slate-900">
+              Your Cart
+            </h1>
+          </div>
+        </section>
+        <section className="pb-24 px-6 lg:px-20">
+          <div className="max-w-7xl mx-auto">
+            <div className="bg-white rounded border border-slate-200 p-12 text-center">
+              <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-slate-100 flex items-center justify-center">
+                <Loader2 className="w-10 h-10 text-slate-500 animate-spin" />
+              </div>
+              <p className="text-slate-600">Loading cart...</p>
+            </div>
+          </div>
+        </section>
+        <Footer />
+      </main>
+    )
+  }
+
   return (
     <main className="min-h-screen bg-slate-50">
       {/* Header */}
@@ -78,7 +117,7 @@ export default function CartPage() {
           <div className="max-w-7xl mx-auto">
             <div className="bg-white rounded border border-slate-200 p-12 text-center">
               <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-slate-100 flex items-center justify-center">
-                <ShoppingBag className="w-10 h-10 text-slate-400" />
+                <ShoppingBag className="w-10 h-10 text-slate-500" />
               </div>
               <h2 className="font-mono text-2xl text-slate-900 mb-2">
                 Your cart is empty
@@ -109,6 +148,7 @@ export default function CartPage() {
                       {count} {count === 1 ? "item" : "items"}
                     </span>
                     <button
+                      type="button"
                       onClick={clearCart}
                       className="text-sm text-slate-500 hover:text-red-600 transition-colors"
                     >
@@ -122,7 +162,7 @@ export default function CartPage() {
                       <div key={item.slug} className="p-6 flex gap-6">
                         {/* Image Placeholder */}
                         <div className="w-24 h-24 rounded bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0">
-                          <span className="text-slate-400 text-xs font-mono">
+                          <span className="text-slate-500 text-xs font-mono">
                             Image
                           </span>
                         </div>
@@ -137,8 +177,9 @@ export default function CartPage() {
                               {item.name}
                             </Link>
                             <button
+                              type="button"
                               onClick={() => removeItem(item.slug)}
-                              className="p-1 text-slate-400 hover:text-red-600 transition-colors"
+                              className="p-1 text-slate-500 hover:text-red-600 transition-colors"
                               aria-label="Remove item"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -153,6 +194,7 @@ export default function CartPage() {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <button
+                                type="button"
                                 onClick={() =>
                                   updateQuantity(item.slug, item.quantity - 1)
                                 }
@@ -165,6 +207,7 @@ export default function CartPage() {
                                 {item.quantity}
                               </span>
                               <button
+                                type="button"
                                 onClick={() =>
                                   updateQuantity(item.slug, item.quantity + 1)
                                 }

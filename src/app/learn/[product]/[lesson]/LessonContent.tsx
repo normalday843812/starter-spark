@@ -2,9 +2,19 @@
 
 import { useState } from "react"
 import { AlertTriangle, Lightbulb, Copy, Check, Info } from "lucide-react"
+import DOMPurify from "isomorphic-dompurify"
 
 interface LessonContentProps {
   content: string
+}
+
+// DOMPurify configuration - only allow safe tags and attributes
+const PURIFY_CONFIG = {
+  ALLOWED_TAGS: ["strong", "em", "code", "a", "br"],
+  ALLOWED_ATTR: ["href", "class", "target", "rel"],
+  ALLOW_DATA_ATTR: false,
+  // Only allow safe URL protocols (blocks javascript:, data:, etc.)
+  ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i,
 }
 
 // Code block component with copy button
@@ -32,7 +42,7 @@ function CodeBlock({
           <span className="text-sm font-mono text-slate-600">{filename}</span>
           <button
             onClick={handleCopy}
-            className="text-slate-400 hover:text-slate-600 transition-colors"
+            className="text-slate-500 hover:text-slate-600 transition-colors"
           >
             {copied ? (
               <Check className="w-4 h-4 text-green-500" />
@@ -46,7 +56,7 @@ function CodeBlock({
         {!filename && (
           <button
             onClick={handleCopy}
-            className="absolute top-3 right-3 text-slate-400 hover:text-slate-600 transition-colors"
+            className="absolute top-3 right-3 text-slate-500 hover:text-slate-600 transition-colors"
           >
             {copied ? (
               <Check className="w-4 h-4 text-green-500" />
@@ -263,17 +273,27 @@ function parseContent(content: string): React.ReactNode[] {
   return elements
 }
 
-// Format inline text (bold, italic, code, links)
+// Format inline text (bold, italic, code, links) with XSS protection
 function formatInlineText(text: string): string {
-  return text
+  // First, escape any raw HTML to prevent injection
+  const escaped = text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+
+  // Then apply markdown formatting
+  const formatted = escaped
     // Bold
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     // Italic
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
     // Inline code
     .replace(/`([^`]+)`/g, '<code class="bg-slate-100 px-1.5 py-0.5 rounded font-mono text-sm">$1</code>')
-    // Links
+    // Links - sanitized by DOMPurify's ALLOWED_URI_REGEXP
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-cyan-700 hover:underline">$1</a>')
+
+  // Sanitize with DOMPurify to prevent any XSS that slipped through
+  return DOMPurify.sanitize(formatted, PURIFY_CONFIG)
 }
 
 export function LessonContent({ content }: LessonContentProps) {

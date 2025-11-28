@@ -83,7 +83,7 @@ export function LearningPreviewSection() {
                 <div className="w-3 h-3 rounded-full bg-red-500/70" />
                 <div className="w-3 h-3 rounded-full bg-yellow-500/70" />
                 <div className="w-3 h-3 rounded-full bg-green-500/70" />
-                <span className="ml-4 text-xs text-slate-400 font-mono">
+                <span className="ml-4 text-xs text-slate-500 font-mono">
                   lesson-03-servo-control.ino
                 </span>
               </div>
@@ -205,7 +205,7 @@ void loop() {
                       <span className="text-sm font-medium text-slate-900">
                         @robotbuilder42
                       </span>
-                      <span className="text-xs text-slate-400">2 hours ago</span>
+                      <span className="text-xs text-slate-500">2 hours ago</span>
                     </div>
                     <p className="text-sm text-slate-700 mb-2">
                       My servo keeps jittering when it holds a position. I&apos;m

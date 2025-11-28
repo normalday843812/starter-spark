@@ -7,7 +7,7 @@
   /* Color Palette: Architectural Blueprint Theme (Light Mode) */
   
   /* Accents */
-  --color-cyan-700: oklch(0.488 0.243 264.376); /* Deep Cyan */
+  --color-cyan-700: oklch(0.52 0.105 211); /* Deep Cyan - #0e7490 */
   --color-cyan-600: oklch(0.609 0.126 221.723);
   --color-cyan-500: oklch(0.715 0.143 215.221);
   --color-amber-500: oklch(0.769 0.188 70.08);
@@ -73,7 +73,7 @@
   --popover-foreground: oklch(0.208 0.042 265.755);
 
   /* Primary: Deep Cyan (700) */
-  --primary: oklch(0.488 0.243 264.376);
+  --primary: oklch(0.52 0.105 211);
   --primary-foreground: oklch(1 0 0);
 
   /* Secondary: Slate-100 */
@@ -95,16 +95,16 @@
   /* Border: Slate-200 */
   --border: oklch(0.929 0.013 255.508);
   --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.488 0.243 264.376);
+  --ring: oklch(0.52 0.105 211);
 
   --sidebar-background: oklch(0.984 0.003 247.858);
   --sidebar-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary: oklch(0.52 0.105 211);
   --sidebar-primary-foreground: oklch(1 0 0);
   --sidebar-accent: oklch(0.968 0.007 247.896);
   --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
   --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.488 0.243 264.376);
+  --sidebar-ring: oklch(0.52 0.105 211);
 
   /* Grid Color: Slate-300 */
   --grid-color: #cbd5e1; 
@@ -119,7 +119,7 @@
     --card-foreground: oklch(0.208 0.042 265.755);
     --popover: oklch(1 0 0);
     --popover-foreground: oklch(0.208 0.042 265.755);
-    --primary: oklch(0.488 0.243 264.376);
+    --primary: oklch(0.52 0.105 211);
     --primary-foreground: oklch(1 0 0);
     --secondary: oklch(0.968 0.007 247.896);
     --secondary-foreground: oklch(0.208 0.042 265.755);
@@ -131,7 +131,7 @@
     --destructive-foreground: oklch(1 0 0);
     --border: oklch(0.929 0.013 255.508);
     --input: oklch(0.929 0.013 255.508);
-    --ring: oklch(0.488 0.243 264.376);
+    --ring: oklch(0.52 0.105 211);
   }
 }
 

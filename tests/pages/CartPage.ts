@@ -38,9 +38,9 @@ export class CartPage {
     this.emptyCartMessage = page.getByText(/your cart is empty/i)
     this.browseKitsButton = page.getByRole("link", { name: /browse kits/i })
 
-    // Cart items
+    // Cart items - use text matching for clear cart button
     this.itemCount = page.locator("text=/\\d+ items?/")
-    this.clearCartButton = page.getByRole("button", { name: /clear cart/i })
+    this.clearCartButton = page.getByText("Clear Cart")
     this.cartItems = page.locator('[class*="divide-y"] > div')
 
     // Order summary
@@ -58,6 +58,16 @@ export class CartPage {
 
   async goto() {
     await this.page.goto("/cart")
+    // Wait for Zustand hydration - loading state shows "Loading cart..."
+    // Wait for h1 to appear first
+    await this.page.waitForFunction(() => {
+      return document.querySelector("h1")?.textContent?.includes("Cart")
+    })
+    // Then wait for loading state to finish (either empty cart or items visible)
+    await this.page.waitForFunction(() => {
+      const hasLoading = document.body.textContent?.includes("Loading cart...")
+      return !hasLoading
+    }, { timeout: 10000 })
   }
 
   async expectPageLoaded() {
@@ -83,6 +93,8 @@ export class CartPage {
   async clearCart() {
     if (await this.clearCartButton.isVisible()) {
       await this.clearCartButton.click()
+      // Wait for state update
+      await expect(this.emptyCartMessage).toBeVisible({ timeout: 5000 })
     }
   }
 
@@ -127,5 +139,15 @@ export class CartPage {
   async clickContinueShopping() {
     await this.continueShoppingLink.click()
     await this.page.waitForURL("**/shop")
+  }
+
+  /**
+   * Wait for quantity to update after clicking increase/decrease
+   * Scoped to main to avoid matching hidden header badge on mobile
+   */
+  async waitForQuantityUpdate(expectedQuantity: number) {
+    await expect(
+      this.page.locator("main .font-mono").filter({ hasText: new RegExp(`^${expectedQuantity}$`) }).first()
+    ).toBeVisible({ timeout: 5000 })
   }
 }

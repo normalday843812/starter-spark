@@ -110,7 +110,7 @@ export default async function LearnPage() {
                             Owned
                           </span>
                         ) : (
-                          <span className="text-xs font-mono bg-slate-100 text-slate-500 px-2 py-1 rounded flex items-center gap-1">
+                          <span className="text-xs font-mono bg-slate-100 text-slate-600 px-2 py-1 rounded flex items-center gap-1">
                             <Lock className="w-3 h-3" />
                             Locked
                           </span>
@@ -128,15 +128,15 @@ export default async function LearnPage() {
                     <div className="p-6 bg-slate-50/50">
                       <div className="flex items-center gap-4 mb-4 text-sm text-slate-600">
                         <div className="flex items-center gap-1">
-                          <Target className="w-4 h-4 text-slate-400" />
+                          <Target className="w-4 h-4 text-slate-500" />
                           <span className="capitalize">{course.difficulty}</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <Clock className="w-4 h-4 text-slate-400" />
+                          <Clock className="w-4 h-4 text-slate-500" />
                           <span>{formatDuration(course.duration_minutes)}</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <BookOpen className="w-4 h-4 text-slate-400" />
+                          <BookOpen className="w-4 h-4 text-slate-500" />
                           <span>{totalLessons} lessons</span>
                         </div>
                       </div>
@@ -166,7 +166,7 @@ export default async function LearnPage() {
                               className="flex items-center justify-between text-sm"
                             >
                               <span className="text-slate-600">{module.title}</span>
-                              <span className="text-slate-400 font-mono text-xs">
+                              <span className="text-slate-500 font-mono text-xs">
                                 {module.lessons?.length || 0}{" "}
                                 {(module.lessons?.length || 0) === 1 ? "lesson" : "lessons"}
                               </span>
@@ -194,7 +194,7 @@ export default async function LearnPage() {
             /* Empty State */
             <div className="text-center py-16">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
-                <BookOpen className="w-8 h-8 text-slate-400" />
+                <BookOpen className="w-8 h-8 text-slate-500" />
               </div>
               <p className="text-slate-600">
                 No courses available yet. Check back soon.

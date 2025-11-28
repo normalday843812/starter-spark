@@ -74,7 +74,7 @@ export function AboutGallery() {
               <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
                 <div className="w-12 h-12 mb-3 rounded-full bg-slate-200 flex items-center justify-center">
                   <svg
-                    className="w-6 h-6 text-slate-400"
+                    className="w-6 h-6 text-slate-500"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"

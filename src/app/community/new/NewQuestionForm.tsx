@@ -276,7 +276,7 @@ Include:
 
 The more detail you provide, the better we can help!"
           rows={12}
-          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-b text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-cyan-700 resize-y min-h-[250px]"
+          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-b text-slate-700 placeholder:text-slate-500 focus:outline-none focus:border-cyan-700 resize-y min-h-[250px]"
         />
 
         <p className="mt-1 text-xs text-slate-500">

@@ -40,9 +40,18 @@ test.describe("Cart - Empty State", () => {
   test("should show zero count in header cart badge", async ({ page }) => {
     await page.goto("/")
 
-    // Cart badge should not be visible when empty
-    const badge = page.locator('[aria-label="Cart"] span')
-    await expect(badge).toBeHidden()
+    // Cart badge should not be visible when empty (desktop only - on mobile, cart is in menu)
+    const viewportSize = page.viewportSize()
+    const isMobile = viewportSize ? viewportSize.width < 768 : false
+
+    if (isMobile) {
+      // On mobile, check that the mobile menu button is visible
+      await expect(page.getByLabel("Toggle menu")).toBeVisible()
+    } else {
+      // On desktop, cart badge should not be visible when empty
+      const badge = page.locator('[aria-label="Cart"] span')
+      await expect(badge).toBeHidden()
+    }
   })
 })
 
@@ -59,18 +68,18 @@ test.describe("Cart - Add Items", () => {
     // Go to shop and find a product
     await page.goto("/shop")
     const productLink = page.locator('a[href^="/shop/"]').first()
-    const href = await productLink.getAttribute("href")
     await productLink.click()
 
     // Wait for product page to load
     await page.waitForURL(/\/shop\/.+/)
+    await page.getByRole("heading", { level: 1 }).waitFor()
 
     // Add to cart
     const addToCartBtn = page.getByRole("button", { name: /add to cart/i })
     await addToCartBtn.click()
 
-    // Wait for cart to update
-    await page.waitForTimeout(500)
+    // Wait for cart sheet to appear or state update
+    await expect(page.getByText(/added to cart|cart/i).first()).toBeVisible({ timeout: 3000 })
 
     // Cart should update - check badge or cart state
     await page.goto("/cart")
@@ -83,13 +92,13 @@ test.describe("Cart - Add Items", () => {
     await page.goto("/shop")
     await page.locator('a[href^="/shop/"]').first().click()
     await page.waitForURL(/\/shop\/.+/)
+    await page.getByRole("heading", { level: 1 }).waitFor()
 
     // Add to cart
     await page.getByRole("button", { name: /add to cart/i }).click()
 
-    // Cart sheet or indicator should be visible
-    // The cart opens automatically after adding
-    await page.waitForTimeout(300)
+    // Cart sheet or indicator should be visible - wait for state update
+    await expect(page.getByText(/added to cart|view cart|cart/i).first()).toBeVisible({ timeout: 3000 })
   })
 
   test("should increment quantity when adding same item twice", async ({
@@ -99,22 +108,29 @@ test.describe("Cart - Add Items", () => {
     await page.goto("/shop")
     await page.locator('a[href^="/shop/"]').first().click()
     await page.waitForURL(/\/shop\/.+/)
+    await page.getByRole("heading", { level: 1 }).waitFor()
 
     // Add to cart twice
     const addToCartBtn = page.getByRole("button", { name: /add to cart/i })
     await addToCartBtn.click()
-    await page.waitForTimeout(300)
 
-    // Close cart if open (click elsewhere or navigate)
-    await page.goto(page.url()) // Reload to close cart
+    // Wait for cart sheet to open (it opens automatically on add to cart)
+    await expect(page.getByRole("dialog")).toBeVisible({ timeout: 3000 })
 
-    // Add again
+    // Close the cart sheet by pressing Escape so we can click Add to Cart again
+    await page.keyboard.press("Escape")
+    await expect(page.getByRole("dialog")).toBeHidden({ timeout: 3000 })
+
+    // Add again (click the button which should now be accessible)
     await addToCartBtn.click()
-    await page.waitForTimeout(300)
 
-    // Go to cart page and verify quantity
+    // Cart sheet opens again - verify quantity is now 2 in the sheet
+    await expect(page.getByRole("dialog")).toBeVisible({ timeout: 3000 })
+    await expect(page.getByRole("dialog").locator(".font-mono").filter({ hasText: /^2$/ })).toBeVisible({ timeout: 3000 })
+
+    // Go to cart page and verify quantity (scope to main to avoid matching hidden header badge)
     await page.goto("/cart")
-    const quantityText = page.locator(".font-mono").filter({ hasText: /^2$/ })
+    const quantityText = page.locator("main .font-mono").filter({ hasText: /^2$/ })
     await expect(quantityText.first()).toBeVisible()
   })
 
@@ -123,19 +139,28 @@ test.describe("Cart - Add Items", () => {
     await page.goto("/shop")
     await page.locator('a[href^="/shop/"]').first().click()
     await page.waitForURL(/\/shop\/.+/)
+    await page.getByRole("heading", { level: 1 }).waitFor()
 
-    // Increase quantity to 3
-    const increaseBtn = page.getByLabel("Increase quantity")
+    // Increase quantity to 3 (use the BuyBox quantity controls, not cart sheet)
+    const buyBoxQuantitySection = page.locator("section").filter({ has: page.getByRole("button", { name: /add to cart/i }) })
+    const increaseBtn = buyBoxQuantitySection.getByLabel("Increase quantity")
     await increaseBtn.click()
+    // Wait for quantity to show 2
+    await expect(buyBoxQuantitySection.locator(".text-center.font-mono").first()).toHaveText("2")
     await increaseBtn.click()
+    // Wait for quantity to show 3
+    await expect(buyBoxQuantitySection.locator(".text-center.font-mono").first()).toHaveText("3")
 
     // Add to cart
     await page.getByRole("button", { name: /add to cart/i }).click()
-    await page.waitForTimeout(300)
 
-    // Go to cart and verify
+    // Wait for cart sheet to open and verify quantity
+    await expect(page.getByRole("dialog")).toBeVisible({ timeout: 3000 })
+    await expect(page.getByRole("dialog").locator(".font-mono").filter({ hasText: /^3$/ })).toBeVisible({ timeout: 3000 })
+
+    // Go to cart and verify (scope to main to avoid matching hidden header badge)
     await page.goto("/cart")
-    const quantityText = page.locator(".font-mono").filter({ hasText: /^3$/ })
+    const quantityText = page.locator("main .font-mono").filter({ hasText: /^3$/ })
     await expect(quantityText.first()).toBeVisible()
   })
 })
@@ -168,10 +193,8 @@ test.describe("Cart - Update Items", () => {
 
     await cartPage.increaseItemQuantity(0)
 
-    // Verify quantity increased
-    await page.waitForTimeout(200)
-    const quantityText = page.locator(".font-mono").filter({ hasText: /^2$/ })
-    await expect(quantityText.first()).toBeVisible()
+    // Verify quantity increased - wait for state update
+    await cartPage.waitForQuantityUpdate(2)
   })
 
   test("should decrease item quantity", async ({ page }) => {
@@ -198,10 +221,8 @@ test.describe("Cart - Update Items", () => {
 
     await cartPage.decreaseItemQuantity(0)
 
-    // Verify quantity decreased
-    await page.waitForTimeout(200)
-    const quantityText = page.locator(".font-mono").filter({ hasText: /^1$/ })
-    await expect(quantityText.first()).toBeVisible()
+    // Verify quantity decreased - wait for state update
+    await cartPage.waitForQuantityUpdate(1)
   })
 
   test("should remove item when decreasing quantity to zero", async ({
@@ -213,7 +234,7 @@ test.describe("Cart - Update Items", () => {
     // Decrease from 1 to 0 should remove
     await cartPage.decreaseItemQuantity(0)
 
-    await page.waitForTimeout(200)
+    // Wait for empty cart state
     await cartPage.expectEmptyCart()
   })
 
@@ -223,7 +244,7 @@ test.describe("Cart - Update Items", () => {
 
     await cartPage.removeItem(0)
 
-    await page.waitForTimeout(200)
+    // Wait for empty cart state
     await cartPage.expectEmptyCart()
   })
 
@@ -255,10 +276,8 @@ test.describe("Cart - Update Items", () => {
     const cartPage = new CartPage(page)
     await cartPage.goto()
 
+    // clearCart already waits for empty cart state internally
     await cartPage.clearCart()
-
-    await page.waitForTimeout(200)
-    await cartPage.expectEmptyCart()
   })
 })
 
@@ -287,8 +306,9 @@ test.describe("Cart - Order Summary", () => {
     await cartPage.goto()
 
     // Subtotal should be 99 * 2 = 198
-    const subtotalText = page.getByText("$198.00")
-    await expect(subtotalText).toBeVisible()
+    // Look for the subtotal row specifically (contains "Subtotal" label)
+    const subtotalRow = page.locator("div").filter({ hasText: /^Subtotal\$198\.00$/ })
+    await expect(subtotalRow).toBeVisible()
   })
 
   test("should show free shipping for orders over $75", async ({ page }) => {
@@ -314,7 +334,8 @@ test.describe("Cart - Order Summary", () => {
     const cartPage = new CartPage(page)
     await cartPage.goto()
 
-    const freeShipping = page.getByText("FREE")
+    // Look for exact "FREE" text in the shipping row (not the trust signal)
+    const freeShipping = page.getByText("FREE", { exact: true })
     await expect(freeShipping).toBeVisible()
   })
 
@@ -520,35 +541,61 @@ test.describe("Cart - Header Badge", () => {
     })
     await page.reload()
 
-    // Badge should not be visible initially
-    let badge = page.locator('[aria-label="Cart"] span')
-    await expect(badge).toBeHidden()
+    // Check viewport - badge tests only apply to desktop
+    const viewportSize = page.viewportSize()
+    const isMobile = viewportSize ? viewportSize.width < 768 : false
 
-    // Add item via localStorage
-    await page.evaluate(() => {
-      const cartState = {
-        state: {
-          items: [
-            {
-              slug: "4dof-robotic-arm-kit",
-              name: "4DOF Robotic Arm Kit",
-              price: 99,
-              quantity: 3,
-            },
-          ],
-        },
-        version: 0,
-      }
-      localStorage.setItem("starterspark-cart", JSON.stringify(cartState))
-    })
+    if (isMobile) {
+      // On mobile, skip badge check and just verify cart page works
+      await page.evaluate(() => {
+        const cartState = {
+          state: {
+            items: [
+              {
+                slug: "4dof-robotic-arm-kit",
+                name: "4DOF Robotic Arm Kit",
+                price: 99,
+                quantity: 3,
+              },
+            ],
+          },
+          version: 0,
+        }
+        localStorage.setItem("starterspark-cart", JSON.stringify(cartState))
+      })
+      await page.goto("/cart")
+      await expect(page.getByText("3 items")).toBeVisible()
+    } else {
+      // Badge should not be visible initially
+      let badge = page.locator('[aria-label="Cart"] span')
+      await expect(badge).toBeHidden()
 
-    // Reload to trigger state update
-    await page.reload()
+      // Add item via localStorage
+      await page.evaluate(() => {
+        const cartState = {
+          state: {
+            items: [
+              {
+                slug: "4dof-robotic-arm-kit",
+                name: "4DOF Robotic Arm Kit",
+                price: 99,
+                quantity: 3,
+              },
+            ],
+          },
+          version: 0,
+        }
+        localStorage.setItem("starterspark-cart", JSON.stringify(cartState))
+      })
 
-    // Badge should show count
-    badge = page.locator('[aria-label="Cart"] span')
-    await expect(badge).toBeVisible()
-    await expect(badge).toHaveText("3")
+      // Reload to trigger state update
+      await page.reload()
+
+      // Badge should show count
+      badge = page.locator('[aria-label="Cart"] span')
+      await expect(badge).toBeVisible()
+      await expect(badge).toHaveText("3")
+    }
   })
 
   test("should show 9+ for more than 9 items", async ({ page }) => {
@@ -572,7 +619,17 @@ test.describe("Cart - Header Badge", () => {
 
     await page.reload()
 
-    const badge = page.locator('[aria-label="Cart"] span')
-    await expect(badge).toHaveText("9+")
+    // Check viewport - badge tests only apply to desktop
+    const viewportSize = page.viewportSize()
+    const isMobile = viewportSize ? viewportSize.width < 768 : false
+
+    if (isMobile) {
+      // On mobile, verify count in cart page
+      await page.goto("/cart")
+      await expect(page.getByText("15 items")).toBeVisible()
+    } else {
+      const badge = page.locator('[aria-label="Cart"] span')
+      await expect(badge).toHaveText("9+")
+    }
   })
 })

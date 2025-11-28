@@ -34,8 +34,11 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Protect dashboard routes
-  const isProtectedRoute = request.nextUrl.pathname.startsWith('/workshop')
+  // Protect dashboard routes (only workshop subroutes, not the main workshop page)
+  // The main /workshop page handles auth state internally with a guest view
+  const isWorkshopSubroute = request.nextUrl.pathname.startsWith('/workshop/') // e.g., /workshop/kit/123
+  const isWorkshopMainPage = request.nextUrl.pathname === '/workshop'
+  const isProtectedRoute = isWorkshopSubroute && !isWorkshopMainPage
   const isAuthRoute =
     request.nextUrl.pathname.startsWith('/login') ||
     request.nextUrl.pathname.startsWith('/register')

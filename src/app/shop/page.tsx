@@ -50,6 +50,9 @@ export default async function ShopPage() {
         </div>
       </section>
 
+      {/* Visually hidden h2 for proper heading hierarchy - must be in server component for axe */}
+      <h2 className="sr-only">Available Products</h2>
+
       {/* Client-side filters and product grid */}
       <ShopFilters products={transformedProducts} />
 

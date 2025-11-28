@@ -190,13 +190,13 @@ export default async function QuestionDetailPage({
             <div className="flex items-start gap-4 mb-6">
               {/* Vote Column */}
               <div className="flex flex-col items-center gap-1 min-w-[40px]">
-                <button className="p-1 text-slate-400 hover:text-cyan-700 transition-colors">
+                <button className="p-1 text-slate-500 hover:text-cyan-700 transition-colors">
                   <ChevronUp className="w-6 h-6" />
                 </button>
                 <span className="font-mono text-lg text-slate-700">
                   {post.upvotes || 0}
                 </span>
-                <button className="p-1 text-slate-400 hover:text-slate-600 transition-colors">
+                <button className="p-1 text-slate-500 hover:text-slate-600 transition-colors">
                   <ChevronDown className="w-6 h-6" />
                 </button>
               </div>
@@ -396,13 +396,13 @@ function AnswerCard({
     <div className="flex gap-4">
       {/* Vote Column */}
       <div className="flex flex-col items-center gap-1 min-w-[40px]">
-        <button className="p-1 text-slate-400 hover:text-cyan-700 transition-colors">
+        <button className="p-1 text-slate-500 hover:text-cyan-700 transition-colors">
           <ChevronUp className="w-5 h-5" />
         </button>
         <span className="font-mono text-sm text-slate-600">
           {answer.upvotes || 0}
         </span>
-        <button className="p-1 text-slate-400 hover:text-slate-600 transition-colors">
+        <button className="p-1 text-slate-500 hover:text-slate-600 transition-colors">
           <ChevronDown className="w-5 h-5" />
         </button>
       </div>

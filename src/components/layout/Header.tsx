@@ -59,23 +59,23 @@ export function Header() {
                 </span>
               )}
             </Button>
-            <Link href="/workshop">
-              <Button
-                variant="outline"
-                className="border-slate-200 hover:border-cyan-700 text-slate-600 hover:text-cyan-700 font-mono text-sm"
-              >
-                Workshop
-              </Button>
+            <Link
+              href="/workshop"
+              className="inline-flex items-center justify-center h-9 px-4 py-2 rounded-md border border-slate-200 hover:border-cyan-700 text-slate-600 hover:text-cyan-700 font-mono text-sm transition-colors"
+            >
+              Workshop
             </Link>
-            <Link href="/shop">
-              <Button className="bg-cyan-700 hover:bg-cyan-600 text-white font-mono text-sm">
-                Shop Kits
-              </Button>
+            <Link
+              href="/shop"
+              className="inline-flex items-center justify-center h-9 px-4 py-2 rounded-md bg-cyan-700 hover:bg-cyan-600 text-white font-mono text-sm transition-colors"
+            >
+              Shop Kits
             </Link>
           </div>
 
           {/* Mobile Menu Button */}
           <button
+            type="button"
             className="md:hidden p-2 text-slate-600 hover:text-cyan-700"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
@@ -105,6 +105,7 @@ export function Header() {
             ))}
             <div className="pt-4 border-t border-slate-200 space-y-3">
               <button
+                type="button"
                 onClick={() => {
                   openCart()
                   setMobileMenuOpen(false)
@@ -114,18 +115,19 @@ export function Header() {
                 <ShoppingCart className="w-5 h-5" />
                 Cart {cartCount > 0 && `(${cartCount})`}
               </button>
-              <Link href="/workshop" className="block">
-                <Button
-                  variant="outline"
-                  className="w-full border-slate-200 hover:border-cyan-700 text-slate-600 hover:text-cyan-700 font-mono text-sm"
-                >
-                  Workshop
-                </Button>
+              <Link
+                href="/workshop"
+                className="block w-full text-center py-2 px-4 rounded-md border border-slate-200 hover:border-cyan-700 text-slate-600 hover:text-cyan-700 font-mono text-sm transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Workshop
               </Link>
-              <Link href="/shop" className="block">
-                <Button className="w-full bg-cyan-700 hover:bg-cyan-600 text-white font-mono text-sm">
-                  Shop Kits
-                </Button>
+              <Link
+                href="/shop"
+                className="block w-full text-center py-2 px-4 rounded-md bg-cyan-700 hover:bg-cyan-600 text-white font-mono text-sm transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Shop Kits
               </Link>
             </div>
           </nav>

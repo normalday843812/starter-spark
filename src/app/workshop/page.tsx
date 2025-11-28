@@ -75,7 +75,7 @@ export default async function WorkshopPage() {
           <div className="max-w-7xl mx-auto">
             <div className="bg-white rounded border border-slate-200 p-12 text-center">
               <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-slate-100 flex items-center justify-center">
-                <LogIn className="w-10 h-10 text-slate-400" />
+                <LogIn className="w-10 h-10 text-slate-500" />
               </div>
               <h2 className="font-mono text-2xl text-slate-900 mb-2">
                 Sign In Required
@@ -125,7 +125,7 @@ export default async function WorkshopPage() {
                   {licenses.length === 0 ? (
                     <div className="text-center py-12">
                       <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
-                        <Package className="w-8 h-8 text-slate-400" />
+                        <Package className="w-8 h-8 text-slate-500" />
                       </div>
                       <p className="text-slate-600 mb-4">
                         You don&apos;t have any kits yet.
@@ -239,7 +239,7 @@ export default async function WorkshopPage() {
                         >
                           <Award
                             className={`w-6 h-6 ${
-                              i === 0 ? "text-amber-500" : "text-slate-400"
+                              i === 0 ? "text-amber-500" : "text-slate-500"
                             }`}
                           />
                         </div>

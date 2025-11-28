@@ -202,7 +202,7 @@ export function EventsPreviewSection() {
                 >
                   <div className="flex items-start gap-3">
                     <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
-                      <MessageSquare className="w-4 h-4 text-slate-400" />
+                      <MessageSquare className="w-4 h-4 text-slate-500" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="font-medium text-slate-900 text-sm truncate">
@@ -217,7 +217,7 @@ export function EventsPreviewSection() {
                         </span>
                       </div>
                     </div>
-                    <div className="text-xs text-slate-400 font-mono">
+                    <div className="text-xs text-slate-500 font-mono">
                       {discussion.replies} replies
                     </div>
                   </div>

@@ -66,9 +66,9 @@ export function ProductTabs({
 
           {/* Learning Outcomes */}
           <div className="mt-8">
-            <h3 className="font-mono text-lg text-slate-900 mb-4">
+            <p className="font-mono text-lg font-semibold text-slate-900 mb-4">
               What You&apos;ll Learn
-            </h3>
+            </p>
             <ul className="space-y-3">
               {learningOutcomes.map((outcome, idx) => (
                 <li key={idx} className="flex items-start gap-3">
@@ -110,7 +110,7 @@ export function ProductTabs({
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <div className="w-20 h-20 mb-4 rounded-full bg-slate-200 flex items-center justify-center">
                 <svg
-                  className="w-10 h-10 text-slate-400"
+                  className="w-10 h-10 text-slate-500"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -124,7 +124,7 @@ export function ProductTabs({
                 </svg>
               </div>
               <p className="text-slate-500 font-mono text-sm">Knolling Photo</p>
-              <p className="text-slate-400 text-xs mt-1">
+              <p className="text-slate-500 text-xs mt-1">
                 All components laid flat
               </p>
             </div>

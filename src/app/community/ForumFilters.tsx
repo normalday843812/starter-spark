@@ -33,7 +33,7 @@ export function ForumFilters({
 
   const updateFilter = useCallback(
     (key: string, value: string | null) => {
-      const params = new URLSearchParams(searchParams.toString())
+      const params = new URLSearchParams(searchParams?.toString() || "")
       if (value && value !== "all") {
         params.set(key, value)
       } else {
@@ -59,7 +59,7 @@ export function ForumFilters({
           Search
         </label>
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
           <Input
             type="text"
             placeholder="Search questions..."
@@ -134,10 +134,13 @@ export function ForumFilters({
       {/* Product Filter */}
       {products.length > 0 && (
         <div>
-          <label className="block text-sm font-mono text-slate-600 mb-2">
+          <label htmlFor="product-filter" className="block text-sm font-mono text-slate-600 mb-2">
             Product
           </label>
           <select
+            id="product-filter"
+            name="product-filter"
+            aria-label="Product"
             value={currentProduct || ""}
             onChange={(e) => updateFilter("product", e.target.value || null)}
             className="w-full px-3 py-2 bg-white border border-slate-200 rounded text-sm text-slate-700 focus:border-cyan-700 focus:outline-none"

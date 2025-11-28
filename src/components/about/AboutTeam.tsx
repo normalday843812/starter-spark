@@ -101,9 +101,10 @@ export function AboutTeam() {
                           href={member.github}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-2 text-slate-400 hover:text-cyan-700 transition-colors"
+                          className="p-2 text-slate-500 hover:text-cyan-700 transition-colors"
+                          aria-label={`${member.name}'s GitHub profile`}
                         >
-                          <Github className="w-4 h-4" />
+                          <Github className="w-4 h-4" aria-hidden="true" />
                         </Link>
                       )}
                       {member.linkedin && (
@@ -111,9 +112,10 @@ export function AboutTeam() {
                           href={member.linkedin}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-2 text-slate-400 hover:text-cyan-700 transition-colors"
+                          className="p-2 text-slate-500 hover:text-cyan-700 transition-colors"
+                          aria-label={`${member.name}'s LinkedIn profile`}
                         >
-                          <Linkedin className="w-4 h-4" />
+                          <Linkedin className="w-4 h-4" aria-hidden="true" />
                         </Link>
                       )}
                     </div>

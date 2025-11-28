@@ -41,7 +41,8 @@ export class WorkshopPage {
 
     // Empty state
     this.emptyState = page.getByText(/no kits yet|haven't claimed/i)
-    this.shopButton = page.getByRole("link", { name: /shop|browse/i })
+    // Scope to main to avoid matching header nav links
+    this.shopButton = page.locator("main").getByRole("link", { name: /shop|browse/i }).first()
 
     // With kits
     this.myKitsSection = page.getByText(/my kits/i)

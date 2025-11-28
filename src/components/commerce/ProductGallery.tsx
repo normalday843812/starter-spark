@@ -78,7 +78,7 @@ export function ProductGallery({
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
             <div className="w-24 h-24 mb-4 rounded-full bg-slate-200 flex items-center justify-center">
               <svg
-                className="w-12 h-12 text-slate-400"
+                className="w-12 h-12 text-slate-500"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -92,7 +92,7 @@ export function ProductGallery({
               </svg>
             </div>
             <p className="text-slate-500 font-mono text-sm">{productName}</p>
-            <p className="text-slate-400 text-xs mt-1">
+            <p className="text-slate-500 text-xs mt-1">
               {typeof thumbnails[selectedImage] === "string"
                 ? thumbnails[selectedImage]
                 : `View ${selectedImage + 1}`}
@@ -114,8 +114,8 @@ export function ProductGallery({
             }`}
           >
             <div className="w-full h-full flex flex-col items-center justify-center">
-              <Box className={`w-4 h-4 mb-0.5 ${view === "3d" ? "text-cyan-700" : "text-slate-400"}`} />
-              <span className={`text-[10px] font-mono ${view === "3d" ? "text-cyan-700" : "text-slate-400"}`}>
+              <Box className={`w-4 h-4 mb-0.5 ${view === "3d" ? "text-cyan-700" : "text-slate-500"}`} />
+              <span className={`text-[10px] font-mono ${view === "3d" ? "text-cyan-700" : "text-slate-500"}`}>
                 3D
               </span>
             </div>
@@ -136,7 +136,7 @@ export function ProductGallery({
             }`}
           >
             <div className="w-full h-full flex items-center justify-center bg-slate-50">
-              <span className="text-slate-400 text-[10px] font-mono">
+              <span className="text-slate-500 text-[10px] font-mono">
                 {typeof thumb === "string" ? thumb : `View ${idx + 1}`}
               </span>
             </div>

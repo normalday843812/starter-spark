@@ -1,5 +1,6 @@
 import { stripe } from "@/lib/stripe"
 import { NextResponse } from "next/server"
+import { rateLimit } from "@/lib/rate-limit"
 
 interface CartItem {
   slug: string
@@ -10,6 +11,10 @@ interface CartItem {
 }
 
 export async function POST(request: Request) {
+  // Rate limit: 10 requests per minute
+  const rateLimitResponse = await rateLimit(request, "checkout")
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const { items } = (await request.json()) as { items: CartItem[] }
 

@@ -134,7 +134,13 @@ test.describe("Product Page - Buy Box", () => {
 
     // Add to cart
     await addToCartBtn.click()
-    await page.waitForTimeout(300)
+
+    // Wait for cart dialog to appear (indicates add to cart completed)
+    await expect(page.getByRole("dialog")).toBeVisible({ timeout: 3000 })
+
+    // Close the dialog
+    await page.keyboard.press("Escape")
+    await expect(page.getByRole("dialog")).toBeHidden({ timeout: 3000 })
 
     // Quantity should reset to 1
     let quantity = page.locator(".text-center.font-mono").first()
@@ -151,11 +157,13 @@ test.describe("Product Page - Buy Box", () => {
 
     // Add to cart
     await addToCartBtn.click()
-    await page.waitForTimeout(300)
 
-    // Go to cart and verify
+    // Wait for cart dialog to appear (indicates add to cart completed)
+    await expect(page.getByRole("dialog")).toBeVisible({ timeout: 3000 })
+
+    // Go to cart and verify (scope to main to avoid matching hidden header badge)
     await page.goto("/cart")
-    const quantityInCart = page.locator(".font-mono").filter({ hasText: /^3$/ })
+    const quantityInCart = page.locator("main .font-mono").filter({ hasText: /^3$/ })
     await expect(quantityInCart.first()).toBeVisible()
   })
 })

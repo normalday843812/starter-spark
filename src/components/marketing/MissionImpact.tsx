@@ -151,7 +151,7 @@ export function MissionImpactSection() {
                     <div className="text-center p-2">
                       <div className="w-8 h-8 mx-auto mb-1 rounded bg-slate-200 flex items-center justify-center">
                         <svg
-                          className="w-4 h-4 text-slate-400"
+                          className="w-4 h-4 text-slate-500"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -164,7 +164,7 @@ export function MissionImpactSection() {
                           />
                         </svg>
                       </div>
-                      <p className="text-slate-400 text-[10px] font-mono">
+                      <p className="text-slate-500 text-[10px] font-mono">
                         {label}
                       </p>
                     </div>

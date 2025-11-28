@@ -21,7 +21,8 @@ export class LoginPage {
     this.page = page
 
     this.pageTitle = page.getByRole("heading", { name: /sign in|login/i })
-    this.emailInput = page.getByPlaceholder(/email|you@example/i)
+    // Use #email id to avoid matching footer newsletter input
+    this.emailInput = page.locator("#email")
     this.submitButton = page.getByRole("button", { name: /send magic link/i })
     this.errorMessage = page.locator('[class*="text-red"]')
 
