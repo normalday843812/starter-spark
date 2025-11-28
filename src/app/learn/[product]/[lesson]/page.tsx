@@ -163,7 +163,7 @@ export default async function LessonPage({
       />
 
       {/* Main Content */}
-      <main className="flex-1 lg:ml-72">
+      <div className="flex-1 lg:ml-72">
         {/* Mobile Header */}
         <div className="lg:hidden sticky top-0 z-40 bg-white border-b border-slate-200 px-4 py-3">
           <div className="flex items-center justify-between">
@@ -236,7 +236,7 @@ export default async function LessonPage({
             )}
           </div>
         </div>
-      </main>
+      </div>
     </div>
   )
 }

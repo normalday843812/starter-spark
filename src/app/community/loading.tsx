@@ -1,6 +1,6 @@
 export default function CommunityLoading() {
   return (
-    <main className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50">
       <section className="pt-32 pb-8 px-6 lg:px-20">
         <div className="max-w-7xl mx-auto">
           <div className="h-4 w-20 bg-slate-200 rounded animate-pulse mb-2" />
@@ -55,6 +55,6 @@ export default function CommunityLoading() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   )
 }

@@ -1,5 +1,6 @@
 export const siteConfig = {
   name: 'StarterSpark',
+  tagline: 'Open Source Robotics Kits',
   description:
     'Precision robotics kits for the next generation of engineers. Designed in Hawaii.',
   url: 'https://starterspark.com',

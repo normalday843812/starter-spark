@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { Calendar, MapPin, Clock, ExternalLink, ChevronDown } from "lucide-react"
 import Link from "next/link"
 import { EventsToggle } from "./EventsToggle"
+import { getEventSchema, getBreadcrumbSchema } from "@/lib/structured-data"
 
 export const metadata = {
   title: "Events - StarterSpark Robotics",
@@ -207,8 +208,38 @@ export default async function EventsPage() {
     .filter((e) => new Date(e.event_date) < now)
     .reverse() // Most recent past events first
 
+  // Generate structured data for SEO
+  const eventSchemas = upcomingEvents.map((event) =>
+    getEventSchema({
+      name: event.title,
+      description: event.description || "",
+      startDate: event.event_date,
+      endDate: event.end_date || undefined,
+      location: event.location,
+      address: event.address || undefined,
+      url: event.rsvp_url || undefined,
+    })
+  )
+
+  const breadcrumbSchema = getBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Events", url: "/events" },
+  ])
+
   return (
-    <main className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50">
+      {/* JSON-LD Structured Data for SEO */}
+      {eventSchemas.map((schema, index) => (
+        <script
+          key={index}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
+      ))}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       {/* Hero */}
       <section className="pt-32 pb-16 px-6 lg:px-20">
         <div className="max-w-4xl mx-auto text-center">
@@ -260,6 +291,6 @@ export default async function EventsPage() {
           </div>
         </section>
       )}
-    </main>
+    </div>
   )
 }

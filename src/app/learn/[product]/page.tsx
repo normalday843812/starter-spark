@@ -13,6 +13,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { notFound } from "next/navigation"
+import { getCourseSchema, getBreadcrumbSchema } from "@/lib/structured-data"
 
 export default async function CoursePage({
   params,
@@ -119,8 +120,36 @@ export default async function CoursePage({
     .find((lesson) => !completedLessonIds.includes(lesson.id))
   const firstLesson = firstIncompleteLesson || sortedModules[0]?.lessons[0]
 
+  // Generate structured data for SEO
+  const courseSchema = getCourseSchema({
+    name: course.title,
+    description: course.description || "",
+    slug: product.slug,
+    difficulty: course.difficulty || undefined,
+    duration: formatDuration(course.duration_minutes),
+    modules: sortedModules.map((mod) => ({
+      name: mod.title,
+      description: mod.description || undefined,
+    })),
+  })
+
+  const breadcrumbSchema = getBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Learn", url: "/learn" },
+    { name: course.title, url: `/learn/${product.slug}` },
+  ])
+
   return (
-    <main className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50">
+      {/* JSON-LD Structured Data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(courseSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       {/* Header */}
       <section className="pt-32 pb-8 px-6 lg:px-20 bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto">
@@ -308,6 +337,6 @@ export default async function CoursePage({
           </div>
         </div>
       </section>
-    </main>
+    </div>
   )
 }

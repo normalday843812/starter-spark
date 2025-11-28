@@ -65,48 +65,48 @@ export function Footer() {
           </div>
 
           {/* Products Column */}
-          <div>
+          <nav aria-label="Products">
             <p className="font-mono text-sm text-cyan-700 mb-4 uppercase tracking-wider">Products</p>
             <ul className="space-y-3 text-sm text-slate-600">
               <li>
-                <Link href="/shop/4dof-arm" className="hover:text-slate-900 transition-colors">
+                <Link href="/shop/4dof-arm" className="hover:text-slate-900 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2">
                   4DOF Robotic Arm
                 </Link>
               </li>
               <li>
-                <Link href="/shop" className="hover:text-slate-900 transition-colors">
+                <Link href="/shop" className="hover:text-slate-900 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2">
                   All Kits
                 </Link>
               </li>
               <li>
-                <Link href="/shop/spare-parts" className="hover:text-slate-900 transition-colors">
+                <Link href="/shop/spare-parts" className="hover:text-slate-900 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2">
                   Spare Parts
                 </Link>
               </li>
             </ul>
-          </div>
+          </nav>
 
           {/* Learn Column */}
-          <div>
+          <nav aria-label="Learning resources">
             <p className="font-mono text-sm text-cyan-700 mb-4 uppercase tracking-wider">Learn</p>
             <ul className="space-y-3 text-sm text-slate-600">
               <li>
-                <Link href="/learn" className="hover:text-slate-900 transition-colors">
+                <Link href="/learn" className="hover:text-slate-900 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2">
                   Documentation
                 </Link>
               </li>
               <li>
-                <Link href="/community" className="hover:text-slate-900 transition-colors">
+                <Link href="/community" className="hover:text-slate-900 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2">
                   The Lab (Q&A)
                 </Link>
               </li>
               <li>
-                <Link href="/events" className="hover:text-slate-900 transition-colors">
+                <Link href="/events" className="hover:text-slate-900 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2">
                   Workshops
                 </Link>
               </li>
             </ul>
-          </div>
+          </nav>
 
           {/* Newsletter Column */}
           <div>
@@ -123,17 +123,19 @@ export function Footer() {
       <div className="border-t border-slate-200 py-6 px-6 lg:px-20">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
           <p className="font-mono">&copy; 2025 StarterSpark Robotics. Honolulu, HI.</p>
-          <div className="flex gap-6">
-            <Link href="/privacy" className="hover:text-slate-900 transition-colors">
-              Privacy
-            </Link>
-            <Link href="/terms" className="hover:text-slate-900 transition-colors">
-              Terms
-            </Link>
-            <Link href="/about" className="hover:text-slate-900 transition-colors">
-              About
-            </Link>
-          </div>
+          <nav aria-label="Legal">
+            <div className="flex gap-6">
+              <Link href="/privacy" className="hover:text-slate-900 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2">
+                Privacy
+              </Link>
+              <Link href="/terms" className="hover:text-slate-900 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2">
+                Terms
+              </Link>
+              <Link href="/about" className="hover:text-slate-900 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2">
+                About
+              </Link>
+            </div>
+          </nav>
         </div>
       </div>
     </footer>

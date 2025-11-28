@@ -38,7 +38,7 @@ export default async function ClaimPage({ params }: ClaimPageProps) {
   // Invalid or missing token
   if (error || !license) {
     return (
-      <main className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-slate-50">
         <section className="pt-32 pb-24 px-6 lg:px-20">
           <div className="max-w-md mx-auto text-center">
             <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-red-100 flex items-center justify-center">
@@ -69,14 +69,14 @@ export default async function ClaimPage({ params }: ClaimPageProps) {
             </div>
           </div>
         </section>
-      </main>
+      </div>
     )
   }
 
   // Already claimed
   if (license.owner_id) {
     return (
-      <main className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-slate-50">
         <section className="pt-32 pb-24 px-6 lg:px-20">
           <div className="max-w-md mx-auto text-center">
             <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-green-100 flex items-center justify-center">
@@ -97,7 +97,7 @@ export default async function ClaimPage({ params }: ClaimPageProps) {
             </Link>
           </div>
         </section>
-      </main>
+      </div>
     )
   }
 
@@ -106,7 +106,7 @@ export default async function ClaimPage({ params }: ClaimPageProps) {
   // Not logged in - redirect to login with claim token
   if (!user) {
     return (
-      <main className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-slate-50">
         <section className="pt-32 pb-24 px-6 lg:px-20">
           <div className="max-w-lg mx-auto">
             <div className="text-center mb-8">
@@ -147,13 +147,13 @@ export default async function ClaimPage({ params }: ClaimPageProps) {
             </p>
           </div>
         </section>
-      </main>
+      </div>
     )
   }
 
   // User is logged in - show claim confirmation
   return (
-    <main className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50">
       <section className="pt-32 pb-24 px-6 lg:px-20">
         <div className="max-w-lg mx-auto">
           <div className="text-center mb-8">
@@ -189,6 +189,6 @@ export default async function ClaimPage({ params }: ClaimPageProps) {
           </p>
         </div>
       </section>
-    </main>
+    </div>
   )
 }

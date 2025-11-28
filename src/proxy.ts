@@ -34,19 +34,43 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Protect dashboard routes (only workshop subroutes, not the main workshop page)
-  // The main /workshop page handles auth state internally with a guest view
-  const isWorkshopSubroute = request.nextUrl.pathname.startsWith('/workshop/') // e.g., /workshop/kit/123
-  const isWorkshopMainPage = request.nextUrl.pathname === '/workshop'
+  // Route classification
+  const pathname = request.nextUrl.pathname
+  const isAdminRoute = pathname.startsWith('/admin')
+  const isWorkshopSubroute = pathname.startsWith('/workshop/') // e.g., /workshop/kit/123
+  const isWorkshopMainPage = pathname === '/workshop'
   const isProtectedRoute = isWorkshopSubroute && !isWorkshopMainPage
-  const isAuthRoute =
-    request.nextUrl.pathname.startsWith('/login') ||
-    request.nextUrl.pathname.startsWith('/register')
+  const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/register')
 
+  // Admin route protection - requires admin or staff role
+  if (isAdminRoute) {
+    if (!user) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      url.searchParams.set('redirectTo', pathname)
+      return NextResponse.redirect(url)
+    }
+
+    // Check user role
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile || (profile.role !== 'admin' && profile.role !== 'staff')) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/'
+      url.searchParams.set('error', 'unauthorized')
+      return NextResponse.redirect(url)
+    }
+  }
+
+  // Workshop subroute protection
   if (isProtectedRoute && !user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
-    url.searchParams.set('redirectTo', request.nextUrl.pathname)
+    url.searchParams.set('redirectTo', pathname)
     return NextResponse.redirect(url)
   }
 

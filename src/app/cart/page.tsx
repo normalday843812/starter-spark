@@ -63,7 +63,7 @@ export default function CartPage() {
   // Show loading state during hydration to prevent mismatch
   if (!isMounted) {
     return (
-      <main className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-slate-50">
         <section className="pt-32 pb-8 px-6 lg:px-20">
           <div className="max-w-7xl mx-auto">
             <Link
@@ -88,12 +88,12 @@ export default function CartPage() {
             </div>
           </div>
         </section>
-      </main>
+      </div>
     )
   }
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50">
       {/* Header */}
       <section className="pt-32 pb-8 px-6 lg:px-20">
         <div className="max-w-7xl mx-auto">
@@ -313,6 +313,6 @@ export default function CartPage() {
           </div>
         </section>
       )}
-    </main>
+    </div>
   )
 }

@@ -489,6 +489,7 @@ export type Database = {
           created_at: string | null
           description: string | null
           id: string
+          is_featured: boolean | null
           name: string
           price_cents: number
           slug: string
@@ -499,6 +500,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          is_featured?: boolean | null
           name: string
           price_cents: number
           slug: string
@@ -509,6 +511,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          is_featured?: boolean | null
           name?: string
           price_cents?: number
           slug?: string
@@ -553,7 +556,7 @@ export type Database = {
         Args: { p_course_id: string; p_user_id: string }
         Returns: number
       }
-      is_admin: { Args: Record<PropertyKey, never>; Returns: boolean }
+      is_admin: { Args: Record<string, never>; Returns: boolean }
       user_owns_product: { Args: { p_product_id: string }; Returns: boolean }
     }
     Enums: {

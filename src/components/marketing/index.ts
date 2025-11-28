@@ -1,6 +1,7 @@
 export { HeroSection } from "./Hero"
 export { DifferentiatorsSection } from "./Differentiators"
 export { ProductSpotlightSection } from "./ProductSpotlight"
+export { FeaturedProduct } from "./FeaturedProduct"
 export { LearningPreviewSection } from "./LearningPreview"
 export { MissionImpactSection } from "./MissionImpact"
 export { EventsPreviewSection } from "./EventsPreview"

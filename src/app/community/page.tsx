@@ -87,7 +87,7 @@ export default async function CommunityPage({
   const availableTags = Array.from(allTags).sort()
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50">
       {/* Hero */}
       <section className="pt-32 pb-8 px-6 lg:px-20">
         <div className="max-w-7xl mx-auto">
@@ -264,6 +264,6 @@ export default async function CommunityPage({
           </div>
         </div>
       </section>
-    </main>
+    </div>
   )
 }

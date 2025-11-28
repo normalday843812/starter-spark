@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { supabaseAdmin } from "@/lib/supabase/admin"
 import { NextResponse } from "next/server"
+import { sendWelcomeEmail } from "@/lib/email/send"
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
@@ -18,6 +19,32 @@ export async function GET(request: Request) {
     }
 
     const user = data.user
+
+    // Check if this is a new user (created within last 60 seconds)
+    const isNewUser = user.created_at
+      ? (Date.now() - new Date(user.created_at).getTime()) < 60000
+      : false
+
+    // Send welcome email to new users
+    if (isNewUser && user.email) {
+      try {
+        // Get user's name from profile if available
+        const { data: profile } = await supabaseAdmin
+          .from("profiles")
+          .select("full_name")
+          .eq("id", user.id)
+          .single()
+
+        await sendWelcomeEmail({
+          to: user.email,
+          userName: profile?.full_name || undefined,
+        })
+        console.log(`Welcome email sent to new user: ${user.email}`)
+      } catch (emailErr) {
+        // Log error but don't fail the auth flow
+        console.error("Failed to send welcome email:", emailErr)
+      }
+    }
 
     // If there's a claim token, claim the license
     if (claimToken && user) {

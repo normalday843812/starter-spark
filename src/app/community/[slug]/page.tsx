@@ -142,7 +142,7 @@ export default async function QuestionDetailPage({
   const verifiedAnswer = comments?.find((c) => c.is_verified_answer)
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50">
       {/* Breadcrumb */}
       <section className="pt-24 pb-4 px-6 lg:px-20">
         <div className="max-w-4xl mx-auto">
@@ -337,7 +337,7 @@ export default async function QuestionDetailPage({
           )}
         </div>
       </section>
-    </main>
+    </div>
   )
 }
 

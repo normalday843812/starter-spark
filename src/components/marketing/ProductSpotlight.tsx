@@ -13,7 +13,8 @@ const thumbnails = [
   { id: "action", label: "In Action", description: "Working demo" },
 ]
 
-const specs = [
+// Default specs shown when product.specs is not available
+const defaultSpecs = [
   { label: "Microcontroller", value: "Arduino Nano (ATmega328P)" },
   { label: "Servos", value: "2× SG90, 3× MG996R" },
   { label: "Degrees of Freedom", value: "4 (Base, Shoulder, Elbow, Gripper)" },
@@ -22,9 +23,26 @@ const specs = [
   { label: "Skill Level", value: "Beginner friendly" },
 ]
 
-export function ProductSpotlightSection() {
+interface ProductSpotlightProps {
+  product: {
+    name: string
+    slug: string
+    description: string | null
+    priceCents: number
+    specs: Record<string, string> | null
+  }
+}
+
+export function ProductSpotlightSection({ product }: ProductSpotlightProps) {
   const [selectedImage, setSelectedImage] = useState(0)
   const currentThumb = thumbnails[selectedImage]
+
+  // Convert specs object to array format, or use defaults
+  const specs = product.specs
+    ? Object.entries(product.specs).map(([label, value]) => ({ label, value }))
+    : defaultSpecs
+
+  const priceDisplay = Math.floor(product.priceCents / 100)
 
   return (
     <section className="py-24 px-6 lg:px-20 bg-slate-50">
@@ -37,7 +55,7 @@ export function ProductSpotlightSection() {
         >
           <p className="text-sm font-mono text-cyan-700 mb-2">Featured Kit</p>
           <h2 className="font-mono text-3xl lg:text-4xl text-slate-900">
-            The 4DOF Robotic Arm
+            {product.name}
           </h2>
         </motion.div>
 
@@ -114,16 +132,22 @@ export function ProductSpotlightSection() {
             </h3>
 
             <div className="space-y-4 text-slate-600 mb-8">
-              <p>
-                Build a fully functional robotic arm from scratch. Learn mechanical
-                assembly, electronics wiring, and Arduino programming—skills that
-                transfer directly to real engineering projects.
-              </p>
-              <p>
-                Each kit includes everything you need: pre-cut acrylic parts,
-                high-torque servos, an Arduino Nano, and our step-by-step digital
-                curriculum with interactive wiring diagrams.
-              </p>
+              {product.description ? (
+                <p>{product.description}</p>
+              ) : (
+                <>
+                  <p>
+                    Build a fully functional robotic arm from scratch. Learn mechanical
+                    assembly, electronics wiring, and Arduino programming—skills that
+                    transfer directly to real engineering projects.
+                  </p>
+                  <p>
+                    Each kit includes everything you need: pre-cut acrylic parts,
+                    high-torque servos, an Arduino Nano, and our step-by-step digital
+                    curriculum with interactive wiring diagrams.
+                  </p>
+                </>
+              )}
             </div>
 
             {/* Specs Table */}
@@ -150,9 +174,9 @@ export function ProductSpotlightSection() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-500">Starting at</p>
-                <p className="text-3xl font-mono text-amber-600">$49</p>
+                <p className="text-3xl font-mono text-amber-600">${priceDisplay}</p>
               </div>
-              <Link href="/shop/4dof-arm">
+              <Link href={`/shop/${product.slug}`}>
                 <Button className="bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
                   View Details
                   <ArrowRight className="w-4 h-4 ml-2" />

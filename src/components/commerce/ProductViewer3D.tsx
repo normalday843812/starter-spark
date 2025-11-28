@@ -24,17 +24,21 @@ export default function ProductViewer3D({ modelPath }: ProductViewer3DProps) {
   const [isLoaded, setIsLoaded] = useState(false)
 
   return (
-    <div className="relative w-full h-full">
+    <div
+      className="relative w-full h-full"
+      role="img"
+      aria-label="Interactive 3D product viewer - use mouse to rotate and zoom"
+    >
       {/* Loading State */}
       {!isLoaded && (
-        <div className="absolute inset-0 flex items-center justify-center bg-slate-100/80 z-10 rounded">
+        <div className="absolute inset-0 flex items-center justify-center bg-slate-100/80 z-10 rounded" aria-hidden="true">
           <div className="flex flex-col items-center gap-3">
-            <div className="w-8 h-8 border-2 border-slate-200 border-t-cyan-700 rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-slate-200 border-t-cyan-700 rounded-full animate-spin" aria-hidden="true" />
             <p className="text-sm text-slate-500 font-mono">Loading 3D Model...</p>
           </div>
         </div>
       )}
-      <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
+      <Canvas camera={{ position: [0, 0, 5], fov: 45 }} aria-hidden="true">
         <Suspense fallback={null}>
           <Stage
             intensity={0.8}

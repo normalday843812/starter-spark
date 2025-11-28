@@ -13,7 +13,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const { redirect, claim } = await searchParams
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50">
       <section className="pt-32 pb-24 px-6 lg:px-20">
         <div className="max-w-md mx-auto">
           <div className="text-center mb-8">
@@ -36,6 +36,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </p>
         </div>
       </section>
-    </main>
+    </div>
   )
 }

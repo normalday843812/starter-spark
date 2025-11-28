@@ -2,7 +2,103 @@ import type { NextConfig } from "next"
 import { withSentryConfig } from "@sentry/nextjs"
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Enable React strict mode for better development experience
+  reactStrictMode: true,
+
+  // Image optimization
+  images: {
+    // Enable modern image formats
+    formats: ["image/avif", "image/webp"],
+    // Allow placeholder images from external sources if needed
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "*.supabase.co",
+      },
+    ],
+    // Device sizes for responsive images
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+  },
+
+  // Experimental features for performance
+  experimental: {
+    // Optimize package imports for smaller bundles
+    optimizePackageImports: ["lucide-react", "motion/react", "@react-three/drei"],
+  },
+
+  // Headers for caching static assets and security
+  async headers() {
+    // Security headers applied to all routes
+    const securityHeaders = [
+      {
+        key: "X-DNS-Prefetch-Control",
+        value: "on",
+      },
+      {
+        key: "Strict-Transport-Security",
+        value: "max-age=31536000; includeSubDomains",
+      },
+      {
+        key: "X-Frame-Options",
+        value: "SAMEORIGIN",
+      },
+      {
+        key: "X-Content-Type-Options",
+        value: "nosniff",
+      },
+      {
+        key: "Referrer-Policy",
+        value: "strict-origin-when-cross-origin",
+      },
+      {
+        key: "Permissions-Policy",
+        value: "camera=(), microphone=(), geolocation=()",
+      },
+    ]
+
+    return [
+      {
+        // Apply security headers to all routes
+        source: "/:path*",
+        headers: securityHeaders,
+      },
+      {
+        // Cache static assets for 1 year
+        source: "/assets/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
+        // Cache fonts for 1 year
+        source: "/fonts/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
+        // Cache 3D models for 1 year
+        source: "/:path*.glb",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+    ]
+  },
 }
 
 // Sentry configuration for error monitoring

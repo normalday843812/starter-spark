@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
+import { getProductSchema, getBreadcrumbSchema } from "@/lib/structured-data"
 
 // Type for product specs JSONB
 interface ProductSpecs {
@@ -75,8 +76,32 @@ export default async function ProductDetailPage({
   const technicalSpecs = specs?.technicalSpecs || []
   const price = Math.round(product.price_cents / 100)
 
+  // Generate structured data for SEO
+  const productSchema = getProductSchema({
+    name: product.name,
+    description: product.description || "",
+    price,
+    slug,
+    inStock,
+  })
+
+  const breadcrumbSchema = getBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Shop", url: "/shop" },
+    { name: product.name, url: `/shop/${slug}` },
+  ])
+
   return (
-    <main className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50">
+      {/* JSON-LD Structured Data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       {/* Breadcrumb */}
       <section className="pt-24 pb-4 px-6 lg:px-20">
         <div className="max-w-7xl mx-auto">
@@ -127,6 +152,6 @@ export default async function ProductDetailPage({
           />
         </div>
       </section>
-    </main>
+    </div>
   )
 }

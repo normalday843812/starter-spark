@@ -6,11 +6,8 @@ Sentry.init({
   // Adds request headers and IP for users
   sendDefaultPii: true,
 
-  // Performance monitoring - 10% in production, 100% in development
   tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
 
-  // Session Replay - 10% of sessions, 100% of sessions with errors
-  // Recommended for low-medium traffic sites
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1.0,
 
@@ -22,10 +19,8 @@ Sentry.init({
     }),
   ],
 
-  // Disable debug logging in production
   debug: false,
 
-  // Only enable in production
   enabled: process.env.NODE_ENV === "production",
 })
 

@@ -14,11 +14,11 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <main className="min-h-screen">
+    <div className="min-h-screen">
       <AboutHero />
       <AboutStory />
       <AboutTeam />
       <AboutGallery />
-    </main>
+    </div>
   )
 }

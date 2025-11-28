@@ -63,16 +63,23 @@ export function NewsletterForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      <TechInput
-        type="email"
-        placeholder="your@email.com"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="h-10 bg-slate-50 text-sm"
-        disabled={status === "loading"}
-      />
+      <div>
+        <label htmlFor="newsletter-email" className="sr-only">
+          Email address for newsletter
+        </label>
+        <TechInput
+          id="newsletter-email"
+          type="email"
+          placeholder="your@email.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="h-10 bg-slate-50 text-sm"
+          disabled={status === "loading"}
+          aria-describedby={status === "error" && message ? "newsletter-error" : undefined}
+        />
+      </div>
       {status === "error" && message && (
-        <p className="text-xs text-red-500">{message}</p>
+        <p id="newsletter-error" role="alert" className="text-xs text-red-500">{message}</p>
       )}
       <Button
         type="submit"
