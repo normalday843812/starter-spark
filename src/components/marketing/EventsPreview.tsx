@@ -97,7 +97,7 @@ export function EventsPreviewSection({
                 {workshops.map((workshop) => (
                   <Link
                     key={workshop.id}
-                    href="/events"
+                    href={`/events#${workshop.slug}`}
                     className="block cursor-pointer"
                   >
                     <Card className="bg-white border-slate-200 hover:border-cyan-200 transition-colors">
