@@ -49,7 +49,7 @@ test.describe("Cart - Empty State", () => {
       await expect(page.getByLabel("Toggle menu")).toBeVisible()
     } else {
       // On desktop, cart badge should not be visible when empty
-      const badge = page.locator('[aria-label="Cart"] span')
+      const badge = page.locator('[aria-label^="Shopping cart"] span')
       await expect(badge).toBeHidden()
     }
   })
@@ -566,8 +566,8 @@ test.describe("Cart - Header Badge", () => {
       await page.goto("/cart")
       await expect(page.getByText("3 items")).toBeVisible()
     } else {
-      // Badge should not be visible initially
-      let badge = page.locator('[aria-label="Cart"] span')
+      // Badge should not be visible initially (aria-label starts with "Shopping cart")
+      let badge = page.locator('[aria-label^="Shopping cart"] span')
       await expect(badge).toBeHidden()
 
       // Add item via localStorage
@@ -591,8 +591,8 @@ test.describe("Cart - Header Badge", () => {
       // Reload to trigger state update
       await page.reload()
 
-      // Badge should show count
-      badge = page.locator('[aria-label="Cart"] span')
+      // Badge should show count (aria-label starts with "Shopping cart")
+      badge = page.locator('[aria-label^="Shopping cart"] span')
       await expect(badge).toBeVisible()
       await expect(badge).toHaveText("3")
     }
@@ -628,7 +628,7 @@ test.describe("Cart - Header Badge", () => {
       await page.goto("/cart")
       await expect(page.getByText("15 items")).toBeVisible()
     } else {
-      const badge = page.locator('[aria-label="Cart"] span')
+      const badge = page.locator('[aria-label^="Shopping cart"] span')
       await expect(badge).toHaveText("9+")
     }
   })

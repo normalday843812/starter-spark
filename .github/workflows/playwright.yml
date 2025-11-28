@@ -52,11 +52,19 @@ jobs:
     - name: Build Next.js App
       run: npm run build
 
+    - name: Start app background
+      run: npm run start > server.log 2>&1 &
+
+    - name: Wait for Server
+      run: npx wait-on http://localhost:3000 --timeout 60000
+
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
       
     - name: Run Playwright tests
       run: npx playwright test
+      env:
+        PLAYWRIGHT_SKIP_WEBSERVER: 1
       
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}

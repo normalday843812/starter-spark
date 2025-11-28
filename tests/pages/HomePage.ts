@@ -193,7 +193,7 @@ export class HomePage {
   }
 
   async getCartCount(): Promise<number> {
-    const badge = this.page.locator('[aria-label="Cart"] span')
+    const badge = this.page.locator('[aria-label^="Shopping cart"] span')
     if (await badge.isVisible()) {
       const text = await badge.textContent()
       return text === "9+" ? 10 : parseInt(text || "0", 10)
