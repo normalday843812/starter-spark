@@ -7,7 +7,7 @@ interface IconProps {
 export function GithubIcon({ className }: IconProps) {
   return (
     <svg
-      role="img"
+      aria-hidden="true"
       viewBox="0 0 24 24"
       fill="currentColor"
       className={className}
@@ -21,7 +21,7 @@ export function GithubIcon({ className }: IconProps) {
 export function InstagramIcon({ className }: IconProps) {
   return (
     <svg
-      role="img"
+      aria-hidden="true"
       viewBox="0 0 24 24"
       fill="currentColor"
       className={className}
@@ -35,7 +35,7 @@ export function InstagramIcon({ className }: IconProps) {
 export function YoutubeIcon({ className }: IconProps) {
   return (
     <svg
-      role="img"
+      aria-hidden="true"
       viewBox="0 0 24 24"
       fill="currentColor"
       className={className}
@@ -50,7 +50,7 @@ export function YoutubeIcon({ className }: IconProps) {
 export function LinkedinIcon({ className }: IconProps) {
   return (
     <svg
-      role="img"
+      aria-hidden="true"
       viewBox="0 0 24 24"
       fill="currentColor"
       className={className}

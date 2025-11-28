@@ -22,8 +22,8 @@ test.describe("API Route Health Checks", () => {
       data: { code: "TEST" },
     })
 
-    // Should return 401 or 400, not 404
-    expect([400, 401]).toContain(response.status())
+    // Should return 401, 400, or 429 (rate limited), not 404
+    expect([400, 401, 429]).toContain(response.status())
   })
 
   test("should respond to /api/claim-by-token POST", async ({ request }) => {
@@ -31,8 +31,8 @@ test.describe("API Route Health Checks", () => {
       data: { token: "test-token" },
     })
 
-    // Should return 401 or 400, not 404
-    expect([400, 401]).toContain(response.status())
+    // Should return 401, 400, or 429 (rate limited), not 404
+    expect([400, 401, 429]).toContain(response.status())
   })
 
   test("should reject GET requests to POST-only endpoints", async ({

@@ -188,8 +188,8 @@ test.describe("Login Page Accessibility", () => {
     page,
   }) => {
     await page.goto("/login")
-    // Wait for login form to load (not loading state)
-    await page.locator('input[type="email"]').waitFor()
+    // Wait for login form to load (not loading state) - use specific ID
+    await page.locator('input#email').waitFor()
 
     const accessibilityScanResults = await new AxeBuilder({ page })
       .disableRules(["region"])
@@ -200,11 +200,11 @@ test.describe("Login Page Accessibility", () => {
 
   test("should have labeled form inputs", async ({ page }) => {
     await page.goto("/login")
-    // Wait for form to load
-    await page.locator('input[type="email"]').waitFor()
+    // Wait for form to load - use specific ID
+    await page.locator('input#email').waitFor()
 
     // Email input should have associated label
-    const emailInput = page.locator('input[type="email"]')
+    const emailInput = page.locator('input#email')
     await expect(emailInput).toBeVisible()
 
     // Check for label association
@@ -216,7 +216,7 @@ test.describe("Login Page Accessibility", () => {
 
   test("should have accessible form submission", async ({ page }) => {
     await page.goto("/login")
-    await page.locator('input[type="email"]').waitFor()
+    await page.locator('input#email').waitFor()
 
     const submitButton = page.getByRole("button", { name: /send|submit|login/i })
     await expect(submitButton).toBeVisible()

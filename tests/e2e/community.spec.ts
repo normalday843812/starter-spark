@@ -80,10 +80,8 @@ test.describe("Community Page - Question Detail", () => {
     await page.goto("/community")
     await page.waitForLoadState("networkidle")
 
-    // Find question links (excluding /new)
-    const questionLinks = page
-      .locator('a[href^="/community/"]')
-      .filter({ hasNot: page.locator('[href*="/new"]') })
+    // Find question links (excluding /community/new)
+    const questionLinks = page.locator('a[href^="/community/"]:not([href="/community/new"])')
     const count = await questionLinks.count()
 
     if (count > 0) {
