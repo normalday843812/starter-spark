@@ -64,7 +64,10 @@ export async function POST(request: Request) {
       })
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+    // Use explicit site URL, or Vercel's auto-generated URL, or localhost for dev
+    const siteUrl =
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
 
     // Create Stripe Checkout Session
     // Note: Item info is stored in each line_item's product_data.metadata.slug

@@ -16,7 +16,9 @@ interface BaseLayoutProps {
   children: React.ReactNode
 }
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://starterspark.com"
+const baseUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://starterspark.com")
 
 export function BaseLayout({ preview, children }: BaseLayoutProps) {
   return (

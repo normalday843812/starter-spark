@@ -5,7 +5,9 @@ import { ClaimLinkEmail } from './templates/claim-link'
 import { WelcomeEmail } from './templates/welcome'
 
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'StarterSpark <hello@sigmachat.org>'
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
 
 interface LicenseInfo {
   code: string
