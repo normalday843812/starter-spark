@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
-import { Calendar, MapPin, Clock, ExternalLink, ChevronDown } from "lucide-react"
+import { Calendar, MapPin, Clock, ExternalLink } from "lucide-react"
 import Link from "next/link"
 import { EventsToggle } from "./EventsToggle"
 import { getEventSchema, getBreadcrumbSchema } from "@/lib/structured-data"

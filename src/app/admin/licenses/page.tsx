@@ -10,8 +10,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Plus, Check, X, User } from "lucide-react"
+import { Plus, User } from "lucide-react"
 import { LicenseActions } from "./LicenseActions"
+import { ProductFilterClient } from "./ProductFilterClient"
 
 export const metadata = {
   title: "Licenses | Admin",
@@ -19,9 +20,10 @@ export const metadata = {
 
 interface SearchParams {
   filter?: string
+  product?: string
 }
 
-async function getLicenses(filter?: string) {
+async function getLicenses(filter?: string, productId?: string) {
   const supabase = await createClient()
 
   let query = supabase
@@ -37,6 +39,10 @@ async function getLicenses(filter?: string) {
     query = query.is("owner_id", null)
   } else if (filter === "claimed") {
     query = query.not("owner_id", "is", null)
+  }
+
+  if (productId) {
+    query = query.eq("product_id", productId)
   }
 
   const { data, error } = await query.limit(100)
@@ -66,7 +72,7 @@ export default async function LicensesPage({
 }) {
   const params = await searchParams
   const [licenses, products] = await Promise.all([
-    getLicenses(params.filter),
+    getLicenses(params.filter, params.product),
     getProducts(),
   ])
 
@@ -93,29 +99,39 @@ export default async function LicensesPage({
       </div>
 
       {/* Filters */}
-      <div className="flex gap-2">
-        {filters.map((filter) => (
-          <Link
-            key={filter.label}
-            href={
-              filter.value
-                ? `/admin/licenses?filter=${filter.value}`
+      <div className="flex flex-wrap items-center gap-4">
+        <div className="flex gap-2">
+          {filters.map((filter) => {
+            // Preserve product filter when changing status filter
+            const href = filter.value
+              ? `/admin/licenses?filter=${filter.value}${params.product ? `&product=${params.product}` : ""}`
+              : params.product
+                ? `/admin/licenses?product=${params.product}`
                 : "/admin/licenses"
-            }
-          >
-            <Button
-              variant={params.filter === filter.value ? "default" : "outline"}
-              size="sm"
-              className={
-                params.filter === filter.value
-                  ? "bg-cyan-700 hover:bg-cyan-600"
-                  : ""
-              }
-            >
-              {filter.label}
-            </Button>
-          </Link>
-        ))}
+            return (
+              <Link key={filter.label} href={href}>
+                <Button
+                  variant={params.filter === filter.value ? "default" : "outline"}
+                  size="sm"
+                  className={
+                    params.filter === filter.value
+                      ? "bg-cyan-700 hover:bg-cyan-600"
+                      : ""
+                  }
+                >
+                  {filter.label}
+                </Button>
+              </Link>
+            )
+          })}
+        </div>
+
+        {/* Product Filter */}
+        <ProductFilterClient
+          products={products}
+          currentProduct={params.product}
+          currentFilter={params.filter}
+        />
       </div>
 
       {/* Licenses Table */}

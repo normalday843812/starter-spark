@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { AlertTriangle, Lightbulb, Copy, Check, Info } from "lucide-react"
 import DOMPurify from "isomorphic-dompurify"
+import { Highlight, themes } from "prism-react-renderer"
 
 interface LessonContentProps {
   content: string
@@ -17,7 +18,35 @@ const PURIFY_CONFIG = {
   ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i,
 }
 
-// Code block component with copy button
+// Map common language aliases to Prism language names
+function getPrismLanguage(lang: string): string {
+  const languageMap: Record<string, string> = {
+    cpp: "cpp",
+    "c++": "cpp",
+    c: "c",
+    javascript: "javascript",
+    js: "javascript",
+    typescript: "typescript",
+    ts: "typescript",
+    python: "python",
+    py: "python",
+    java: "java",
+    arduino: "cpp", // Arduino is C++ based
+    ino: "cpp",
+    bash: "bash",
+    sh: "bash",
+    shell: "bash",
+    json: "json",
+    html: "markup",
+    css: "css",
+    sql: "sql",
+    text: "plain",
+    plain: "plain",
+  }
+  return languageMap[lang.toLowerCase()] || "plain"
+}
+
+// Code block component with copy button and syntax highlighting
 function CodeBlock({
   code,
   language = "cpp",
@@ -28,6 +57,7 @@ function CodeBlock({
   filename?: string
 }) {
   const [copied, setCopied] = useState(false)
+  const prismLanguage = getPrismLanguage(language)
 
   const handleCopy = () => {
     navigator.clipboard.writeText(code)
@@ -37,38 +67,48 @@ function CodeBlock({
 
   return (
     <div className="rounded border border-slate-200 overflow-hidden my-6">
-      {filename && (
-        <div className="flex items-center justify-between px-4 py-2 bg-slate-100 border-b border-slate-200">
-          <span className="text-sm font-mono text-slate-600">{filename}</span>
-          <button
-            onClick={handleCopy}
-            className="text-slate-500 hover:text-slate-600 transition-colors"
-          >
-            {copied ? (
-              <Check className="w-4 h-4 text-green-500" />
-            ) : (
-              <Copy className="w-4 h-4" />
-            )}
-          </button>
+      {/* Header with filename and/or language badge */}
+      <div className="flex items-center justify-between px-4 py-2 bg-slate-100 border-b border-slate-200">
+        <div className="flex items-center gap-2">
+          {filename && (
+            <span className="text-sm font-mono text-slate-600">{filename}</span>
+          )}
+          <span className="text-xs font-mono text-slate-400 bg-slate-200 px-1.5 py-0.5 rounded">
+            {language}
+          </span>
         </div>
-      )}
-      <div className="relative">
-        {!filename && (
-          <button
-            onClick={handleCopy}
-            className="absolute top-3 right-3 text-slate-500 hover:text-slate-600 transition-colors"
-          >
-            {copied ? (
-              <Check className="w-4 h-4 text-green-500" />
-            ) : (
-              <Copy className="w-4 h-4" />
-            )}
-          </button>
-        )}
-        <pre className="p-4 bg-slate-50 overflow-x-auto">
-          <code className="text-sm font-mono text-slate-800">{code}</code>
-        </pre>
+        <button
+          onClick={handleCopy}
+          className="text-slate-500 hover:text-slate-600 transition-colors cursor-pointer"
+          aria-label={copied ? "Copied!" : "Copy code"}
+        >
+          {copied ? (
+            <Check className="w-4 h-4 text-green-500" />
+          ) : (
+            <Copy className="w-4 h-4" />
+          )}
+        </button>
       </div>
+      {/* Syntax highlighted code */}
+      <Highlight theme={themes.github} code={code.trim()} language={prismLanguage}>
+        {({ className, style, tokens, getLineProps, getTokenProps }) => (
+          <pre
+            className={`${className} p-4 overflow-x-auto text-sm`}
+            style={{ ...style, margin: 0, background: "#f8fafc" }}
+          >
+            {tokens.map((line, i) => (
+              <div key={i} {...getLineProps({ line })}>
+                <span className="inline-block w-8 text-slate-400 select-none text-right mr-4">
+                  {i + 1}
+                </span>
+                {line.map((token, key) => (
+                  <span key={key} {...getTokenProps({ token })} />
+                ))}
+              </div>
+            ))}
+          </pre>
+        )}
+      </Highlight>
     </div>
   )
 }

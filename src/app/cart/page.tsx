@@ -27,8 +27,9 @@ export default function CartPage() {
   const count = useCartStore(selectCartCount)
 
   // Fix hydration mismatch with Zustand persist
+  // This is an intentional pattern - runs once on mount to sync client state
   useEffect(() => {
-    setIsMounted(true)
+    setIsMounted(true) // eslint-disable-line react-hooks/set-state-in-effect
   }, [])
 
   const handleCheckout = async () => {

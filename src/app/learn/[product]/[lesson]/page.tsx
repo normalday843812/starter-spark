@@ -53,7 +53,7 @@ export default async function LessonPage({
     notFound()
   }
 
-  const module = lesson.module as {
+  const lessonModule = lesson.module as {
     id: string
     title: string
     sort_order: number
@@ -64,7 +64,7 @@ export default async function LessonPage({
     } | null
   } | null
 
-  const course = module?.course
+  const course = lessonModule?.course
   const product = course?.product
 
   if (!product || product.slug !== productSlug) {
@@ -141,17 +141,39 @@ export default async function LessonPage({
     redirect(`/learn/${productSlug}`)
   }
 
-  // Build sidebar course structure
+  // Fetch user's lesson progress for this course
+  const completedLessonIds: Set<string> = new Set()
+  if (user) {
+    const allLessonIds = sortedModules.flatMap((mod) => mod.lessons.map((l) => l.id))
+    const { data: progressData } = await supabase
+      .from("lesson_progress")
+      .select("lesson_id")
+      .eq("user_id", user.id)
+      .eq("completed", true)
+      .in("lesson_id", allLessonIds)
+
+    if (progressData) {
+      progressData.forEach((p) => completedLessonIds.add(p.lesson_id))
+    }
+  }
+
+  // Build sidebar course structure with IDs for progress tracking
   const sidebarCourse = {
     title: courseData.title,
     modules: sortedModules.map((mod) => ({
       title: mod.title,
       lessons: mod.lessons.map((l) => ({
+        id: l.id,
         slug: l.slug,
         title: l.title,
       })),
     })),
   }
+
+  // Calculate progress
+  const totalLessons = sortedModules.reduce((acc, mod) => acc + mod.lessons.length, 0)
+  const completedCount = completedLessonIds.size
+  const progressPercent = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
@@ -160,6 +182,8 @@ export default async function LessonPage({
         product={productSlug}
         currentLesson={lessonSlug}
         course={sidebarCourse}
+        completedLessonIds={completedLessonIds}
+        progressPercent={progressPercent}
       />
 
       {/* Main Content */}

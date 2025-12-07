@@ -1,13 +1,11 @@
 import { createClient } from "@/lib/supabase/server"
 import { formatRelativeTime } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import {
   CheckCircle2,
   Circle,
   MessageSquare,
   Plus,
-  Search,
   Eye,
   ChevronUp,
 } from "lucide-react"
