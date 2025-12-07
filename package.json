@@ -41,6 +41,7 @@
     "motion": "^12.23.24",
     "next": "16.0.4",
     "posthog-js": "^1.298.1",
+    "prism-react-renderer": "^2.4.1",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "resend": "^6.5.2",

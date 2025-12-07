@@ -18,15 +18,19 @@ interface LessonSidebarProps {
     title: string
     modules: {
       title: string
-      lessons: { slug: string; title: string }[]
+      lessons: { id: string; slug: string; title: string }[]
     }[]
   }
+  completedLessonIds: Set<string>
+  progressPercent: number
 }
 
 export function LessonSidebar({
   product,
   currentLesson,
   course,
+  completedLessonIds,
+  progressPercent,
 }: LessonSidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [expandedModules, setExpandedModules] = useState<Set<number>>(
@@ -50,7 +54,8 @@ export function LessonSidebar({
     mod.lessons.some((l) => l.slug === currentLesson)
   )
 
-  const SidebarContent = () => (
+  // Sidebar content as JSX (not a component to avoid re-render issues)
+  const sidebarContent = (
     <>
       {/* Header */}
       <div className="p-4 border-b border-slate-200">
@@ -70,19 +75,19 @@ export function LessonSidebar({
       <div className="p-4 border-b border-slate-100">
         <div className="flex items-center justify-between text-xs mb-2">
           <span className="text-slate-500">Progress</span>
-          <span className="font-mono text-slate-700">0%</span>
+          <span className="font-mono text-slate-700">{progressPercent}%</span>
         </div>
         <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
           <div
             className="h-full bg-cyan-700 rounded-full transition-all"
-            style={{ width: "0%" }}
+            style={{ width: `${progressPercent}%` }}
           />
         </div>
       </div>
 
       {/* Modules */}
       <nav className="flex-1 overflow-y-auto">
-        {course.modules.map((module, moduleIndex) => {
+        {course.modules.map((courseModule, moduleIndex) => {
           const isExpanded = expandedModules.has(moduleIndex)
           const isCurrentModule = moduleIndex === currentModuleIndex
 
@@ -97,7 +102,7 @@ export function LessonSidebar({
                 }`}
               >
                 <span className="font-mono text-sm font-medium">
-                  {module.title}
+                  {courseModule.title}
                 </span>
                 {isExpanded ? (
                   <ChevronDown className="w-4 h-4 text-slate-500" />
@@ -108,9 +113,9 @@ export function LessonSidebar({
 
               {isExpanded && (
                 <div className="pb-2">
-                  {module.lessons.map((lesson) => {
+                  {courseModule.lessons.map((lesson) => {
                     const isCurrent = lesson.slug === currentLesson
-                    const isCompleted = false // TODO: track completion
+                    const isCompleted = completedLessonIds.has(lesson.id)
 
                     return (
                       <Link
@@ -155,7 +160,7 @@ export function LessonSidebar({
     <>
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex lg:flex-col lg:w-72 lg:fixed lg:inset-y-0 lg:left-0 bg-white border-r border-slate-200 pt-16">
-        <SidebarContent />
+        {sidebarContent}
       </aside>
 
       {/* Mobile Sidebar Toggle */}
@@ -180,7 +185,7 @@ export function LessonSidebar({
             >
               <X className="w-5 h-5" />
             </button>
-            <SidebarContent />
+            {sidebarContent}
           </aside>
         </div>
       )}

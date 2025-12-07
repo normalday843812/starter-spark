@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
-import { formatRelativeTime, formatDate } from "@/lib/utils"
+import { formatRelativeTime } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   CheckCircle2,

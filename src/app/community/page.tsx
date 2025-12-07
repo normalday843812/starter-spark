@@ -1,13 +1,11 @@
 import { createClient } from "@/lib/supabase/server"
 import { formatRelativeTime } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import {
   CheckCircle2,
   Circle,
   MessageSquare,
   Plus,
-  Search,
   Eye,
   ChevronUp,
 } from "lucide-react"
@@ -24,7 +22,7 @@ export const metadata = {
 export default async function CommunityPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; tag?: string; product?: string }>
+  searchParams: Promise<{ status?: string; tag?: string; product?: string; q?: string }>
 }) {
   const params = await searchParams
   const supabase = await createClient()
@@ -65,6 +63,11 @@ export default async function CommunityPage({
 
   if (params.tag) {
     query = query.contains("tags", [params.tag])
+  }
+
+  // Apply text search
+  if (params.q && params.q.trim()) {
+    query = query.ilike("title", `%${params.q.trim()}%`)
   }
 
   const { data: posts, error } = await query.limit(50)
@@ -124,6 +127,7 @@ export default async function CommunityPage({
                   currentStatus={params.status}
                   currentTag={params.tag}
                   currentProduct={params.product}
+                  currentSearch={params.q}
                 />
               </Suspense>
             </div>

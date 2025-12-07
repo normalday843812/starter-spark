@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest"
-import { useCartStore, selectCartTotal, selectCartCount, type CartItem } from "./cart"
+import { useCartStore, selectCartTotal, selectCartCount } from "./cart"
 
 describe("Cart Store", () => {
   // Reset store before each test

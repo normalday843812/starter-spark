@@ -3,7 +3,6 @@ import { supabaseAdmin } from "@/lib/supabase/admin"
 import { Button } from "@/components/ui/button"
 import { Package, CheckCircle, AlertCircle, ArrowRight, LogIn } from "lucide-react"
 import Link from "next/link"
-import { redirect } from "next/navigation"
 import { ClaimButton } from "./ClaimButton"
 
 export const metadata = {
