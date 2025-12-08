@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Loader2, Save, Trash2, Plus, X, Package, AlertTriangle, Image } from "lucide-react"
+import { Loader2, Save, Trash2, Plus, X, Package, AlertTriangle, Image as ImageIcon } from "lucide-react"
 import { updateProduct, deleteProduct, updateProductTags, saveProductMedia } from "../actions"
 import { MediaUploader, MediaItem } from "@/components/admin/MediaUploader"
 import { Database } from "@/lib/supabase/database.types"
@@ -625,7 +625,7 @@ export function ProductForm({ product, initialTags = [], initialMedia = [] }: Pr
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Image className="h-5 w-5 text-slate-600" />
+            <ImageIcon className="h-5 w-5 text-slate-600" />
             <div>
               <CardTitle>Media</CardTitle>
               <CardDescription>Product images, videos, 3D models, and documents</CardDescription>

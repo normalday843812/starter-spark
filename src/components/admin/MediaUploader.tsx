@@ -87,7 +87,7 @@ export function MediaUploader({ productId, media, onChange, bucket = "products" 
     setIsDragging(false)
   }, [])
 
-  const uploadFile = async (file: File): Promise<MediaItem | null> => {
+  const uploadFile = useCallback(async (file: File): Promise<MediaItem | null> => {
     const fileId = `${file.name}-${Date.now()}`
     setUploading((prev) => [...prev, fileId])
     setUploadProgress((prev) => ({ ...prev, [fileId]: 0 }))
@@ -145,9 +145,8 @@ export function MediaUploader({ productId, media, onChange, bucket = "products" 
         return next
       })
     }
-  }
+  }, [productId, bucket, supabase.storage, media.length])
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleDrop = useCallback(
     async (e: React.DragEvent) => {
       e.preventDefault()
@@ -169,7 +168,7 @@ export function MediaUploader({ productId, media, onChange, bucket = "products" 
         onChange([...media, ...newMedia])
       }
     },
-    [media, onChange]
+    [media, onChange, uploadFile]
   )
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
