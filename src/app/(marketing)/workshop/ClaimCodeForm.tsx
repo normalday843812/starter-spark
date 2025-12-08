@@ -59,7 +59,7 @@ export function ClaimCodeForm() {
         value={code}
         onChange={(e) => setCode(e.target.value.toUpperCase())}
         className="font-mono text-center tracking-widest uppercase bg-slate-50 border-slate-200 focus:border-cyan-700"
-        maxLength={16}
+        maxLength={19}
         disabled={isLoading}
       />
       <Button
