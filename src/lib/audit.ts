@@ -40,6 +40,9 @@ export type AuditAction =
   | 'stats.created'
   | 'stats.updated'
   | 'stats.deleted'
+  // Site content
+  | 'site_content.updated'
+  | 'site_content.reset'
 
 /**
  * Resource types that can be audited
@@ -54,6 +57,7 @@ export type AuditResourceType =
   | 'content'
   | 'settings'
   | 'stats'
+  | 'site_content'
 
 interface AuditLogParams {
   userId: string

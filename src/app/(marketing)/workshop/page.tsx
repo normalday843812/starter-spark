@@ -5,6 +5,7 @@ import Link from "next/link"
 import { ClaimCodeForm } from "./ClaimCodeForm"
 import { KitCard } from "./KitCard"
 import { QuickTools } from "./QuickTools"
+import { getContents } from "@/lib/content"
 
 export default async function WorkshopPage() {
   const supabase = await createClient()
@@ -12,6 +13,22 @@ export default async function WorkshopPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser()
+
+  // Fetch dynamic content
+  const content = await getContents(
+    [
+      "workshop.header.title",
+      "workshop.header.description",
+      "workshop.header.description_signed_out",
+      "workshop.no_kits",
+    ],
+    {
+      "workshop.header.title": "Workshop",
+      "workshop.header.description": "Manage your kits, track progress, and access learning materials.",
+      "workshop.header.description_signed_out": "Sign in to access your kits and learning materials.",
+      "workshop.no_kits": "You don't have any kits yet.",
+    }
+  )
 
   // If logged in, fetch user's licenses with product info
   let groupedKits: Array<{
@@ -82,12 +99,12 @@ export default async function WorkshopPage() {
         <div className="max-w-7xl mx-auto">
           <p className="text-sm font-mono text-cyan-700 mb-2">Dashboard</p>
           <h1 className="font-mono text-4xl lg:text-5xl font-bold text-slate-900 mb-4">
-            Workshop
+            {content["workshop.header.title"]}
           </h1>
           <p className="text-lg text-slate-600 max-w-2xl">
             {user
-              ? "Manage your kits, track progress, and access learning materials."
-              : "Sign in to access your kits and learning materials."}
+              ? content["workshop.header.description"]
+              : content["workshop.header.description_signed_out"]}
           </p>
         </div>
       </section>
@@ -154,7 +171,7 @@ export default async function WorkshopPage() {
                         <Package className="w-8 h-8 text-slate-500" />
                       </div>
                       <p className="text-slate-600 mb-4">
-                        You don&apos;t have any kits yet.
+                        {content["workshop.no_kits"]}
                       </p>
                       <p className="text-sm text-slate-500 mb-6">
                         Purchase a kit or enter a code to get started.

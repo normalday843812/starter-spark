@@ -1,8 +1,8 @@
 import {
-  HeroSection,
-  DifferentiatorsSection,
+  HeroWrapper,
+  DifferentiatorsWrapper,
   FeaturedProduct,
-  LearningPreviewSection,
+  LearningPreviewWrapper,
   MissionImpact,
   EventsPreview,
 } from "@/components/marketing"
@@ -23,10 +23,10 @@ export default function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
       />
-      <HeroSection />
-      <DifferentiatorsSection />
+      <HeroWrapper />
+      <DifferentiatorsWrapper />
       <FeaturedProduct />
-      <LearningPreviewSection />
+      <LearningPreviewWrapper />
       <MissionImpact />
       <EventsPreview />
     </div>

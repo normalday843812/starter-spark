@@ -12,6 +12,7 @@ import {
 import Link from "next/link"
 import { ForumFilters } from "./ForumFilters"
 import { Suspense } from "react"
+import { getContents } from "@/lib/content"
 
 export const metadata = {
   title: "The Lab - Community Q&A",
@@ -26,6 +27,16 @@ export default async function CommunityPage({
 }) {
   const params = await searchParams
   const supabase = await createClient()
+
+  // Fetch dynamic content
+  const content = await getContents(
+    ["community.header.title", "community.header.description", "community.empty"],
+    {
+      "community.header.title": "The Lab",
+      "community.header.description": "Get help from the community. Ask questions, share solutions, and connect with other builders. Every question gets answered.",
+      "community.empty": "No discussions yet. Be the first to ask a question!",
+    }
+  )
 
   // Fetch posts with author info and comment count
   let query = supabase
@@ -96,11 +107,10 @@ export default async function CommunityPage({
         <div className="max-w-7xl mx-auto">
           <p className="text-sm font-mono text-cyan-700 mb-2">Community</p>
           <h1 className="font-mono text-4xl lg:text-5xl font-bold text-slate-900 mb-4">
-            The Lab
+            {content["community.header.title"]}
           </h1>
           <p className="text-lg text-slate-600 max-w-2xl">
-            Get help from the community. Ask questions, share solutions, and
-            connect with other builders. Every question gets answered.
+            {content["community.header.description"]}
           </p>
         </div>
       </section>
@@ -253,8 +263,7 @@ export default async function CommunityPage({
                     No questions yet
                   </p>
                   <p className="text-slate-600 mb-6">
-                    Be the first to ask a question and get help from the
-                    community.
+                    {content["community.empty"]}
                   </p>
                   <Link href="/community/new">
                     <Button className="bg-cyan-700 hover:bg-cyan-600 text-white font-mono">

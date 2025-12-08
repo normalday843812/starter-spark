@@ -4,11 +4,22 @@ import { Package } from "lucide-react"
 import Link from "next/link"
 import { ProductTag } from "@/components/commerce"
 import { Database } from "@/lib/supabase/database.types"
+import { getContents } from "@/lib/content"
 
 type ProductTagType = Database["public"]["Enums"]["product_tag_type"]
 
 export default async function ShopPage() {
   const supabase = await createClient()
+
+  // Fetch dynamic content
+  const content = await getContents(
+    ["shop.header.title", "shop.header.description", "shop.empty"],
+    {
+      "shop.header.title": "Robotics Kits",
+      "shop.header.description": "Everything you need to start building. Each kit includes components, tools, and full access to our learning platform.",
+      "shop.empty": "No products available at this time.",
+    }
+  )
 
   // Fetch active and coming_soon products with their tags
   const { data: products, error } = await supabase
@@ -115,11 +126,10 @@ export default async function ShopPage() {
         <div className="max-w-7xl mx-auto">
           <p className="text-sm font-mono text-cyan-700 mb-2">Shop</p>
           <h1 className="font-mono text-4xl lg:text-5xl font-bold text-slate-900 mb-4">
-            Robotics Kits
+            {content["shop.header.title"]}
           </h1>
           <p className="text-lg text-slate-600 max-w-2xl">
-            Everything you need to start building. Each kit includes components,
-            tools, and full access to our learning platform.
+            {content["shop.header.description"]}
           </p>
         </div>
       </section>
@@ -142,8 +152,7 @@ export default async function ShopPage() {
                 Products Coming Soon
               </h3>
               <p className="text-slate-600 max-w-md mb-6">
-                We&apos;re working on new robotics kits. Sign up for our newsletter
-                to be the first to know when they&apos;re available.
+                {content["shop.empty"]}
               </p>
               <Link
                 href="/#newsletter"

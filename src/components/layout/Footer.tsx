@@ -4,6 +4,7 @@ import { Heart } from "lucide-react"
 import Link from "next/link"
 import { NewsletterForm } from "./NewsletterForm"
 import { createClient } from "@/lib/supabase/server"
+import { getContent } from "@/lib/content"
 
 // Custom X (Twitter) icon since simple-icons doesn't have it as "X"
 function XIcon({ className }: { className?: string }) {
@@ -22,6 +23,12 @@ interface FooterProduct {
 
 export async function Footer() {
   const supabase = await createClient()
+
+  // Fetch dynamic content
+  const copyrightText = await getContent(
+    "footer.copyright",
+    "© 2025 StarterSpark Robotics. All rights reserved."
+  )
 
   // Fetch active products for the footer links
   const { data: products, error } = await supabase
@@ -153,7 +160,7 @@ export async function Footer() {
       {/* Bottom Bar */}
       <div className="border-t border-slate-200 py-6 px-6 lg:px-20">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
-          <p className="font-mono">&copy; 2025 StarterSpark Robotics. Honolulu, HI.</p>
+          <p className="font-mono">{copyrightText}</p>
           <nav aria-label="Legal">
             <div className="flex gap-6">
               <Link href="/privacy" className="hover:text-slate-900 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2">

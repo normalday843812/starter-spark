@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "13.0.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       admin_audit_log: {
@@ -689,6 +714,45 @@ export type Database = {
         }
         Relationships: []
       }
+      site_content: {
+        Row: {
+          category: string
+          content: string
+          content_key: string
+          content_type: string
+          default_value: string | null
+          description: string | null
+          id: string
+          last_updated_by: string | null
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          category: string
+          content: string
+          content_key: string
+          content_type?: string
+          default_value?: string | null
+          description?: string | null
+          id?: string
+          last_updated_by?: string | null
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          content?: string
+          content_key?: string
+          content_type?: string
+          default_value?: string | null
+          description?: string | null
+          id?: string
+          last_updated_by?: string | null
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       site_stats: {
         Row: {
           auto_source: string | null
@@ -775,6 +839,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_expired_tags: { Args: never; Returns: undefined }
       get_course_progress: {
         Args: { p_course_id: string; p_user_id: string }
         Returns: number
@@ -935,6 +1000,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       product_status: ["active", "coming_soon", "draft"],

@@ -6,6 +6,19 @@ import { motion, useInView } from "motion/react"
 import Link from "next/link"
 import { useEffect, useState, useRef } from "react"
 
+export interface LearningPreviewSectionProps {
+  title?: string
+  description?: string
+  block1Title?: string
+  block1Description1?: string
+  block1Description2?: string
+  block1Cta?: string
+  block2Title?: string
+  block2Description1?: string
+  block2Description2?: string
+  block2Cta?: string
+}
+
 // Typing animation component
 function TypeWriter({ text, startDelay = 0 }: { text: string; startDelay?: number }) {
   const [displayText, setDisplayText] = useState("")
@@ -49,7 +62,18 @@ function TypeWriter({ text, startDelay = 0 }: { text: string; startDelay?: numbe
   )
 }
 
-export function LearningPreviewSection() {
+export function LearningPreviewSection({
+  title = "Learn by Doing",
+  description = "Our interactive platform guides you from unboxing to your first programmed movement.",
+  block1Title = "Step-by-Step Digital Guides",
+  block1Description1 = "Each lesson builds on the last, taking you from basic assembly through advanced programming. Our interactive diagrams show exactly where each wire connects, and you can hover over components to learn what they do.",
+  block1Description2 = "The built-in code editor lets you write, test, and upload your programs directly from the browser. Real-time syntax highlighting and error checking help you learn proper coding practices from day one.",
+  block1Cta = "Start Learning",
+  block2Title = "Expert Support When You Need It",
+  block2Description1 = "Stuck on a step? Our community forum, The Lab, connects you with fellow builders and our support team. Most questions get answered within hours, not days.",
+  block2Description2 = "Staff members actively monitor discussions and provide verified solutions. Every question helps build our knowledge base for future builders.",
+  block2Cta = "Visit The Lab",
+}: LearningPreviewSectionProps) {
   return (
     <section className="py-24 px-6 lg:px-20 bg-white">
       <div className="max-w-7xl mx-auto">
@@ -60,11 +84,10 @@ export function LearningPreviewSection() {
           className="text-center mb-16"
         >
           <h2 className="font-mono text-3xl lg:text-4xl text-slate-900 mb-4">
-            Learn by Doing
+            {title}
           </h2>
           <p className="text-slate-600 max-w-2xl mx-auto">
-            Our interactive platform guides you from unboxing to your first
-            programmed movement.
+            {description}
           </p>
         </motion.div>
 
@@ -125,17 +148,17 @@ void loop() {
               <Code className="w-6 h-6 text-cyan-700" />
             </div>
             <h3 className="font-mono text-2xl text-slate-900 mb-4">
-              Step-by-Step Digital Guides
+              {block1Title}
             </h3>
             <p className="text-slate-600 mb-4 leading-relaxed">
-              Description
+              {block1Description1}
             </p>
             <p className="text-slate-600 leading-relaxed mb-6">
-              Description
+              {block1Description2}
             </p>
-            <Link href="/shop">
+            <Link href="/learn">
               <Button className="bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
-                Start Learning
+                {block1Cta}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </Link>
@@ -154,20 +177,20 @@ void loop() {
               <MessageCircle className="w-6 h-6 text-cyan-700" />
             </div>
             <h3 className="font-mono text-2xl text-slate-900 mb-4">
-              Expert Support When You Need It
+              {block2Title}
             </h3>
             <p className="text-slate-600 mb-4 leading-relaxed">
-              Description
+              {block2Description1}
             </p>
             <p className="text-slate-600 mb-6 leading-relaxed">
-              Description
+              {block2Description2}
             </p>
             <Link href="/community">
               <Button
                 variant="outline"
                 className="border-slate-200 hover:border-cyan-700 text-slate-600 hover:text-cyan-700 font-mono"
               >
-                Visit The Lab
+                {block2Cta}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </Link>

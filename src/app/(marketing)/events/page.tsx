@@ -3,6 +3,7 @@ import { Calendar, MapPin, Clock, ExternalLink } from "lucide-react"
 import Link from "next/link"
 import { EventsToggle } from "./EventsToggle"
 import { getEventSchema, getBreadcrumbSchema } from "@/lib/structured-data"
+import { getContents } from "@/lib/content"
 
 export const metadata = {
   title: "Events - StarterSpark Robotics",
@@ -190,6 +191,16 @@ function EventCard({ event, isPast = false }: { event: Event; isPast?: boolean }
 export default async function EventsPage() {
   const supabase = await createClient()
 
+  // Fetch dynamic content
+  const content = await getContents(
+    ["events.header.title", "events.header.description", "events.empty"],
+    {
+      "events.header.title": "Learn With Us",
+      "events.header.description": "Hands-on workshops, competitions, and community events throughout Hawaii. Join us to learn robotics, meet fellow builders, and grow your skills.",
+      "events.empty": "No upcoming events. Check back soon for new workshops and events!",
+    }
+  )
+
   // Fetch all public events
   const { data: events, error } = await supabase
     .from("events")
@@ -251,12 +262,10 @@ export default async function EventsPage() {
             Events & Workshops
           </div>
           <h1 className="font-mono text-4xl lg:text-5xl text-slate-900 mb-4">
-            Learn With Us
+            {content["events.header.title"]}
           </h1>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Hands-on workshops, competitions, and community events throughout
-            Hawaii. Join us to learn robotics, meet fellow builders, and grow
-            your skills.
+            {content["events.header.description"]}
           </p>
         </div>
       </section>
@@ -277,9 +286,8 @@ export default async function EventsPage() {
           ) : (
             <div className="bg-white border border-slate-200 rounded p-8 text-center">
               <Calendar className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-              <p className="text-slate-600 mb-2">No upcoming events</p>
-              <p className="text-sm text-slate-500">
-                Check back soon for new workshops and events!
+              <p className="text-slate-600">
+                {content["events.empty"]}
               </p>
             </div>
           )}

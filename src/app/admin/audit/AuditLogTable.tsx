@@ -77,6 +77,7 @@ const resourceIcons: Record<string, typeof User> = {
   settings: Settings,
   stats: Settings,
   page_content: FileText,
+  site_content: FileText,
 }
 
 const actionDescriptions: Record<string, { label: string; verb: string; color: string }> = {
@@ -114,6 +115,9 @@ const actionDescriptions: Record<string, { label: string; verb: string; color: s
   "stats.created": { label: "Stat Created", verb: "created site stat", color: "bg-green-100 text-green-700 border-green-200" },
   "stats.updated": { label: "Stat Updated", verb: "updated site stat", color: "bg-blue-100 text-blue-700 border-blue-200" },
   "stats.deleted": { label: "Stat Deleted", verb: "deleted site stat", color: "bg-red-100 text-red-700 border-red-200" },
+  // Site content
+  "site_content.updated": { label: "Site Content Updated", verb: "updated site content", color: "bg-blue-100 text-blue-700 border-blue-200" },
+  "site_content.reset": { label: "Site Content Reset", verb: "reset site content to default", color: "bg-amber-100 text-amber-700 border-amber-200" },
 }
 
 const resourceLinks: Record<string, (id: string) => string> = {
@@ -124,6 +128,7 @@ const resourceLinks: Record<string, (id: string) => string> = {
   post: (id) => `/admin/community?search=${id}`,
   comment: (id) => `/admin/community`,
   content: (id) => `/admin/content/${id}`,
+  site_content: () => `/admin/content/site`,
 }
 
 function formatDate(dateStr: string | null): string {

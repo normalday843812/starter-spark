@@ -1,7 +1,8 @@
 import {
   BookOpen,
   Cpu,
-  MessageCircleQuestion,
+  Code,
+  HelpCircle,
   Calendar,
   Users,
   Info,
@@ -26,22 +27,28 @@ export const documentationNav: NavGroup = {
   title: "Documentation",
   items: [
     {
-      title: "Hardware Guides",
+      title: "Getting Started",
       href: "/learn",
-      description: "Assembly instructions and hardware setup",
+      description: "Start your robotics journey",
+      icon: BookOpen,
+    },
+    {
+      title: "Hardware Guides",
+      href: "/docs#hardware",
+      description: "Assembly and wiring guides",
       icon: Cpu,
     },
     {
       title: "Software Guides",
-      href: "/learn",
-      description: "Programming tutorials and code examples",
-      icon: BookOpen,
+      href: "/docs#software",
+      description: "Arduino programming tutorials",
+      icon: Code,
     },
     {
       title: "Troubleshooting",
-      href: "/community?status=open",
+      href: "/community?tag=troubleshooting",
       description: "Common issues and solutions",
-      icon: MessageCircleQuestion,
+      icon: HelpCircle,
     },
   ],
 }
@@ -79,6 +86,7 @@ export const footerNav = {
   main: [
     { title: "Shop", href: "/shop" },
     { title: "Learn", href: "/learn" },
+    { title: "Docs", href: "/docs" },
     { title: "Community", href: "/community" },
     { title: "Events", href: "/events" },
     { title: "About", href: "/about" },
