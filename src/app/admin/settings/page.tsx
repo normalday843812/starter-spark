@@ -37,7 +37,7 @@ async function getSiteStats() {
 
   const { data, error } = await supabase
     .from("site_stats")
-    .select("id, key, value, label, suffix, is_auto_calculated")
+    .select("id, key, value, label, suffix, is_auto_calculated, auto_source")
     .order("sort_order", { ascending: true })
 
   if (error) {

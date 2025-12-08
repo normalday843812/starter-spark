@@ -598,6 +598,7 @@ export type Database = {
           suffix: string | null
           description: string | null
           is_auto_calculated: boolean | null
+          auto_source: string | null
           sort_order: number | null
           created_at: string | null
           updated_at: string | null
@@ -610,6 +611,7 @@ export type Database = {
           suffix?: string | null
           description?: string | null
           is_auto_calculated?: boolean | null
+          auto_source?: string | null
           sort_order?: number | null
           created_at?: string | null
           updated_at?: string | null
@@ -622,6 +624,7 @@ export type Database = {
           suffix?: string | null
           description?: string | null
           is_auto_calculated?: boolean | null
+          auto_source?: string | null
           sort_order?: number | null
           created_at?: string | null
           updated_at?: string | null

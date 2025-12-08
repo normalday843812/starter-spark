@@ -8,6 +8,8 @@ interface UpdateStatInput {
   value: number
   label: string
   suffix: string
+  is_auto_calculated?: boolean
+  auto_source?: string | null
 }
 
 export async function updateSiteStat(input: UpdateStatInput) {
@@ -33,14 +35,22 @@ export async function updateSiteStat(input: UpdateStatInput) {
   }
 
   // Update the stat
+  const updateData: Record<string, unknown> = {
+    value: input.value,
+    label: input.label,
+    suffix: input.suffix || "",
+    updated_at: new Date().toISOString(),
+  }
+
+  // Include auto_calculated fields if provided
+  if (input.is_auto_calculated !== undefined) {
+    updateData.is_auto_calculated = input.is_auto_calculated
+    updateData.auto_source = input.is_auto_calculated ? (input.auto_source || null) : null
+  }
+
   const { error } = await supabase
     .from("site_stats")
-    .update({
-      value: input.value,
-      label: input.label,
-      suffix: input.suffix || "",
-      updated_at: new Date().toISOString(),
-    })
+    .update(updateData)
     .eq("id", input.id)
 
   if (error) {
@@ -60,6 +70,7 @@ export async function createSiteStat(input: {
   label: string
   suffix: string
   is_auto_calculated: boolean
+  auto_source?: string | null
 }) {
   const supabase = await createClient()
 
@@ -99,6 +110,7 @@ export async function createSiteStat(input: {
     label: input.label,
     suffix: input.suffix || "",
     is_auto_calculated: input.is_auto_calculated,
+    auto_source: input.is_auto_calculated ? (input.auto_source || null) : null,
     sort_order: nextSortOrder,
   })
 
