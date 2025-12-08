@@ -10,27 +10,33 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Plus, Megaphone, Info, AlertTriangle, CheckCircle, XCircle, Sparkles } from "lucide-react"
+import { Plus, Megaphone, Info, AlertTriangle, CheckCircle, XCircle, Tag, Zap, Gift } from "lucide-react"
 import { BannerActions } from "./BannerActions"
 
 export const metadata = {
   title: "Banners | Admin",
 }
 
-const COLOR_SCHEME_ICONS = {
+const COLOR_SCHEME_ICONS: Record<string, typeof Info> = {
   info: Info,
   warning: AlertTriangle,
   success: CheckCircle,
   error: XCircle,
-  promo: Sparkles,
+  sale: Tag,
+  promo: Zap,
+  announcement: Megaphone,
+  gift: Gift,
 }
 
-const COLOR_SCHEME_STYLES = {
+const COLOR_SCHEME_STYLES: Record<string, string> = {
   info: "bg-cyan-100 text-cyan-700",
   warning: "bg-amber-100 text-amber-700",
   success: "bg-green-100 text-green-700",
   error: "bg-red-100 text-red-700",
-  promo: "bg-gradient-to-r from-cyan-100 to-purple-100 text-purple-700",
+  sale: "bg-rose-100 text-rose-700",
+  promo: "bg-violet-100 text-violet-700",
+  announcement: "bg-slate-200 text-slate-700",
+  gift: "bg-emerald-100 text-emerald-700",
 }
 
 async function getBanners() {
@@ -126,9 +132,9 @@ export default async function BannersPage() {
             </TableHeader>
             <TableBody>
               {banners.map((banner) => {
-                const colorScheme = (banner.color_scheme || "info") as keyof typeof COLOR_SCHEME_ICONS
-                const IconComponent = COLOR_SCHEME_ICONS[colorScheme]
-                const colorStyle = COLOR_SCHEME_STYLES[colorScheme]
+                const colorScheme = banner.color_scheme || "info"
+                const IconComponent = COLOR_SCHEME_ICONS[colorScheme] || Info
+                const colorStyle = COLOR_SCHEME_STYLES[colorScheme] || "bg-slate-100 text-slate-700"
 
                 const isActive =
                   banner.is_active &&
