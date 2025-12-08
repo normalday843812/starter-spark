@@ -155,6 +155,7 @@ export default async function UsersPage({
                     <div className="flex items-center gap-3">
                       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100">
                         {user.avatar_url ? (
+                          /* eslint-disable-next-line @next/next/no-img-element */
                           <img
                             src={user.avatar_url}
                             alt={user.full_name || ""}

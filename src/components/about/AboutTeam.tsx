@@ -83,6 +83,7 @@ export function AboutTeam({ team = defaultTeam }: AboutTeamProps) {
                   {/* Avatar */}
                   <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-cyan-100 to-slate-100 flex items-center justify-center overflow-hidden">
                     {member.image ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
                       <img
                         src={member.image}
                         alt={member.name}

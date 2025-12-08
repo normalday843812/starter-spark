@@ -66,9 +66,8 @@ export function CartContent({
   const savings = useCartStore(selectCartSavings)
 
   // Fix hydration mismatch with Zustand persist
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { setIsMounted(true) }, [])
 
   const handleCheckout = async () => {
     setIsLoading(true)

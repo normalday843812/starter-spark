@@ -126,7 +126,7 @@ const resourceLinks: Record<string, (id: string) => string> = {
   license: (id) => `/admin/licenses?search=${id}`,
   event: (id) => `/admin/events/${id}`,
   post: (id) => `/admin/community?search=${id}`,
-  comment: (id) => `/admin/community`,
+  comment: () => `/admin/community`,
   content: (id) => `/admin/content/${id}`,
   site_content: () => `/admin/content/site`,
 }
@@ -186,7 +186,7 @@ function CopyButton({ text }: { text: string }) {
   )
 }
 
-function DetailsSection({ details, action }: { details: Json | null; action: string }) {
+function DetailsSection({ details }: { details: Json | null }) {
   if (!details || typeof details !== "object" || Array.isArray(details)) {
     return null
   }
@@ -466,7 +466,7 @@ export function AuditLogTable({
                                   <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
                                     Change Details
                                   </p>
-                                  <DetailsSection details={log.details} action={log.action} />
+                                  <DetailsSection details={log.details} />
                                 </div>
                               )}
 

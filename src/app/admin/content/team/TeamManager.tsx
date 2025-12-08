@@ -203,6 +203,7 @@ export function TeamManager({ initialMembers }: TeamManagerProps) {
 
                 <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
                   {member.image_url ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
                     <img
                       src={member.image_url}
                       alt={member.name}

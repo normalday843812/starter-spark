@@ -28,7 +28,7 @@ interface SiteContentEditorProps {
   category: string
 }
 
-export default function SiteContentEditor({ content, category }: SiteContentEditorProps) {
+export default function SiteContentEditor({ content }: SiteContentEditorProps) {
   const [editedContent, setEditedContent] = useState<Record<string, string>>({})
   const [savedItems, setSavedItems] = useState<Set<string>>(new Set())
   const [isPending, startTransition] = useTransition()
