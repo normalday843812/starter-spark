@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { FileText, Clock, CheckCircle, Edit } from "lucide-react"
+import { FileText, Clock, CheckCircle, Edit, Users, Info, BookOpen } from "lucide-react"
 import Link from "next/link"
 
 // Page metadata for display
@@ -17,6 +17,16 @@ const PAGE_METADATA: Record<string, { title: string; description: string; icon: 
     description: "Legal terms for using our products and services",
     icon: FileText,
   },
+  about_hero: {
+    title: "About Page Hero",
+    description: "Main headline and description on the About page",
+    icon: Info,
+  },
+  about_story: {
+    title: "Our Story",
+    description: "The story section on the About page",
+    icon: BookOpen,
+  },
 }
 
 export default async function ContentPage() {
@@ -28,16 +38,59 @@ export default async function ContentPage() {
     .select("*")
     .order("page_key")
 
+  // Fetch team member count
+  const { count: teamCount } = await supabase
+    .from("team_members")
+    .select("*", { count: "exact", head: true })
+
   if (error) {
     console.error("Error fetching pages:", error)
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-mono text-slate-900">Content Management</h1>
-        <p className="text-slate-600">Edit static pages like Privacy Policy and Terms of Service</p>
+        <p className="text-slate-600">Edit static pages, team profiles, and site content</p>
       </div>
+
+      {/* Team Members Section */}
+      <div>
+        <h2 className="text-lg font-mono text-slate-900 mb-4">Team</h2>
+        <Card className="bg-white border-slate-200">
+          <CardHeader className="flex flex-row items-start justify-between space-y-0">
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-cyan-100 rounded">
+                <Users className="h-5 w-5 text-cyan-700" />
+              </div>
+              <div>
+                <CardTitle className="text-lg">Team Members</CardTitle>
+                <CardDescription>Manage team profiles shown on the About page</CardDescription>
+              </div>
+            </div>
+            <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200">
+              {teamCount || 0} members
+            </Badge>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-slate-500">
+                Add, edit, and reorder team member profiles
+              </p>
+              <Button asChild size="sm" variant="outline">
+                <Link href="/admin/content/team">
+                  <Edit className="h-4 w-4 mr-2" />
+                  Manage Team
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Page Content Section */}
+      <div>
+        <h2 className="text-lg font-mono text-slate-900 mb-4">Pages</h2>
 
       <div className="grid gap-4 md:grid-cols-2">
         {(pages || []).map((page) => {
@@ -116,6 +169,7 @@ export default async function ContentPage() {
           </CardContent>
         </Card>
       )}
+      </div>
     </div>
   )
 }

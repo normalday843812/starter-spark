@@ -2,6 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card"
 import { GithubIcon, LinkedinIcon } from "@/components/icons/brand-icons"
+import { Twitter } from "lucide-react"
 import { motion } from "motion/react"
 import Link from "next/link"
 
@@ -12,38 +13,44 @@ interface TeamMember {
   image?: string
   github?: string
   linkedin?: string
+  twitter?: string
 }
 
-const team: TeamMember[] = [
+interface AboutTeamProps {
+  team?: TeamMember[]
+}
+
+// Fallback team data (used if database is empty)
+const defaultTeam: TeamMember[] = [
   {
     name: "Josh Zhang",
     role: "Marketing & Business",
-    bio: "PLACEHOLDER: Team member bio coming soon.",
+    bio: "Team member bio coming soon.",
     github: "https://github.com/thebestjosh",
     linkedin: "https://www.linkedin.com/in/josh-zhang-36aa02352/",
   },
   {
     name: "Vincent Lau",
     role: "Kit Design & CAD",
-    bio: "PLACEHOLDER: Team member bio coming soon.",
-    // PLACEHOLDER: GitHub and LinkedIn coming soon
+    bio: "Team member bio coming soon.",
   },
   {
     name: "Ryder Kawachika",
     role: "Kit Design & CAD",
-    bio: "PLACEHOLDER: Team member bio coming soon.",
+    bio: "Team member bio coming soon.",
     github: "https://github.com/rydertk",
   },
   {
     name: "Kai Stewart",
     role: "Web Development",
-    bio: "me",
+    bio: "Founder and lead developer.",
     github: "https://github.com/normalday843812",
     linkedin: "https://www.linkedin.com/in/kai-stewart-b88841395/",
   }
 ]
 
-export function AboutTeam() {
+export function AboutTeam({ team = defaultTeam }: AboutTeamProps) {
+  const displayTeam = team.length > 0 ? team : defaultTeam
   return (
     <section className="py-24 px-6 lg:px-20 bg-slate-50">
       <div className="max-w-7xl mx-auto">
@@ -63,7 +70,7 @@ export function AboutTeam() {
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {team.map((member, idx) => (
+          {displayTeam.map((member, idx) => (
             <motion.div
               key={member.name}
               initial={{ opacity: 0, y: 20 }}
@@ -73,14 +80,22 @@ export function AboutTeam() {
             >
               <Card className="h-full bg-white border-slate-200 shadow-sm hover:shadow-md transition-shadow">
                 <CardContent className="p-6">
-                  {/* Avatar Placeholder */}
-                  <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-cyan-100 to-slate-100 flex items-center justify-center">
-                    <span className="text-2xl font-mono text-cyan-700">
-                      {member.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </span>
+                  {/* Avatar */}
+                  <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-cyan-100 to-slate-100 flex items-center justify-center overflow-hidden">
+                    {member.image ? (
+                      <img
+                        src={member.image}
+                        alt={member.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-2xl font-mono text-cyan-700">
+                        {member.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </span>
+                    )}
                   </div>
 
                   <div className="text-center">
@@ -116,6 +131,17 @@ export function AboutTeam() {
                           aria-label={`${member.name}'s LinkedIn profile`}
                         >
                           <LinkedinIcon className="w-4 h-4" aria-hidden="true" />
+                        </Link>
+                      )}
+                      {member.twitter && (
+                        <Link
+                          href={member.twitter}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 text-slate-500 hover:text-cyan-700 transition-colors"
+                          aria-label={`${member.name}'s Twitter profile`}
+                        >
+                          <Twitter className="w-4 h-4" aria-hidden="true" />
                         </Link>
                       )}
                     </div>
