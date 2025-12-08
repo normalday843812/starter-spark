@@ -1,23 +1,129 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Menu, X, ShoppingCart } from "lucide-react"
-import Link from "next/link"
 import { useState } from "react"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu"
+import { Menu, X, ShoppingCart, ChevronDown, Lock } from "lucide-react"
 import { useCartStore, selectCartCount } from "@/store/cart"
+import { documentationNav, communityNav, type NavItem } from "@/config/navigation"
+import { cn } from "@/lib/utils"
 
-const navLinks = [
-  { href: "/shop", label: "Shop" },
-  { href: "/learn", label: "Learn" },
-  { href: "/community", label: "Community" },
-  { href: "/about", label: "About" },
-  { href: "/events", label: "Events" },
-]
+function NavDropdownItem({ item }: { item: NavItem }) {
+  const Icon = item.icon
+
+  return (
+    <NavigationMenuLink asChild>
+      <Link
+        href={item.href}
+        className="flex items-start gap-3 rounded-md p-3 hover:bg-slate-50 transition-colors group"
+      >
+        {Icon && (
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-100 group-hover:bg-cyan-100 transition-colors">
+            <Icon className="h-4 w-4 text-slate-600 group-hover:text-cyan-700 transition-colors" />
+          </div>
+        )}
+        <div className="flex-1">
+          <div className="flex items-center gap-1.5">
+            <span className="font-medium text-slate-900 group-hover:text-cyan-700 transition-colors text-sm">
+              {item.title}
+            </span>
+            {item.requiresAuth && (
+              <Lock className="h-3 w-3 text-slate-400" />
+            )}
+          </div>
+          {item.description && (
+            <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+              {item.description}
+            </p>
+          )}
+        </div>
+      </Link>
+    </NavigationMenuLink>
+  )
+}
+
+// Mobile accordion section
+function MobileNavSection({
+  title,
+  items,
+  isOpen,
+  onToggle,
+  onNavigate,
+}: {
+  title: string
+  items: NavItem[]
+  isOpen: boolean
+  onToggle: () => void
+  onNavigate: () => void
+}) {
+  return (
+    <div className="border-b border-slate-100 last:border-b-0">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-center justify-between py-3 font-mono text-sm text-slate-700 hover:text-cyan-700 transition-colors"
+        aria-expanded={isOpen}
+      >
+        {title}
+        <ChevronDown
+          className={cn(
+            "h-4 w-4 transition-transform duration-200",
+            isOpen && "rotate-180"
+          )}
+        />
+      </button>
+      <div
+        className={cn(
+          "overflow-hidden transition-all duration-200",
+          isOpen ? "max-h-96 pb-3" : "max-h-0"
+        )}
+      >
+        <div className="space-y-1 pl-2">
+          {items.map((item) => {
+            const Icon = item.icon
+            return (
+              <Link
+                key={item.href + item.title}
+                href={item.href}
+                onClick={onNavigate}
+                className="flex items-center gap-3 rounded-md p-2 text-sm text-slate-600 hover:text-cyan-700 hover:bg-slate-50 transition-colors"
+              >
+                {Icon && <Icon className="h-4 w-4" />}
+                <span>{item.title}</span>
+                {item.requiresAuth && (
+                  <Lock className="h-3 w-3 text-slate-400" />
+                )}
+              </Link>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [openSection, setOpenSection] = useState<string | null>(null)
   const cartCount = useCartStore(selectCartCount)
   const openCart = useCartStore((state) => state.openCart)
+
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false)
+    setOpenSection(null)
+  }
+
+  const toggleSection = (section: string) => {
+    setOpenSection(openSection === section ? null : section)
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200">
@@ -34,40 +140,66 @@ export function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav aria-label="Main navigation" className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="font-mono text-sm text-slate-600 hover:text-cyan-700 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
+          <NavigationMenu className="hidden md:flex">
+            <NavigationMenuList className="gap-1">
+              {/* Documentation Dropdown */}
+              <NavigationMenuItem>
+                <NavigationMenuTrigger className="font-mono text-sm text-slate-600 hover:text-cyan-700 bg-transparent hover:bg-slate-100 data-[state=open]:bg-slate-100">
+                  {documentationNav.title}
+                </NavigationMenuTrigger>
+                <NavigationMenuContent className="bg-white border border-slate-200 shadow-lg rounded-lg">
+                  <div className="w-[320px] p-2">
+                    {documentationNav.items.map((item) => (
+                      <NavDropdownItem key={item.href + item.title} item={item} />
+                    ))}
+                  </div>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
+
+              {/* Community Dropdown */}
+              <NavigationMenuItem>
+                <NavigationMenuTrigger className="font-mono text-sm text-slate-600 hover:text-cyan-700 bg-transparent hover:bg-slate-100 data-[state=open]:bg-slate-100">
+                  {communityNav.title}
+                </NavigationMenuTrigger>
+                <NavigationMenuContent className="bg-white border border-slate-200 shadow-lg rounded-lg">
+                  <div className="w-[280px] p-2">
+                    {communityNav.items.map((item) => (
+                      <NavDropdownItem key={item.href + item.title} item={item} />
+                    ))}
+                  </div>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
+
+              {/* Shop Link (no dropdown) */}
+              <NavigationMenuItem>
+                <Link href="/shop" legacyBehavior passHref>
+                  <NavigationMenuLink className="font-mono text-sm text-slate-600 hover:text-cyan-700 px-4 py-2 rounded-md hover:bg-slate-100 transition-colors inline-flex items-center">
+                    Shop
+                  </NavigationMenuLink>
+                </Link>
+              </NavigationMenuItem>
+            </NavigationMenuList>
+          </NavigationMenu>
 
           {/* Desktop Actions */}
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-3">
             <Button
               variant="ghost"
               size="icon"
               className="relative text-slate-600 hover:text-cyan-700 hover:bg-slate-100"
-              aria-label={`Shopping cart${cartCount > 0 ? `, ${cartCount} item${cartCount === 1 ? '' : 's'}` : ''}`}
+              aria-label={`Shopping cart${cartCount > 0 ? `, ${cartCount} item${cartCount === 1 ? "" : "s"}` : ""}`}
               onClick={openCart}
             >
               <ShoppingCart className="w-5 h-5" />
               {cartCount > 0 && (
-                <span aria-hidden="true" className="absolute -top-1 -right-1 w-5 h-5 bg-cyan-700 text-white text-xs font-mono rounded-full flex items-center justify-center">
+                <span
+                  aria-hidden="true"
+                  className="absolute -top-1 -right-1 w-5 h-5 bg-cyan-700 text-white text-xs font-mono rounded-full flex items-center justify-center"
+                >
                   {cartCount > 9 ? "9+" : cartCount}
                 </span>
               )}
             </Button>
-            <Link
-              href="/workshop"
-              className="inline-flex items-center justify-center h-9 px-4 py-2 rounded-md border border-slate-200 hover:border-cyan-700 text-slate-600 hover:text-cyan-700 font-mono text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2"
-            >
-              Workshop
-            </Link>
             <Link
               href="/shop"
               className="inline-flex items-center justify-center h-9 px-4 py-2 rounded-md bg-cyan-700 hover:bg-cyan-600 text-white font-mono text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2"
@@ -77,60 +209,71 @@ export function Header() {
           </div>
 
           {/* Mobile Menu Button */}
-          <button
-            type="button"
-            className="md:hidden p-2 text-slate-600 hover:text-cyan-700 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle menu"
-            aria-expanded={mobileMenuOpen}
-            aria-controls="mobile-menu"
-          >
-            {mobileMenuOpen ? (
-              <X className="w-6 h-6" aria-hidden="true" />
-            ) : (
-              <Menu className="w-6 h-6" aria-hidden="true" />
-            )}
-          </button>
+          <div className="flex items-center gap-2 md:hidden">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative text-slate-600 hover:text-cyan-700 hover:bg-slate-100"
+              aria-label={`Shopping cart${cartCount > 0 ? `, ${cartCount} item${cartCount === 1 ? "" : "s"}` : ""}`}
+              onClick={openCart}
+            >
+              <ShoppingCart className="w-5 h-5" />
+              {cartCount > 0 && (
+                <span
+                  aria-hidden="true"
+                  className="absolute -top-1 -right-1 w-5 h-5 bg-cyan-700 text-white text-xs font-mono rounded-full flex items-center justify-center"
+                >
+                  {cartCount > 9 ? "9+" : cartCount}
+                </span>
+              )}
+            </Button>
+            <button
+              type="button"
+              className="p-2 text-slate-600 hover:text-cyan-700 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle menu"
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-menu"
+            >
+              {mobileMenuOpen ? (
+                <X className="w-6 h-6" aria-hidden="true" />
+              ) : (
+                <Menu className="w-6 h-6" aria-hidden="true" />
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div id="mobile-menu" className="md:hidden bg-white border-b border-slate-200">
-          <nav aria-label="Mobile navigation" className="px-6 py-4 space-y-4">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="block font-mono text-sm text-slate-600 hover:text-cyan-700 transition-colors py-2 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {link.label}
-              </Link>
-            ))}
-            <div className="pt-4 border-t border-slate-200 space-y-3">
-              <button
-                type="button"
-                onClick={() => {
-                  openCart()
-                  setMobileMenuOpen(false)
-                }}
-                className="w-full flex items-center justify-center gap-2 py-2 font-mono text-sm text-slate-600 hover:text-cyan-700 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2"
-              >
-                <ShoppingCart className="w-5 h-5" aria-hidden="true" />
-                Cart {cartCount > 0 && `(${cartCount})`}
-              </button>
-              <Link
-                href="/workshop"
-                className="block w-full text-center py-2 px-4 rounded-md border border-slate-200 hover:border-cyan-700 text-slate-600 hover:text-cyan-700 font-mono text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Workshop
-              </Link>
+        <div
+          id="mobile-menu"
+          className="md:hidden bg-white border-b border-slate-200"
+        >
+          <nav aria-label="Mobile navigation" className="px-6 py-4">
+            {/* Accordion sections */}
+            <MobileNavSection
+              title={documentationNav.title}
+              items={documentationNav.items}
+              isOpen={openSection === "documentation"}
+              onToggle={() => toggleSection("documentation")}
+              onNavigate={closeMobileMenu}
+            />
+            <MobileNavSection
+              title={communityNav.title}
+              items={communityNav.items}
+              isOpen={openSection === "community"}
+              onToggle={() => toggleSection("community")}
+              onNavigate={closeMobileMenu}
+            />
+
+            {/* Direct links */}
+            <div className="pt-3 space-y-2">
               <Link
                 href="/shop"
-                className="block w-full text-center py-2 px-4 rounded-md bg-cyan-700 hover:bg-cyan-600 text-white font-mono text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2"
-                onClick={() => setMobileMenuOpen(false)}
+                className="block w-full text-center py-2.5 px-4 rounded-md bg-cyan-700 hover:bg-cyan-600 text-white font-mono text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2"
+                onClick={closeMobileMenu}
               >
                 Shop Kits
               </Link>
