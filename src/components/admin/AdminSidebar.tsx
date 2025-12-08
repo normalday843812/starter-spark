@@ -14,6 +14,7 @@ import {
   LogOut,
   ChevronLeft,
   FileText,
+  ScrollText,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -29,6 +30,7 @@ const navItems = [
   { href: "/admin/events", label: "Events", icon: Calendar },
   { href: "/admin/content", label: "Content", icon: FileText },
   { href: "/admin/users", label: "Users", icon: Users },
+  { href: "/admin/audit", label: "Audit Log", icon: ScrollText },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ]
 
