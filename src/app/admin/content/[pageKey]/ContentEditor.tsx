@@ -317,7 +317,8 @@ export function ContentEditor({ page }: ContentEditorProps) {
       {/* Actions */}
       <div className="flex items-center justify-between">
         <div className="flex gap-2">
-          {isPublished && (
+          {/* Only custom pages can be unpublished - system pages must remain published */}
+          {isPublished && isCustomPage && (
             <Button
               type="button"
               variant="outline"
