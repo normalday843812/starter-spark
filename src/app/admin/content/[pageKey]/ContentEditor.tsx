@@ -11,6 +11,16 @@ import { ArrowLeft, Save, Eye, CheckCircle, Loader2, EyeOff, Trash2 } from "luci
 import Link from "next/link"
 import ReactMarkdown from "react-markdown"
 import { updatePageContent, unpublishPageContent, deleteCustomPage } from "../actions"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface PageContent {
   id: string
@@ -48,6 +58,8 @@ export function ContentEditor({ page }: ContentEditorProps) {
   const [title, setTitle] = useState(page.title)
   const [content, setContent] = useState(page.content)
   const [activeTab, setActiveTab] = useState<string>("edit")
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showUnpublishDialog, setShowUnpublishDialog] = useState(false)
 
   // Custom page state
   const isCustomPage = page.is_custom_page === true
@@ -105,10 +117,7 @@ export function ContentEditor({ page }: ContentEditorProps) {
   }
 
   const handleUnpublish = () => {
-    if (!confirm("Are you sure you want to unpublish this page? It will no longer be visible to the public.")) {
-      return
-    }
-
+    setShowUnpublishDialog(false)
     setError(null)
     setSuccess(null)
 
@@ -125,10 +134,7 @@ export function ContentEditor({ page }: ContentEditorProps) {
   }
 
   const handleDelete = () => {
-    if (!confirm("Are you sure you want to delete this page? This action cannot be undone.")) {
-      return
-    }
-
+    setShowDeleteDialog(false)
     setError(null)
     setSuccess(null)
 
@@ -322,7 +328,7 @@ export function ContentEditor({ page }: ContentEditorProps) {
             <Button
               type="button"
               variant="outline"
-              onClick={handleUnpublish}
+              onClick={() => setShowUnpublishDialog(true)}
               disabled={isPending}
               className="text-amber-600 border-amber-300 hover:bg-amber-50"
             >
@@ -334,7 +340,7 @@ export function ContentEditor({ page }: ContentEditorProps) {
             <Button
               type="button"
               variant="outline"
-              onClick={handleDelete}
+              onClick={() => setShowDeleteDialog(true)}
               disabled={isPending}
               className="text-red-600 border-red-300 hover:bg-red-50"
             >
@@ -391,6 +397,48 @@ export function ContentEditor({ page }: ContentEditorProps) {
           </CardContent>
         </Card>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this page?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. The page and all its content will be permanently deleted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Unpublish Confirmation Dialog */}
+      <AlertDialog open={showUnpublishDialog} onOpenChange={setShowUnpublishDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unpublish this page?</AlertDialogTitle>
+            <AlertDialogDescription>
+              The page will no longer be visible to the public. You can republish it at any time.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleUnpublish}
+              className="bg-amber-600 hover:bg-amber-700 text-white"
+            >
+              Unpublish
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }
