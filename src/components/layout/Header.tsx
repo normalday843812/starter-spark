@@ -170,11 +170,11 @@ export function Header() {
                 </NavigationMenuContent>
               </NavigationMenuItem>
 
-              {/* Shop Link (no dropdown) */}
+              {/* Workshop Link (no dropdown) */}
               <NavigationMenuItem>
-                <Link href="/shop" legacyBehavior passHref>
+                <Link href="/workshop" legacyBehavior passHref>
                   <NavigationMenuLink className="font-mono text-sm text-slate-600 hover:text-cyan-700 px-4 py-2 rounded-md hover:bg-slate-100 transition-colors inline-flex items-center">
-                    Shop
+                    Workshop
                   </NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
@@ -270,6 +270,13 @@ export function Header() {
 
             {/* Direct links */}
             <div className="pt-3 space-y-2">
+              <Link
+                href="/workshop"
+                className="block py-3 font-mono text-sm text-slate-700 hover:text-cyan-700 transition-colors"
+                onClick={closeMobileMenu}
+              >
+                Workshop
+              </Link>
               <Link
                 href="/shop"
                 className="block w-full text-center py-2.5 px-4 rounded-md bg-cyan-700 hover:bg-cyan-600 text-white font-mono text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2"

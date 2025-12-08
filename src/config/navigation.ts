@@ -1,7 +1,6 @@
 import {
   BookOpen,
   Cpu,
-  Wrench,
   MessageCircleQuestion,
   Calendar,
   Users,
@@ -37,13 +36,6 @@ export const documentationNav: NavGroup = {
       href: "/learn",
       description: "Programming tutorials and code examples",
       icon: BookOpen,
-    },
-    {
-      title: "Workshop Dashboard",
-      href: "/workshop",
-      description: "Your kits, progress, and tools",
-      icon: Wrench,
-      requiresAuth: true,
     },
     {
       title: "Troubleshooting",
