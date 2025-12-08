@@ -417,6 +417,42 @@ export type Database = {
           },
         ]
       }
+      page_content: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          last_updated_by: string | null
+          page_key: string
+          published_at: string | null
+          title: string
+          updated_at: string | null
+          version: number | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          last_updated_by?: string | null
+          page_key: string
+          published_at?: string | null
+          title: string
+          updated_at?: string | null
+          version?: number | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          last_updated_by?: string | null
+          page_key?: string
+          published_at?: string | null
+          title?: string
+          updated_at?: string | null
+          version?: number | null
+        }
+        Relationships: []
+      }
       post_votes: {
         Row: {
           created_at: string | null

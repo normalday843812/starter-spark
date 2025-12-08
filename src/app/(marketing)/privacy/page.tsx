@@ -1,24 +1,56 @@
 import type { Metadata } from "next"
+import { createClient } from "@/lib/supabase/server"
+import ReactMarkdown from "react-markdown"
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "StarterSpark Robotics privacy policy.",
+  description: "StarterSpark Robotics privacy policy - how we collect, use, and protect your data.",
 }
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  const supabase = await createClient()
+
+  // Fetch privacy policy content
+  const { data: page } = await supabase
+    .from("page_content")
+    .select("title, content, updated_at")
+    .eq("page_key", "privacy")
+    .not("published_at", "is", null)
+    .single()
+
+  const lastUpdated = page?.updated_at
+    ? new Date(page.updated_at).toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      })
+    : null
+
   return (
     <div className="min-h-screen bg-slate-50">
       <section className="pt-32 pb-24 px-6 lg:px-20">
         <div className="max-w-3xl mx-auto">
           <h1 className="font-mono text-4xl font-bold text-slate-900 mb-8">
-            Privacy Policy
+            {page?.title || "Privacy Policy"}
           </h1>
 
           <div className="bg-white rounded border border-slate-200 p-8">
-            <p className="text-slate-500 font-mono text-sm">
-              PLACEHOLDER: Privacy policy content will be added here. This page will detail how StarterSpark Robotics collects, uses, and protects user data.
-            </p>
+            {page?.content ? (
+              <div className="prose prose-slate max-w-none">
+                <ReactMarkdown>{page.content}</ReactMarkdown>
+              </div>
+            ) : (
+              <p className="text-slate-500 font-mono text-sm">
+                Privacy policy content is being updated. Please check back later.
+              </p>
+            )}
           </div>
+
+          {lastUpdated && (
+            <p className="mt-6 text-sm text-slate-500 text-center">
+              Last updated: {lastUpdated}
+            </p>
+          )}
         </div>
       </section>
     </div>

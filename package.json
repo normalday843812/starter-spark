@@ -45,6 +45,7 @@
     "prism-react-renderer": "^2.4.1",
     "react": "19.2.0",
     "react-dom": "19.2.0",
+    "react-markdown": "^10.1.0",
     "resend": "^6.5.2",
     "simple-icons": "^15.22.0",
     "stripe": "^20.0.0",
