@@ -21,7 +21,7 @@ export default async function ShopPage() {
     }
   )
 
-  // Fetch active and coming_soon products with their tags
+  // Fetch active and coming_soon products with their tags and media
   const { data: products, error } = await supabase
     .from("products")
     .select(`
@@ -40,6 +40,12 @@ export default async function ShopPage() {
         priority,
         discount_percent,
         expires_at
+      ),
+      product_media (
+        url,
+        is_primary,
+        image_type,
+        sort_order
       )
     `)
     .in("status", ["active", "coming_soon"])
@@ -69,6 +75,13 @@ export default async function ShopPage() {
       discount_percent: t.discount_percent,
     }))
 
+    // Get primary image or first hero image or first image
+    const media = product.product_media || []
+    const primaryImage = media.find((m) => m.is_primary)
+    const heroImage = media.find((m) => m.image_type === "hero")
+    const firstImage = media.sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))[0]
+    const image = primaryImage?.url || heroImage?.url || firstImage?.url || undefined
+
     return {
       id: product.id,
       slug: product.slug,
@@ -80,6 +93,7 @@ export default async function ShopPage() {
       status: (product.status || "active") as "active" | "coming_soon" | "draft",
       tags,
       createdAt: product.created_at,
+      image,
       // Discount fields (Phase 14.3)
       originalPrice: product.original_price_cents ? product.original_price_cents / 100 : null,
       discountPercent: product.discount_percent,

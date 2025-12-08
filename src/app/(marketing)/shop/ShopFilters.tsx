@@ -15,6 +15,7 @@ interface Product {
   tags?: ProductTag[]
   category: string
   status: "active" | "coming_soon" | "draft"
+  image?: string
   // Discount fields (Phase 14.3)
   originalPrice?: number | null
   discountPercent?: number | null
@@ -97,6 +98,7 @@ export function ShopFilters({ products }: ShopFiltersProps) {
                   slug={product.slug}
                   name={product.name}
                   price={product.price}
+                  image={product.image}
                   inStock={product.inStock}
                   badge={product.badge}
                   tags={product.tags}
