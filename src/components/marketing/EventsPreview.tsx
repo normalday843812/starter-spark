@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Calendar, MapPin, ArrowRight, MessageSquare, Users, PlusCircle } from "lucide-react"
+import { Calendar, MapPin, ArrowRight, MessageSquare, Users, PlusCircle, ChevronUp, CheckCircle2, Circle } from "lucide-react"
 import { motion } from "motion/react"
 import Link from "next/link"
 
@@ -21,6 +21,8 @@ export interface Discussion {
   title: string
   author_name: string | null
   comment_count: number
+  upvotes: number
+  status: string
   tags: string[] | null
 }
 
@@ -238,37 +240,63 @@ export function EventsPreviewSection({
             </div>
 
             {hasDiscussions ? (
-              /* Recent Discussions */
-              <div className="space-y-3">
+              /* Top Discussions by Upvotes */
+              <div className="space-y-4">
                 {discussions.map((discussion) => (
                   <Link
                     key={discussion.id}
                     href={`/community/${discussion.slug || discussion.id}`}
-                    className="block p-4 bg-white rounded border border-slate-200 hover:border-cyan-200 transition-colors"
+                    className="block"
                   >
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
-                        <MessageSquare className="w-4 h-4 text-slate-500" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-slate-900 text-sm truncate">
-                          {discussion.title}
-                        </h4>
-                        <div className="flex items-center gap-3 mt-1">
-                          <span className="text-xs text-slate-500">
-                            @{discussion.author_name || "anonymous"}
-                          </span>
-                          {discussion.tags && discussion.tags[0] && (
-                            <span className="text-xs px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded">
-                              #{discussion.tags[0]}
-                            </span>
-                          )}
+                    <Card className="bg-white border-slate-200 hover:border-cyan-300 transition-colors">
+                      <CardContent className="p-4">
+                        <div className="flex gap-4">
+                          {/* Vote/Comment Column */}
+                          <div className="flex flex-col items-center gap-1 text-center min-w-[40px]">
+                            <div className="flex items-center gap-0.5 text-slate-500">
+                              <ChevronUp className="w-4 h-4" />
+                              <span className="font-mono text-sm">{discussion.upvotes}</span>
+                            </div>
+                            <div className="flex items-center gap-0.5 text-slate-400">
+                              <MessageSquare className="w-3 h-3" />
+                              <span className="font-mono text-xs">{discussion.comment_count}</span>
+                            </div>
+                          </div>
+
+                          {/* Content */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start gap-2 mb-1">
+                              {/* Status Badge */}
+                              {discussion.status === "solved" ? (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-green-100 text-green-700 text-xs font-mono rounded flex-shrink-0">
+                                  <CheckCircle2 className="w-3 h-3" />
+                                  Solved
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-slate-100 text-slate-600 text-xs font-mono rounded flex-shrink-0">
+                                  <Circle className="w-3 h-3" />
+                                  Open
+                                </span>
+                              )}
+                              <h4 className="font-mono text-sm text-slate-900 truncate">
+                                {discussion.title}
+                              </h4>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs text-slate-500">
+                              <span>{discussion.author_name || "Anonymous"}</span>
+                              {discussion.tags && discussion.tags[0] && (
+                                <>
+                                  <span className="text-slate-300">·</span>
+                                  <span className="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded">
+                                    #{discussion.tags[0]}
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                      <div className="text-xs text-slate-500 font-mono">
-                        {discussion.comment_count} {discussion.comment_count === 1 ? "reply" : "replies"}
-                      </div>
-                    </div>
+                      </CardContent>
+                    </Card>
                   </Link>
                 ))}
               </div>

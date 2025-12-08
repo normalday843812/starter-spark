@@ -47,8 +47,7 @@ export async function EventsPreview() {
     console.error("Failed to fetch events:", eventsError.message)
   }
 
-  // Fetch recent discussions with author info and comment count
-  // Using a raw query to get comment count
+  // Fetch top discussions by upvotes with author info
   const { data: postsData, error: postsError } = await supabase
     .from("posts")
     .select(`
@@ -56,12 +55,13 @@ export async function EventsPreview() {
       slug,
       title,
       tags,
+      upvotes,
+      status,
       profiles:author_id (
         full_name
       )
     `)
-    .eq("status", "open")
-    .order("created_at", { ascending: false })
+    .order("upvotes", { ascending: false })
     .limit(3)
 
   if (postsError) {
@@ -84,6 +84,8 @@ export async function EventsPreview() {
         title: post.title,
         author_name: profile?.full_name || null,
         comment_count: count || 0,
+        upvotes: post.upvotes || 0,
+        status: post.status || "open",
         tags: post.tags,
       })
     }
