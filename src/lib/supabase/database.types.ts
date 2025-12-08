@@ -422,9 +422,13 @@ export type Database = {
           content: string
           created_at: string | null
           id: string
+          is_custom_page: boolean | null
           last_updated_by: string | null
           page_key: string
           published_at: string | null
+          seo_description: string | null
+          seo_title: string | null
+          slug: string | null
           title: string
           updated_at: string | null
           version: number | null
@@ -433,9 +437,13 @@ export type Database = {
           content: string
           created_at?: string | null
           id?: string
+          is_custom_page?: boolean | null
           last_updated_by?: string | null
           page_key: string
           published_at?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
+          slug?: string | null
           title: string
           updated_at?: string | null
           version?: number | null
@@ -444,9 +452,13 @@ export type Database = {
           content?: string
           created_at?: string | null
           id?: string
+          is_custom_page?: boolean | null
           last_updated_by?: string | null
           page_key?: string
           published_at?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
+          slug?: string | null
           title?: string
           updated_at?: string | null
           version?: number | null

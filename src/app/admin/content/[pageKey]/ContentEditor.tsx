@@ -7,10 +7,10 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ArrowLeft, Save, Eye, CheckCircle, Loader2, EyeOff } from "lucide-react"
+import { ArrowLeft, Save, Eye, CheckCircle, Loader2, EyeOff, Trash2 } from "lucide-react"
 import Link from "next/link"
 import ReactMarkdown from "react-markdown"
-import { updatePageContent, unpublishPageContent } from "../actions"
+import { updatePageContent, unpublishPageContent, deleteCustomPage } from "../actions"
 
 interface PageContent {
   id: string
@@ -20,6 +20,10 @@ interface PageContent {
   published_at: string | null
   updated_at: string | null
   version: number | null
+  is_custom_page?: boolean | null
+  slug?: string | null
+  seo_title?: string | null
+  seo_description?: string | null
 }
 
 interface ContentEditorProps {
@@ -44,6 +48,9 @@ export function ContentEditor({ page }: ContentEditorProps) {
   const [title, setTitle] = useState(page.title)
   const [content, setContent] = useState(page.content)
   const [activeTab, setActiveTab] = useState<string>("edit")
+
+  // Custom page state
+  const isCustomPage = page.is_custom_page === true
 
   // Parse about_hero JSON content for structured editing
   const isAboutHero = page.page_key === "about_hero"
@@ -116,6 +123,35 @@ export function ContentEditor({ page }: ContentEditorProps) {
       }
     })
   }
+
+  const handleDelete = () => {
+    if (!confirm("Are you sure you want to delete this page? This action cannot be undone.")) {
+      return
+    }
+
+    setError(null)
+    setSuccess(null)
+
+    startTransition(async () => {
+      const result = await deleteCustomPage(page.page_key)
+
+      if (result.error) {
+        setError(result.error)
+      } else {
+        router.push("/admin/content")
+      }
+    })
+  }
+
+  // Get the live URL for this page
+  const getLiveUrl = (): { url: string; label: string } | null => {
+    if (isCustomPage && page.slug) {
+      return { url: `/p/${page.slug}`, label: "This page is live at" }
+    }
+    return PAGE_URL_MAP[page.page_key] || null
+  }
+
+  const liveUrlInfo = getLiveUrl()
 
   return (
     <>
@@ -280,7 +316,7 @@ export function ContentEditor({ page }: ContentEditorProps) {
 
       {/* Actions */}
       <div className="flex items-center justify-between">
-        <div>
+        <div className="flex gap-2">
           {isPublished && (
             <Button
               type="button"
@@ -291,6 +327,18 @@ export function ContentEditor({ page }: ContentEditorProps) {
             >
               <EyeOff className="h-4 w-4 mr-2" />
               Unpublish
+            </Button>
+          )}
+          {isCustomPage && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleDelete}
+              disabled={isPending}
+              className="text-red-600 border-red-300 hover:bg-red-50"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
             </Button>
           )}
         </div>
@@ -325,18 +373,18 @@ export function ContentEditor({ page }: ContentEditorProps) {
       </div>
 
       {/* Preview Link */}
-      {isPublished && PAGE_URL_MAP[page.page_key] && (
+      {isPublished && liveUrlInfo && (
         <Card className="bg-slate-50 border-slate-200">
           <CardContent className="py-4">
             <p className="text-sm text-slate-600">
-              {PAGE_URL_MAP[page.page_key]!.label}:{" "}
+              {liveUrlInfo.label}:{" "}
               <a
-                href={PAGE_URL_MAP[page.page_key]!.url}
+                href={liveUrlInfo.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-cyan-700 hover:underline"
               >
-                {PAGE_URL_MAP[page.page_key]!.url}
+                {liveUrlInfo.url}
               </a>
             </p>
           </CardContent>
