@@ -19,9 +19,12 @@ interface BuyBoxProps {
   slug: string
   name: string
   price: number
-  originalPrice?: number
+  originalPrice?: number | null
   inStock: boolean
   image?: string
+  // Discount fields (Phase 14.3)
+  discountPercent?: number | null
+  discountExpiresAt?: string | null
 }
 
 export function BuyBox({
@@ -32,12 +35,40 @@ export function BuyBox({
   originalPrice,
   inStock,
   image,
+  discountPercent,
+  discountExpiresAt,
 }: BuyBoxProps) {
   const [quantity, setQuantity] = useState(1)
   const addItem = useCartStore((state) => state.addItem)
 
+  // Check if discount is active (exists and not expired)
+  const hasActiveDiscount =
+    discountPercent &&
+    originalPrice &&
+    (!discountExpiresAt || new Date(discountExpiresAt) > new Date())
+
+  // Calculate time remaining for countdown (if discount expires within 7 days)
+  const getTimeRemaining = () => {
+    if (!discountExpiresAt) return null
+    const now = new Date()
+    const expires = new Date(discountExpiresAt)
+    const diff = expires.getTime() - now.getTime()
+    if (diff <= 0) return null
+    if (diff > 7 * 24 * 60 * 60 * 1000) return null // More than 7 days, don't show countdown
+
+    const days = Math.floor(diff / (24 * 60 * 60 * 1000))
+    const hours = Math.floor((diff % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000))
+    const minutes = Math.floor((diff % (60 * 60 * 1000)) / (60 * 1000))
+
+    if (days > 0) return `${days}d ${hours}h left`
+    if (hours > 0) return `${hours}h ${minutes}m left`
+    return `${minutes}m left`
+  }
+
+  const timeRemaining = hasActiveDiscount ? getTimeRemaining() : null
+
   const handleAddToCart = () => {
-    addItem({ slug, name, price, image }, quantity)
+    addItem({ slug, name, price, image, originalPrice: hasActiveDiscount ? originalPrice ?? undefined : undefined }, quantity)
 
     // Track add to cart event
     trackAddToCart({
@@ -71,12 +102,29 @@ export function BuyBox({
       </div>
 
       {/* Price */}
-      <div className="flex items-baseline gap-3">
-        <span className="text-4xl font-mono text-amber-600">${price.toFixed(2)}</span>
-        {originalPrice && originalPrice > price && (
-          <span className="text-xl font-mono text-slate-500 line-through">
-            ${originalPrice.toFixed(2)}
-          </span>
+      <div className="space-y-2">
+        <div className="flex items-baseline gap-3 flex-wrap">
+          <span className="text-4xl font-mono text-amber-600">${price.toFixed(2)}</span>
+          {hasActiveDiscount && originalPrice && (
+            <>
+              <span className="text-xl font-mono text-slate-400 line-through">
+                ${originalPrice.toFixed(2)}
+              </span>
+              <span className="px-2 py-1 bg-red-500 text-white text-sm font-mono rounded">
+                {discountPercent}% OFF
+              </span>
+            </>
+          )}
+        </div>
+        {timeRemaining && (
+          <p className="text-sm text-red-600 font-mono">
+            Sale ends: {timeRemaining}
+          </p>
+        )}
+        {hasActiveDiscount && originalPrice && (
+          <p className="text-sm text-green-600 font-mono">
+            You save ${(originalPrice - price).toFixed(2)}
+          </p>
         )}
       </div>
 

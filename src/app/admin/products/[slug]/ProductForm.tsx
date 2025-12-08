@@ -7,7 +7,26 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Loader2, Save, Trash2, Plus, X } from "lucide-react"
-import { updateProduct, deleteProduct } from "../actions"
+import { updateProduct, deleteProduct, updateProductTags } from "../actions"
+import { Database } from "@/lib/supabase/database.types"
+
+type ProductTagType = Database["public"]["Enums"]["product_tag_type"]
+
+const ALL_TAGS: { type: ProductTagType; label: string; description: string }[] = [
+  { type: "featured", label: "Featured", description: "Highlights product in the shop" },
+  { type: "new", label: "New", description: "Recently added product" },
+  { type: "bestseller", label: "Bestseller", description: "Top selling product" },
+  { type: "discount", label: "Discount", description: "Product is on sale" },
+  { type: "limited", label: "Limited", description: "Limited availability" },
+  { type: "bundle", label: "Bundle", description: "Product bundle/kit" },
+  { type: "out_of_stock", label: "Out of Stock", description: "Currently unavailable" },
+]
+
+interface TagState {
+  tag: ProductTagType
+  priority: number
+  discount_percent: number | null
+}
 
 interface ProductFormProps {
   product: {
@@ -19,10 +38,15 @@ interface ProductFormProps {
     stripe_price_id: string | null
     specs: unknown
     is_featured: boolean | null
+    // Discount fields (Phase 14.3)
+    discount_percent: number | null
+    discount_expires_at: string | null
+    original_price_cents: number | null
   }
+  initialTags?: TagState[]
 }
 
-export function ProductForm({ product }: ProductFormProps) {
+export function ProductForm({ product, initialTags = [] }: ProductFormProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [isDeleting, setIsDeleting] = useState(false)
@@ -35,6 +59,11 @@ export function ProductForm({ product }: ProductFormProps) {
   const [priceCents, setPriceCents] = useState(product.price_cents)
   const [stripePriceId, setStripePriceId] = useState(product.stripe_price_id || "")
   const [isFeatured, setIsFeatured] = useState(product.is_featured || false)
+
+  // Discount state (Phase 14.3)
+  const [discountPercent, setDiscountPercent] = useState<number | null>(product.discount_percent)
+  const [discountExpiresAt, setDiscountExpiresAt] = useState(product.discount_expires_at || "")
+  const [originalPriceCents, setOriginalPriceCents] = useState<number | null>(product.original_price_cents)
   const [specs, setSpecs] = useState<{ key: string; value: string }[]>(() => {
     if (product.specs && typeof product.specs === "object" && !Array.isArray(product.specs)) {
       return Object.entries(product.specs as Record<string, unknown>).map(([key, value]) => ({
@@ -44,6 +73,40 @@ export function ProductForm({ product }: ProductFormProps) {
     }
     return []
   })
+
+  // Tags state
+  const [selectedTags, setSelectedTags] = useState<TagState[]>(initialTags)
+
+  const toggleTag = (tagType: ProductTagType) => {
+    setSelectedTags((prev) => {
+      const exists = prev.find((t) => t.tag === tagType)
+      if (exists) {
+        return prev.filter((t) => t.tag !== tagType)
+      }
+      return [...prev, { tag: tagType, priority: 0, discount_percent: null }]
+    })
+  }
+
+  const updateTagPriority = (tagType: ProductTagType, priority: number) => {
+    setSelectedTags((prev) =>
+      prev.map((t) => (t.tag === tagType ? { ...t, priority } : t))
+    )
+  }
+
+  const updateDiscountPercent = (percent: number | null) => {
+    setSelectedTags((prev) =>
+      prev.map((t) => (t.tag === "discount" ? { ...t, discount_percent: percent } : t))
+    )
+  }
+
+  const isTagSelected = (tagType: ProductTagType) =>
+    selectedTags.some((t) => t.tag === tagType)
+
+  const getTagPriority = (tagType: ProductTagType) =>
+    selectedTags.find((t) => t.tag === tagType)?.priority ?? 0
+
+  const getDiscountPercent = () =>
+    selectedTags.find((t) => t.tag === "discount")?.discount_percent ?? null
 
   const handleAddSpec = () => {
     setSpecs([...specs, { key: "", value: "" }])
@@ -72,6 +135,7 @@ export function ProductForm({ product }: ProductFormProps) {
     })
 
     startTransition(async () => {
+      // Update product
       const result = await updateProduct(product.id, {
         name,
         slug,
@@ -80,14 +144,26 @@ export function ProductForm({ product }: ProductFormProps) {
         stripe_price_id: stripePriceId || null,
         specs: Object.keys(specsObject).length > 0 ? specsObject : null,
         is_featured: isFeatured,
+        // Discount fields (Phase 14.3)
+        discount_percent: discountPercent,
+        discount_expires_at: discountExpiresAt || null,
+        original_price_cents: originalPriceCents,
       })
 
       if (result.error) {
         setError(result.error)
-      } else {
-        router.push("/admin/products")
-        router.refresh()
+        return
       }
+
+      // Update tags
+      const tagsResult = await updateProductTags(product.id, selectedTags)
+      if (tagsResult.error) {
+        setError(tagsResult.error)
+        return
+      }
+
+      router.push("/admin/products")
+      router.refresh()
     })
   }
 
@@ -211,6 +287,154 @@ export function ProductForm({ product }: ProductFormProps) {
               Featured product (shown on homepage)
             </label>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Discount */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Discount Settings</CardTitle>
+          <CardDescription>Configure time-limited discounts for this product</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="space-y-2">
+              <label htmlFor="discountPercent" className="text-sm font-medium text-slate-900">
+                Discount %
+              </label>
+              <Input
+                id="discountPercent"
+                type="number"
+                min="1"
+                max="99"
+                value={discountPercent ?? ""}
+                onChange={(e) => setDiscountPercent(e.target.value ? parseInt(e.target.value) : null)}
+                placeholder="e.g., 20"
+              />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="originalPrice" className="text-sm font-medium text-slate-900">
+                Original Price (cents)
+              </label>
+              <Input
+                id="originalPrice"
+                type="number"
+                min="0"
+                value={originalPriceCents ?? ""}
+                onChange={(e) => setOriginalPriceCents(e.target.value ? parseInt(e.target.value) : null)}
+                placeholder="e.g., 9999"
+              />
+              {originalPriceCents && (
+                <p className="text-xs text-slate-500">
+                  Display: ${(originalPriceCents / 100).toFixed(2)}
+                </p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="discountExpires" className="text-sm font-medium text-slate-900">
+                Expires At
+              </label>
+              <Input
+                id="discountExpires"
+                type="datetime-local"
+                value={discountExpiresAt ? discountExpiresAt.slice(0, 16) : ""}
+                onChange={(e) => setDiscountExpiresAt(e.target.value ? new Date(e.target.value).toISOString() : "")}
+              />
+            </div>
+          </div>
+          {discountPercent && originalPriceCents && (
+            <div className="p-3 bg-green-50 rounded border border-green-200">
+              <p className="text-sm text-green-700">
+                <span className="font-mono font-semibold">{discountPercent}%</span> discount:
+                <span className="line-through text-slate-500 mx-2">${(originalPriceCents / 100).toFixed(2)}</span>
+                → <span className="font-mono font-semibold">${(priceCents / 100).toFixed(2)}</span>
+                <span className="text-green-600 ml-2">(saves ${((originalPriceCents - priceCents) / 100).toFixed(2)})</span>
+              </p>
+            </div>
+          )}
+          <p className="text-xs text-slate-500">
+            Set all three fields to enable a discount. Current price should be the discounted price.
+            {!discountExpiresAt && discountPercent && " Leave 'Expires At' empty for no expiration."}
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Tags */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Product Tags</CardTitle>
+          <CardDescription>Select tags to display on the product card (max 3 shown)</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            {ALL_TAGS.map((tagInfo) => (
+              <div
+                key={tagInfo.type}
+                className={`flex items-start gap-3 p-3 rounded-md border transition-colors ${
+                  isTagSelected(tagInfo.type)
+                    ? "border-cyan-700 bg-cyan-50"
+                    : "border-slate-200 hover:border-slate-300"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  id={`tag-${tagInfo.type}`}
+                  checked={isTagSelected(tagInfo.type)}
+                  onChange={() => toggleTag(tagInfo.type)}
+                  className="mt-1 h-4 w-4 rounded border-slate-300 text-cyan-700 focus:ring-cyan-700"
+                />
+                <div className="flex-1">
+                  <label
+                    htmlFor={`tag-${tagInfo.type}`}
+                    className="block text-sm font-medium text-slate-900 cursor-pointer"
+                  >
+                    {tagInfo.label}
+                  </label>
+                  <p className="text-xs text-slate-500">{tagInfo.description}</p>
+
+                  {/* Show priority input when selected */}
+                  {isTagSelected(tagInfo.type) && (
+                    <div className="mt-2 flex items-center gap-2">
+                      <label className="text-xs text-slate-600">Priority:</label>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={getTagPriority(tagInfo.type)}
+                        onChange={(e) =>
+                          updateTagPriority(tagInfo.type, parseInt(e.target.value) || 0)
+                        }
+                        className="w-20 h-7 text-xs"
+                      />
+                    </div>
+                  )}
+
+                  {/* Show discount percentage when discount tag is selected */}
+                  {tagInfo.type === "discount" && isTagSelected("discount") && (
+                    <div className="mt-2 flex items-center gap-2">
+                      <label className="text-xs text-slate-600">Discount %:</label>
+                      <Input
+                        type="number"
+                        min="1"
+                        max="99"
+                        value={getDiscountPercent() ?? ""}
+                        onChange={(e) =>
+                          updateDiscountPercent(
+                            e.target.value ? parseInt(e.target.value) : null
+                          )
+                        }
+                        placeholder="e.g., 20"
+                        className="w-20 h-7 text-xs"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-slate-500">
+            Higher priority tags are shown first. Tags are sorted by priority when displayed.
+          </p>
         </CardContent>
       </Card>
 

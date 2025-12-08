@@ -2,22 +2,41 @@ import { createClient } from "@/lib/supabase/server"
 import { ShopFilters } from "./ShopFilters"
 import { Package } from "lucide-react"
 import Link from "next/link"
+import { ProductTag } from "@/components/commerce"
+import { Database } from "@/lib/supabase/database.types"
+
+type ProductTagType = Database["public"]["Enums"]["product_tag_type"]
 
 export default async function ShopPage() {
   const supabase = await createClient()
 
-  // Fetch active and coming_soon products (not drafts)
+  // Fetch active and coming_soon products with their tags
   const { data: products, error } = await supabase
     .from("products")
-    .select("id, slug, name, price_cents, specs, status")
+    .select(`
+      id,
+      slug,
+      name,
+      price_cents,
+      original_price_cents,
+      discount_percent,
+      discount_expires_at,
+      specs,
+      status,
+      created_at,
+      product_tags (
+        tag,
+        priority,
+        discount_percent
+      )
+    `)
     .in("status", ["active", "coming_soon"])
-    .order("created_at", { ascending: true })
 
   if (error) {
     console.error("Error fetching products:", error)
   }
 
-  // Transform products for display
+  // Transform and sort products for display
   const transformedProducts = (products || []).map((product) => {
     const specs = product.specs as {
       category?: string
@@ -25,7 +44,14 @@ export default async function ShopPage() {
       inStock?: boolean
     } | null
 
+    const tags: ProductTag[] = (product.product_tags || []).map((t) => ({
+      tag: t.tag as ProductTagType,
+      priority: t.priority,
+      discount_percent: t.discount_percent,
+    }))
+
     return {
+      id: product.id,
       slug: product.slug,
       name: product.name,
       price: product.price_cents / 100,
@@ -33,10 +59,46 @@ export default async function ShopPage() {
       badge: specs?.badge || undefined,
       category: specs?.category || "kit",
       status: (product.status || "active") as "active" | "coming_soon" | "draft",
+      tags,
+      createdAt: product.created_at,
+      // Discount fields (Phase 14.3)
+      originalPrice: product.original_price_cents ? product.original_price_cents / 100 : null,
+      discountPercent: product.discount_percent,
+      discountExpiresAt: product.discount_expires_at,
     }
   })
 
-  const hasProducts = transformedProducts.length > 0
+  // Sort products according to PLAN.md algorithm:
+  // 1. Out of stock products always last
+  // 2. Featured products first
+  // 3. Then by tag priority sum
+  // 4. Then by created date (newest first)
+  const sortedProducts = transformedProducts.sort((a, b) => {
+    const aHasOutOfStock = a.tags.some(t => t.tag === "out_of_stock")
+    const bHasOutOfStock = b.tags.some(t => t.tag === "out_of_stock")
+    const aHasFeatured = a.tags.some(t => t.tag === "featured")
+    const bHasFeatured = b.tags.some(t => t.tag === "featured")
+
+    // Out of stock last
+    if (aHasOutOfStock && !bHasOutOfStock) return 1
+    if (!aHasOutOfStock && bHasOutOfStock) return -1
+
+    // Featured first
+    if (aHasFeatured && !bHasFeatured) return -1
+    if (!aHasFeatured && bHasFeatured) return 1
+
+    // By priority sum
+    const aPriority = a.tags.reduce((sum, t) => sum + t.priority, 0)
+    const bPriority = b.tags.reduce((sum, t) => sum + t.priority, 0)
+    if (aPriority !== bPriority) return bPriority - aPriority
+
+    // By date (newest first)
+    const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0
+    const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0
+    return bDate - aDate
+  })
+
+  const hasProducts = sortedProducts.length > 0
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -59,7 +121,7 @@ export default async function ShopPage() {
 
       {hasProducts ? (
         /* Client-side filters and product grid */
-        <ShopFilters products={transformedProducts} />
+        <ShopFilters products={sortedProducts} />
       ) : (
         /* Empty state when no products exist */
         <section className="py-16 px-6 lg:px-20">

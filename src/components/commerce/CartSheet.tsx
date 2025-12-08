@@ -73,13 +73,25 @@ export function CartSheet() {
                     {/* Quantity Controls */}
                     <div className="flex items-center gap-2 mt-2">
                       <button
-                        onClick={() =>
-                          updateQuantity(item.slug, item.quantity - 1)
-                        }
-                        className="cursor-pointer w-7 h-7 rounded border border-slate-200 flex items-center justify-center hover:border-slate-300 transition-colors"
-                        aria-label="Decrease quantity"
+                        onClick={() => {
+                          if (item.quantity === 1) {
+                            removeItem(item.slug)
+                          } else {
+                            updateQuantity(item.slug, item.quantity - 1)
+                          }
+                        }}
+                        className={`cursor-pointer w-7 h-7 rounded border flex items-center justify-center transition-colors ${
+                          item.quantity === 1
+                            ? "border-red-200 hover:border-red-300 hover:bg-red-50"
+                            : "border-slate-200 hover:border-slate-300"
+                        }`}
+                        aria-label={item.quantity === 1 ? "Remove item" : "Decrease quantity"}
                       >
-                        <Minus className="w-3 h-3 text-slate-600" />
+                        {item.quantity === 1 ? (
+                          <Trash2 className="w-3 h-3 text-red-500" />
+                        ) : (
+                          <Minus className="w-3 h-3 text-slate-600" />
+                        )}
                       </button>
                       <span className="w-8 text-center font-mono text-sm">
                         {item.quantity}

@@ -75,6 +75,9 @@ export default async function ProductDetailPage({
   const includedItems = specs?.includedItems || []
   const technicalSpecs = specs?.technicalSpecs || []
   const price = product.price_cents / 100
+  const originalPrice = product.original_price_cents ? product.original_price_cents / 100 : null
+  const discountPercent = product.discount_percent
+  const discountExpiresAt = product.discount_expires_at
 
   // Generate structured data for SEO
   const productSchema = getProductSchema({
@@ -135,6 +138,9 @@ export default async function ProductDetailPage({
                 name={product.name}
                 price={price}
                 inStock={inStock}
+                originalPrice={originalPrice}
+                discountPercent={discountPercent}
+                discountExpiresAt={discountExpiresAt}
               />
             </div>
           </div>

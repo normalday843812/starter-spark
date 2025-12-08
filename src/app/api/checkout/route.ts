@@ -1,6 +1,7 @@
 import { stripe } from "@/lib/stripe"
 import { NextResponse } from "next/server"
 import { rateLimit } from "@/lib/rate-limit"
+import { createClient } from "@/lib/supabase/server"
 
 interface CartItem {
   slug: string
@@ -25,15 +26,65 @@ export async function POST(request: Request) {
       )
     }
 
+    // Verify prices from database (Phase 14.3 - discount validation)
+    const supabase = await createClient()
+    const slugs = items.map((item) => item.slug)
+    const { data: products, error: dbError } = await supabase
+      .from("products")
+      .select("slug, name, price_cents, discount_percent, discount_expires_at, original_price_cents")
+      .in("slug", slugs)
+
+    if (dbError) {
+      console.error("Database error:", dbError)
+      return NextResponse.json(
+        { error: "Failed to verify products" },
+        { status: 500 }
+      )
+    }
+
+    // Create a map for quick lookup
+    const productMap = new Map(products?.map((p) => [p.slug, p]) || [])
+
+    // Verify each item exists and has valid price
+    const verifiedItems: { slug: string; name: string; priceCents: number; quantity: number }[] = []
+    for (const item of items) {
+      const product = productMap.get(item.slug)
+      if (!product) {
+        return NextResponse.json(
+          { error: `Product not found: ${item.slug}` },
+          { status: 400 }
+        )
+      }
+
+      // Check if discount is still valid
+      let currentPriceCents = product.price_cents
+      if (product.discount_expires_at) {
+        const expiresAt = new Date(product.discount_expires_at)
+        if (expiresAt <= new Date()) {
+          // Discount expired - use original price if available
+          if (product.original_price_cents) {
+            currentPriceCents = product.original_price_cents
+          }
+        }
+      }
+
+      verifiedItems.push({
+        slug: product.slug,
+        name: product.name,
+        priceCents: currentPriceCents,
+        quantity: item.quantity,
+      })
+    }
+
     // Calculate shipping - free over $75
-    const subtotal = items.reduce(
-      (sum, item) => sum + item.price * item.quantity,
+    const subtotal = verifiedItems.reduce(
+      (sum, item) => sum + (item.priceCents / 100) * item.quantity,
       0
     )
     const shippingCost = subtotal >= 75 ? 0 : 999 // 9.99 in cents
 
-    // Build line items for Stripe
-    const lineItems = items.map((item) => ({
+    // Build line items for Stripe using verified prices
+    const lineItems = verifiedItems.map((item) => ({
       price_data: {
         currency: "usd",
         product_data: {
@@ -42,7 +93,7 @@ export async function POST(request: Request) {
             slug: item.slug,
           },
         },
-        unit_amount: Math.round(item.price * 100), // Convert to cents
+        unit_amount: item.priceCents,
       },
       quantity: item.quantity,
     }))

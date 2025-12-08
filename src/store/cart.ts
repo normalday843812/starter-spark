@@ -7,6 +7,7 @@ export interface CartItem {
   price: number
   quantity: number
   image?: string
+  originalPrice?: number // For showing savings when discounted
 }
 
 interface CartState {
@@ -103,3 +104,11 @@ export const selectCartTotal = (state: CartStore) =>
 
 export const selectCartCount = (state: CartStore) =>
   state.items.reduce((count, item) => count + item.quantity, 0)
+
+export const selectCartSavings = (state: CartStore) =>
+  state.items.reduce((savings, item) => {
+    if (item.originalPrice && item.originalPrice > item.price) {
+      return savings + (item.originalPrice - item.price) * item.quantity
+    }
+    return savings
+  }, 0)

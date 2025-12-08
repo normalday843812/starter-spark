@@ -4,6 +4,15 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { motion } from "motion/react"
 import Link from "next/link"
+import { Database } from "@/lib/supabase/database.types"
+
+type ProductTagType = Database["public"]["Enums"]["product_tag_type"]
+
+export interface ProductTag {
+  tag: ProductTagType
+  priority: number
+  discount_percent?: number | null
+}
 
 interface ProductCardProps {
   slug: string
@@ -11,8 +20,24 @@ interface ProductCardProps {
   price: number
   image?: string
   inStock: boolean
-  badge?: string
+  badge?: string // Legacy support
+  tags?: ProductTag[]
   status?: "active" | "coming_soon" | "draft"
+  // Discount fields (Phase 14.3)
+  originalPrice?: number | null
+  discountPercent?: number | null
+  discountExpiresAt?: string | null
+}
+
+// Tag styling configuration
+const tagStyles: Record<ProductTagType, { bg: string; text: string; label: string }> = {
+  featured: { bg: "bg-cyan-700", text: "text-white", label: "Featured" },
+  discount: { bg: "bg-amber-500", text: "text-white", label: "Sale" },
+  new: { bg: "bg-green-500", text: "text-white", label: "New" },
+  bestseller: { bg: "bg-purple-500", text: "text-white", label: "Bestseller" },
+  limited: { bg: "bg-red-500", text: "text-white", label: "Limited" },
+  bundle: { bg: "bg-blue-500", text: "text-white", label: "Bundle" },
+  out_of_stock: { bg: "bg-slate-400", text: "text-white", label: "Out of Stock" },
 }
 
 export function ProductCard({
@@ -21,18 +46,37 @@ export function ProductCard({
   price,
   inStock,
   badge,
+  tags = [],
   status = "active",
+  originalPrice,
+  discountPercent,
+  discountExpiresAt,
 }: ProductCardProps) {
   const isComingSoon = status === "coming_soon"
 
+  // Check if discount is active (exists and not expired)
+  const hasActiveDiscount =
+    discountPercent &&
+    originalPrice &&
+    (!discountExpiresAt || new Date(discountExpiresAt) > new Date())
+
+  // Sort tags by priority (higher = first) and limit to 3
+  const sortedTags = [...tags]
+    .sort((a, b) => b.priority - a.priority)
+    .slice(0, 3)
+
+  // Check if out of stock via tags
+  const hasOutOfStockTag = tags.some(t => t.tag === "out_of_stock")
+  const effectiveInStock = !hasOutOfStockTag && inStock
+
   const cardContent = (
     <motion.div
-      whileHover={isComingSoon ? undefined : { y: -4 }}
+      whileHover={isComingSoon || hasOutOfStockTag ? undefined : { y: -4 }}
       transition={{ type: "spring", stiffness: 300 }}
     >
       <Card
         className={`h-full bg-white border-slate-200 shadow-sm transition-all ${
-          isComingSoon
+          isComingSoon || hasOutOfStockTag
             ? "opacity-75 cursor-default"
             : "hover:shadow-md hover:border-cyan-200 cursor-pointer"
         }`}
@@ -60,8 +104,29 @@ export function ProductCard({
               <p className="text-slate-500 font-mono text-xs">Product Image</p>
             </div>
 
-            {/* Badge */}
-            {badge && (
+            {/* Product Tags (top left) */}
+            {sortedTags.length > 0 && (
+              <div className="absolute top-3 left-3 flex flex-col gap-1.5">
+                {sortedTags.map((tagData) => {
+                  const style = tagStyles[tagData.tag]
+                  const label = tagData.tag === "discount" && tagData.discount_percent
+                    ? `${tagData.discount_percent}% Off`
+                    : style.label
+                  return (
+                    <Badge
+                      key={tagData.tag}
+                      variant="secondary"
+                      className={`${style.bg} ${style.text} font-mono text-xs`}
+                    >
+                      {label}
+                    </Badge>
+                  )
+                })}
+              </div>
+            )}
+
+            {/* Legacy badge support (if no tags) */}
+            {badge && sortedTags.length === 0 && (
               <div className="absolute top-3 left-3">
                 <Badge
                   variant="secondary"
@@ -72,7 +137,7 @@ export function ProductCard({
               </div>
             )}
 
-            {/* Status Badge */}
+            {/* Status Badge (top right) */}
             <div className="absolute top-3 right-3">
               {isComingSoon ? (
                 <Badge
@@ -85,12 +150,12 @@ export function ProductCard({
                 <Badge
                   variant="outline"
                   className={`font-mono text-xs ${
-                    inStock
+                    effectiveInStock
                       ? "bg-green-50 text-green-700 border-green-200"
                       : "bg-amber-50 text-amber-700 border-amber-200"
                   }`}
                 >
-                  {inStock ? "In Stock" : "Pre-Order"}
+                  {effectiveInStock ? "In Stock" : "Pre-Order"}
                 </Badge>
               )}
             </div>
@@ -103,6 +168,16 @@ export function ProductCard({
             </h3>
             {isComingSoon ? (
               <p className="text-lg font-mono text-slate-400">Price TBD</p>
+            ) : hasActiveDiscount ? (
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="text-2xl font-mono text-amber-600">${price.toFixed(2)}</p>
+                <p className="text-lg font-mono text-slate-400 line-through">
+                  ${originalPrice!.toFixed(2)}
+                </p>
+                <span className="px-1.5 py-0.5 bg-red-500 text-white text-xs font-mono rounded">
+                  {discountPercent}% OFF
+                </span>
+              </div>
             ) : (
               <p className="text-2xl font-mono text-amber-600">${price.toFixed(2)}</p>
             )}
@@ -112,7 +187,7 @@ export function ProductCard({
     </motion.div>
   )
 
-  if (isComingSoon) {
+  if (isComingSoon || hasOutOfStockTag) {
     return cardContent
   }
 

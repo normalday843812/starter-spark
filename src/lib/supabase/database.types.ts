@@ -524,9 +524,12 @@ export type Database = {
         Row: {
           created_at: string | null
           description: string | null
+          discount_expires_at: string | null
+          discount_percent: number | null
           id: string
           is_featured: boolean | null
           name: string
+          original_price_cents: number | null
           price_cents: number
           slug: string
           specs: Json | null
@@ -536,9 +539,12 @@ export type Database = {
         Insert: {
           created_at?: string | null
           description?: string | null
+          discount_expires_at?: string | null
+          discount_percent?: number | null
           id?: string
           is_featured?: boolean | null
           name: string
+          original_price_cents?: number | null
           price_cents: number
           slug: string
           specs?: Json | null
@@ -548,9 +554,12 @@ export type Database = {
         Update: {
           created_at?: string | null
           description?: string | null
+          discount_expires_at?: string | null
+          discount_percent?: number | null
           id?: string
           is_featured?: boolean | null
           name?: string
+          original_price_cents?: number | null
           price_cents?: number
           slug?: string
           specs?: Json | null
@@ -558,6 +567,40 @@ export type Database = {
           stripe_price_id?: string | null
         }
         Relationships: []
+      }
+      product_tags: {
+        Row: {
+          id: string
+          product_id: string
+          tag: Database["public"]["Enums"]["product_tag_type"]
+          priority: number
+          discount_percent: number | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          product_id: string
+          tag: Database["public"]["Enums"]["product_tag_type"]
+          priority?: number
+          discount_percent?: number | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          product_id?: string
+          tag?: Database["public"]["Enums"]["product_tag_type"]
+          priority?: number
+          discount_percent?: number | null
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_tags_product_id_fkey"
+            columns: ["product_id"]
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       profiles: {
         Row: {
@@ -654,6 +697,7 @@ export type Database = {
     }
     Enums: {
       product_status: "active" | "coming_soon" | "draft"
+      product_tag_type: "featured" | "discount" | "new" | "bestseller" | "limited" | "bundle" | "out_of_stock"
       user_role: "admin" | "staff" | "user"
     }
     CompositeTypes: {

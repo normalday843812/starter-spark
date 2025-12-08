@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { useCartStore, selectCartTotal, selectCartCount } from "@/store/cart"
+import { useCartStore, selectCartTotal, selectCartCount, selectCartSavings } from "@/store/cart"
 import {
   Minus,
   Plus,
@@ -25,6 +25,7 @@ export default function CartPage() {
   const clearCart = useCartStore((state) => state.clearCart)
   const total = useCartStore(selectCartTotal)
   const count = useCartStore(selectCartCount)
+  const savings = useCartStore(selectCartSavings)
 
   // Fix hydration mismatch with Zustand persist
   // This is an intentional pattern - runs once on mount to sync client state
@@ -194,13 +195,25 @@ export default function CartPage() {
                             <div className="flex items-center gap-2">
                               <button
                                 type="button"
-                                onClick={() =>
-                                  updateQuantity(item.slug, item.quantity - 1)
-                                }
-                                className="cursor-pointer w-8 h-8 rounded border border-slate-200 flex items-center justify-center hover:border-slate-300 transition-colors"
-                                aria-label="Decrease quantity"
+                                onClick={() => {
+                                  if (item.quantity === 1) {
+                                    removeItem(item.slug)
+                                  } else {
+                                    updateQuantity(item.slug, item.quantity - 1)
+                                  }
+                                }}
+                                className={`cursor-pointer w-8 h-8 rounded border flex items-center justify-center transition-colors ${
+                                  item.quantity === 1
+                                    ? "border-red-200 hover:border-red-300 hover:bg-red-50"
+                                    : "border-slate-200 hover:border-slate-300"
+                                }`}
+                                aria-label={item.quantity === 1 ? "Remove item" : "Decrease quantity"}
                               >
-                                <Minus className="w-3 h-3 text-slate-600" />
+                                {item.quantity === 1 ? (
+                                  <Trash2 className="w-3 h-3 text-red-500" />
+                                ) : (
+                                  <Minus className="w-3 h-3 text-slate-600" />
+                                )}
                               </button>
                               <span className="w-10 text-center font-mono">
                                 {item.quantity}
@@ -243,6 +256,14 @@ export default function CartPage() {
                         ${total.toFixed(2)}
                       </span>
                     </div>
+                    {savings > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-green-600">Your Savings</span>
+                        <span className="font-mono text-green-600">
+                          -${savings.toFixed(2)}
+                        </span>
+                      </div>
+                    )}
                     <div className="flex justify-between">
                       <span className="text-slate-600">Shipping</span>
                       <span className="font-mono text-slate-900">

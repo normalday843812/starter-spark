@@ -1,4 +1,4 @@
-export { ProductCard } from "./ProductCard"
+export { ProductCard, type ProductTag } from "./ProductCard"
 export { ProductGallery } from "./ProductGallery"
 export { BuyBox } from "./BuyBox"
 export { ProductTabs } from "./ProductTabs"

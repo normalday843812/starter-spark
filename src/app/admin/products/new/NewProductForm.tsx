@@ -74,6 +74,10 @@ export function NewProductForm() {
         stripe_price_id: stripePriceId || null,
         specs: Object.keys(specsObject).length > 0 ? specsObject : null,
         is_featured: isFeatured,
+        // Discount fields (Phase 14.3) - null for new products
+        discount_percent: null,
+        discount_expires_at: null,
+        original_price_cents: null,
       })
 
       if (result.error) {
