@@ -19,6 +19,19 @@ async function getProduct(slug: string) {
         tag,
         priority,
         discount_percent
+      ),
+      product_media (
+        id,
+        type,
+        url,
+        storage_path,
+        filename,
+        file_size,
+        mime_type,
+        alt_text,
+        is_primary,
+        sort_order,
+        image_type
       )
     `)
     .eq("slug", slug)
@@ -50,13 +63,30 @@ export default async function EditProductPage({
     discount_percent: t.discount_percent,
   }))
 
+  // Transform media for the form
+  const media = (product.product_media || [])
+    .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+    .map((m) => ({
+      id: m.id,
+      type: m.type as "image" | "video" | "3d_model" | "document",
+      url: m.url,
+      storage_path: m.storage_path ?? undefined,
+      filename: m.filename,
+      file_size: m.file_size ?? undefined,
+      mime_type: m.mime_type ?? undefined,
+      alt_text: m.alt_text ?? undefined,
+      is_primary: m.is_primary ?? false,
+      sort_order: m.sort_order ?? 0,
+      image_type: (m.image_type as "hero" | "knolling" | "detail" | "action" | "packaging" | "other") ?? undefined,
+    }))
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="font-mono text-2xl font-bold text-slate-900">Edit Product</h1>
         <p className="text-slate-600">Update product details</p>
       </div>
-      <ProductForm product={product} initialTags={tags} />
+      <ProductForm product={product} initialTags={tags} initialMedia={media} />
     </div>
   )
 }

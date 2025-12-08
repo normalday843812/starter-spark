@@ -19,12 +19,14 @@ const ProductViewer3D = dynamic(() => import("./ProductViewer3D"), {
 interface ProductGalleryProps {
   images?: string[]
   modelPath?: string
+  modelPreviewUrl?: string // Preview image shown while 3D model loads
   productName: string
 }
 
 export function ProductGallery({
   images = [],
   modelPath,
+  modelPreviewUrl,
   productName,
 }: ProductGalleryProps) {
   const [view, setView] = useState<"3d" | "images">(modelPath ? "3d" : "images")
@@ -73,7 +75,11 @@ export function ProductGallery({
 
         {/* Content */}
         {view === "3d" && modelPath ? (
-          <ProductViewer3D modelPath={modelPath} />
+          <ProductViewer3D
+            modelPath={modelPath}
+            previewUrl={modelPreviewUrl || images[0]}
+            previewAlt={`${productName} preview`}
+          />
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
             <div className="w-24 h-24 mb-4 rounded-full bg-slate-200 flex items-center justify-center">

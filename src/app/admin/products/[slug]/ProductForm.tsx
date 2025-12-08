@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Loader2, Save, Trash2, Plus, X, Package, AlertTriangle } from "lucide-react"
-import { updateProduct, deleteProduct, updateProductTags } from "../actions"
+import { Loader2, Save, Trash2, Plus, X, Package, AlertTriangle, Image } from "lucide-react"
+import { updateProduct, deleteProduct, updateProductTags, saveProductMedia } from "../actions"
+import { MediaUploader, MediaItem } from "@/components/admin/MediaUploader"
 import { Database } from "@/lib/supabase/database.types"
 
 type ProductTagType = Database["public"]["Enums"]["product_tag_type"]
@@ -51,9 +52,10 @@ interface ProductFormProps {
     low_stock_threshold: number | null
   }
   initialTags?: TagState[]
+  initialMedia?: MediaItem[]
 }
 
-export function ProductForm({ product, initialTags = [] }: ProductFormProps) {
+export function ProductForm({ product, initialTags = [], initialMedia = [] }: ProductFormProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [isDeleting, setIsDeleting] = useState(false)
@@ -97,6 +99,9 @@ export function ProductForm({ product, initialTags = [] }: ProductFormProps) {
 
   // Tags state
   const [selectedTags, setSelectedTags] = useState<TagState[]>(initialTags)
+
+  // Media state
+  const [media, setMedia] = useState<MediaItem[]>(initialMedia)
 
   const toggleTag = (tagType: ProductTagType) => {
     setSelectedTags((prev) => {
@@ -179,6 +184,13 @@ export function ProductForm({ product, initialTags = [] }: ProductFormProps) {
       const tagsResult = await updateProductTags(product.id, selectedTags)
       if (tagsResult.error) {
         setError(tagsResult.error)
+        return
+      }
+
+      // Update media
+      const mediaResult = await saveProductMedia(product.id, media)
+      if (mediaResult.error) {
+        setError(mediaResult.error)
         return
       }
 
@@ -606,6 +618,26 @@ export function ProductForm({ product, initialTags = [] }: ProductFormProps) {
               ))}
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Media */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Image className="h-5 w-5 text-slate-600" />
+            <div>
+              <CardTitle>Media</CardTitle>
+              <CardDescription>Product images, videos, 3D models, and documents</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <MediaUploader
+            productId={product.id}
+            media={media}
+            onChange={setMedia}
+          />
         </CardContent>
       </Card>
 

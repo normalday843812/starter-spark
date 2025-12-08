@@ -296,3 +296,117 @@ export async function updateProductTags(
 
   return { error: null }
 }
+
+type ProductImageType = "hero" | "knolling" | "detail" | "action" | "packaging" | "other"
+
+interface MediaData {
+  id?: string
+  type: "image" | "video" | "3d_model" | "document"
+  url: string
+  storage_path?: string
+  filename: string
+  file_size?: number
+  mime_type?: string
+  alt_text?: string
+  is_primary?: boolean
+  sort_order?: number
+  image_type?: ProductImageType
+  isNew?: boolean
+}
+
+export async function saveProductMedia(
+  productId: string,
+  media: MediaData[]
+): Promise<{ error: string | null }> {
+  const supabase = await createClient()
+
+  // Check if user is admin/staff
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return { error: "Unauthorized" }
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single()
+
+  if (!profile || !profile.role || !["admin", "staff"].includes(profile.role)) {
+    return { error: "Unauthorized" }
+  }
+
+  // Get existing media for this product
+  const { data: existingMedia } = await supabase
+    .from("product_media")
+    .select("id")
+    .eq("product_id", productId)
+
+  const existingIds = new Set((existingMedia || []).map((m) => m.id))
+  const currentIds = new Set(media.filter((m) => m.id).map((m) => m.id))
+
+  // Delete media that's no longer in the list
+  const toDelete = [...existingIds].filter((id) => !currentIds.has(id))
+  if (toDelete.length > 0) {
+    const { error: deleteError } = await supabase
+      .from("product_media")
+      .delete()
+      .in("id", toDelete)
+
+    if (deleteError) {
+      console.error("Error deleting media:", deleteError)
+      return { error: deleteError.message }
+    }
+  }
+
+  // Update existing media (alt_text, is_primary, sort_order, image_type)
+  for (const item of media.filter((m) => m.id && existingIds.has(m.id))) {
+    if (!item.id) continue // TypeScript guard
+    const { error: updateError } = await supabase
+      .from("product_media")
+      .update({
+        alt_text: item.alt_text || null,
+        is_primary: item.is_primary || false,
+        sort_order: item.sort_order ?? 0,
+        image_type: item.image_type || null,
+      })
+      .eq("id", item.id)
+
+    if (updateError) {
+      console.error("Error updating media:", updateError)
+      return { error: updateError.message }
+    }
+  }
+
+  // Insert new media
+  const newMedia = media.filter((m) => !m.id || m.isNew)
+  if (newMedia.length > 0) {
+    const { error: insertError } = await supabase.from("product_media").insert(
+      newMedia.map((m) => ({
+        product_id: productId,
+        type: m.type,
+        url: m.url,
+        storage_path: m.storage_path || null,
+        filename: m.filename,
+        file_size: m.file_size || null,
+        mime_type: m.mime_type || null,
+        alt_text: m.alt_text || null,
+        is_primary: m.is_primary || false,
+        sort_order: m.sort_order ?? 0,
+        image_type: m.image_type || null,
+        created_by: user.id,
+      }))
+    )
+
+    if (insertError) {
+      console.error("Error inserting media:", insertError)
+      return { error: insertError.message }
+    }
+  }
+
+  revalidatePath(`/admin/products/${productId}`)
+  revalidatePath("/admin/products")
+  revalidatePath("/shop")
+
+  return { error: null }
+}
