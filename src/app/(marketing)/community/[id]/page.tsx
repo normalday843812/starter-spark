@@ -24,11 +24,13 @@ export async function generateMetadata({
   const { id } = await params
   const supabase = await createClient()
 
-  // Try ID first, then fallback to slug for backwards compatibility
+  // Check if id looks like a UUID, otherwise treat as slug
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+
   const { data: post } = await supabase
     .from("posts")
     .select("title")
-    .or(`id.eq.${id},slug.eq.${id}`)
+    .eq(isUUID ? "id" : "slug", id)
     .single()
 
   if (!post) {
@@ -50,7 +52,9 @@ export default async function QuestionDetailPage({
   const supabase = await createClient()
 
   // Fetch the post with author and comments
-  // Try ID first, then fallback to slug for backwards compatibility
+  // Check if id looks like a UUID, otherwise treat as slug
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+
   const { data: post, error } = await supabase
     .from("posts")
     .select(
@@ -79,7 +83,7 @@ export default async function QuestionDetailPage({
       )
     `
     )
-    .or(`id.eq.${id},slug.eq.${id}`)
+    .eq(isUUID ? "id" : "slug", id)
     .single()
 
   if (error || !post) {

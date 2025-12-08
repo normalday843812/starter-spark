@@ -115,9 +115,10 @@ export async function POST(request: Request) {
       })
     }
 
-    // Use explicit site URL, or Vercel's auto-generated URL, or localhost for dev
+    // Use explicit site URL, or Vercel's branch URL (consistent), or deployment URL, or localhost
     const siteUrl =
       process.env.NEXT_PUBLIC_SITE_URL ||
+      (process.env.VERCEL_BRANCH_URL ? `https://${process.env.VERCEL_BRANCH_URL}` : null) ||
       (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
 
     // Create Stripe Checkout Session
