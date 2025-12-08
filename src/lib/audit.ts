@@ -13,9 +13,12 @@ export type AuditAction =
   | 'product.created'
   | 'product.updated'
   | 'product.deleted'
+  | 'product.tags_updated'
   // License management
   | 'license.created'
+  | 'license.bulk_created'
   | 'license.revoked'
+  | 'license.assigned'
   | 'license.transferred'
   // Event management
   | 'event.created'
@@ -26,9 +29,17 @@ export type AuditAction =
   | 'post.status_changed'
   | 'comment.deleted'
   | 'comment.verified'
+  // Content management
+  | 'content.updated'
+  | 'content.published'
+  | 'content.unpublished'
+  | 'content.created'
+  | 'content.deleted'
   // Site settings
   | 'settings.updated'
+  | 'stats.created'
   | 'stats.updated'
+  | 'stats.deleted'
 
 /**
  * Resource types that can be audited
@@ -40,6 +51,7 @@ export type AuditResourceType =
   | 'event'
   | 'post'
   | 'comment'
+  | 'content'
   | 'settings'
   | 'stats'
 

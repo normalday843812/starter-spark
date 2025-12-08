@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
 import { Database } from "@/lib/supabase/database.types"
+import { logAuditEvent } from "@/lib/audit"
 
 type ProductTagType = Database["public"]["Enums"]["product_tag_type"]
 
@@ -76,6 +77,19 @@ export async function updateProduct(
     return { error: error.message }
   }
 
+  // Log audit event
+  await logAuditEvent({
+    userId: user.id,
+    action: 'product.updated',
+    resourceType: 'product',
+    resourceId: id,
+    details: {
+      name: data.name,
+      slug: data.slug,
+      priceCents: data.price_cents,
+    },
+  })
+
   revalidatePath("/admin/products")
   revalidatePath("/shop")
   revalidatePath("/")
@@ -112,12 +126,31 @@ export async function deleteProduct(id: string): Promise<{ error: string | null 
     return { error: "Cannot delete product with existing licenses" }
   }
 
+  // Get product info before deleting for audit log
+  const { data: product } = await supabase
+    .from("products")
+    .select("name, slug")
+    .eq("id", id)
+    .single()
+
   const { error } = await supabase.from("products").delete().eq("id", id)
 
   if (error) {
     console.error("Error deleting product:", error)
     return { error: error.message }
   }
+
+  // Log audit event
+  await logAuditEvent({
+    userId: user.id,
+    action: 'product.deleted',
+    resourceType: 'product',
+    resourceId: id,
+    details: {
+      name: product?.name,
+      slug: product?.slug,
+    },
+  })
 
   revalidatePath("/admin/products")
   revalidatePath("/shop")
@@ -172,6 +205,19 @@ export async function createProduct(
     console.error("Error creating product:", error)
     return { error: error.message, id: null }
   }
+
+  // Log audit event
+  await logAuditEvent({
+    userId: user.id,
+    action: 'product.created',
+    resourceType: 'product',
+    resourceId: product.id,
+    details: {
+      name: data.name,
+      slug: data.slug,
+      priceCents: data.price_cents,
+    },
+  })
 
   revalidatePath("/admin/products")
   revalidatePath("/shop")
@@ -231,6 +277,18 @@ export async function updateProductTags(
       return { error: insertError.message }
     }
   }
+
+  // Log audit event
+  await logAuditEvent({
+    userId: user.id,
+    action: 'product.tags_updated',
+    resourceType: 'product',
+    resourceId: productId,
+    details: {
+      tags: tags.map(t => t.tag),
+      tagCount: tags.length,
+    },
+  })
 
   revalidatePath("/admin/products")
   revalidatePath("/shop")

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
+import { logAuditEvent } from "@/lib/audit"
 
 interface UpdateContentData {
   title: string
@@ -58,6 +59,19 @@ export async function updatePageContent(
     return { error: error.message }
   }
 
+  // Log audit event
+  await logAuditEvent({
+    userId: user.id,
+    action: data.publish ? 'content.published' : 'content.updated',
+    resourceType: 'content',
+    resourceId: pageKey,
+    details: {
+      title: data.title,
+      published: data.publish || false,
+      version: newVersion,
+    },
+  })
+
   // Revalidate the admin page and the public page
   revalidatePath("/admin/content")
   revalidatePath(`/admin/content/${pageKey}`)
@@ -100,6 +114,14 @@ export async function unpublishPageContent(
     console.error("Error unpublishing page:", error)
     return { error: error.message }
   }
+
+  // Log audit event
+  await logAuditEvent({
+    userId: user.id,
+    action: 'content.unpublished',
+    resourceType: 'content',
+    resourceId: pageKey,
+  })
 
   revalidatePath("/admin/content")
   revalidatePath(`/admin/content/${pageKey}`)
@@ -199,6 +221,20 @@ export async function createCustomPage(
     return { error: error.message }
   }
 
+  // Log audit event
+  await logAuditEvent({
+    userId: user.id,
+    action: 'content.created',
+    resourceType: 'content',
+    resourceId: pageKey,
+    details: {
+      title: data.title,
+      slug,
+      published: data.publish || false,
+      isCustomPage: true,
+    },
+  })
+
   revalidatePath("/admin/content")
   revalidatePath(`/p/${slug}`)
 
@@ -246,6 +282,18 @@ export async function deleteCustomPage(
     console.error("Error deleting custom page:", error)
     return { error: error.message }
   }
+
+  // Log audit event
+  await logAuditEvent({
+    userId: user.id,
+    action: 'content.deleted',
+    resourceType: 'content',
+    resourceId: pageKey,
+    details: {
+      slug: page.slug,
+      isCustomPage: true,
+    },
+  })
 
   revalidatePath("/admin/content")
   if (page.slug) {

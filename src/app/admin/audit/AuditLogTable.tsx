@@ -73,29 +73,47 @@ const resourceIcons: Record<string, typeof User> = {
   event: Calendar,
   post: MessageSquare,
   comment: MessageSquare,
+  content: FileText,
   settings: Settings,
   stats: Settings,
   page_content: FileText,
 }
 
 const actionDescriptions: Record<string, { label: string; verb: string; color: string }> = {
+  // User management
   "user.role_changed": { label: "Role Changed", verb: "changed the role of", color: "bg-purple-100 text-purple-700 border-purple-200" },
   "user.deleted": { label: "User Deleted", verb: "deleted user", color: "bg-red-100 text-red-700 border-red-200" },
+  // Product management
   "product.created": { label: "Product Created", verb: "created product", color: "bg-green-100 text-green-700 border-green-200" },
   "product.updated": { label: "Product Updated", verb: "updated product", color: "bg-blue-100 text-blue-700 border-blue-200" },
   "product.deleted": { label: "Product Deleted", verb: "deleted product", color: "bg-red-100 text-red-700 border-red-200" },
+  "product.tags_updated": { label: "Tags Updated", verb: "updated tags on product", color: "bg-blue-100 text-blue-700 border-blue-200" },
+  // License management
   "license.created": { label: "License Created", verb: "created license", color: "bg-green-100 text-green-700 border-green-200" },
+  "license.bulk_created": { label: "Bulk Licenses", verb: "bulk generated licenses for", color: "bg-green-100 text-green-700 border-green-200" },
   "license.revoked": { label: "License Revoked", verb: "revoked license", color: "bg-red-100 text-red-700 border-red-200" },
+  "license.assigned": { label: "License Assigned", verb: "manually assigned license", color: "bg-cyan-100 text-cyan-700 border-cyan-200" },
   "license.transferred": { label: "License Transferred", verb: "transferred license", color: "bg-amber-100 text-amber-700 border-amber-200" },
+  // Event management
   "event.created": { label: "Event Created", verb: "created event", color: "bg-green-100 text-green-700 border-green-200" },
   "event.updated": { label: "Event Updated", verb: "updated event", color: "bg-blue-100 text-blue-700 border-blue-200" },
   "event.deleted": { label: "Event Deleted", verb: "deleted event", color: "bg-red-100 text-red-700 border-red-200" },
+  // Community moderation
   "post.deleted": { label: "Post Deleted", verb: "deleted post", color: "bg-red-100 text-red-700 border-red-200" },
   "post.status_changed": { label: "Post Status Changed", verb: "changed status of post", color: "bg-amber-100 text-amber-700 border-amber-200" },
   "comment.deleted": { label: "Comment Deleted", verb: "deleted comment", color: "bg-red-100 text-red-700 border-red-200" },
   "comment.verified": { label: "Comment Verified", verb: "verified comment as answer on", color: "bg-green-100 text-green-700 border-green-200" },
+  // Content management
+  "content.created": { label: "Page Created", verb: "created page", color: "bg-green-100 text-green-700 border-green-200" },
+  "content.updated": { label: "Page Updated", verb: "updated page", color: "bg-blue-100 text-blue-700 border-blue-200" },
+  "content.published": { label: "Page Published", verb: "published page", color: "bg-green-100 text-green-700 border-green-200" },
+  "content.unpublished": { label: "Page Unpublished", verb: "unpublished page", color: "bg-amber-100 text-amber-700 border-amber-200" },
+  "content.deleted": { label: "Page Deleted", verb: "deleted page", color: "bg-red-100 text-red-700 border-red-200" },
+  // Site settings
   "settings.updated": { label: "Settings Updated", verb: "updated settings", color: "bg-blue-100 text-blue-700 border-blue-200" },
-  "stats.updated": { label: "Stats Updated", verb: "updated stats", color: "bg-blue-100 text-blue-700 border-blue-200" },
+  "stats.created": { label: "Stat Created", verb: "created site stat", color: "bg-green-100 text-green-700 border-green-200" },
+  "stats.updated": { label: "Stat Updated", verb: "updated site stat", color: "bg-blue-100 text-blue-700 border-blue-200" },
+  "stats.deleted": { label: "Stat Deleted", verb: "deleted site stat", color: "bg-red-100 text-red-700 border-red-200" },
 }
 
 const resourceLinks: Record<string, (id: string) => string> = {
@@ -105,6 +123,7 @@ const resourceLinks: Record<string, (id: string) => string> = {
   event: (id) => `/admin/events/${id}`,
   post: (id) => `/admin/community?search=${id}`,
   comment: (id) => `/admin/community`,
+  content: (id) => `/admin/content/${id}`,
 }
 
 function formatDate(dateStr: string | null): string {
