@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Info, AlertTriangle, CheckCircle, XCircle, Sparkles, X, Loader2 } from "lucide-react"
+import { Info, AlertTriangle, CheckCircle, XCircle, Tag, Zap, Gift, Megaphone, X, Loader2 } from "lucide-react"
 import { createBanner, updateBanner } from "./actions"
 
 interface BannerFormProps {
@@ -38,11 +38,16 @@ interface BannerFormProps {
 }
 
 const COLOR_SCHEMES = [
-  { value: "info", label: "Info", icon: Info, preview: "bg-cyan-50 text-cyan-700 border-cyan-200" },
-  { value: "warning", label: "Warning", icon: AlertTriangle, preview: "bg-amber-50 text-amber-700 border-amber-200" },
-  { value: "success", label: "Success", icon: CheckCircle, preview: "bg-green-50 text-green-700 border-green-200" },
-  { value: "error", label: "Error", icon: XCircle, preview: "bg-red-50 text-red-700 border-red-200" },
-  { value: "promo", label: "Promo", icon: Sparkles, preview: "bg-gradient-to-r from-cyan-600 to-purple-600 text-white" },
+  // Status banners
+  { value: "info", label: "Info", icon: Info, preview: "bg-cyan-50 text-cyan-800 border-cyan-200", category: "Status" },
+  { value: "warning", label: "Warning", icon: AlertTriangle, preview: "bg-amber-50 text-amber-800 border-amber-200", category: "Status" },
+  { value: "success", label: "Success", icon: CheckCircle, preview: "bg-green-50 text-green-800 border-green-200", category: "Status" },
+  { value: "error", label: "Error", icon: XCircle, preview: "bg-red-50 text-red-800 border-red-200", category: "Status" },
+  // Promotional banners
+  { value: "sale", label: "Sale", icon: Tag, preview: "bg-rose-600 text-white border-rose-700", category: "Promo" },
+  { value: "promo", label: "Promo", icon: Zap, preview: "bg-violet-600 text-white border-violet-700", category: "Promo" },
+  { value: "announcement", label: "Announcement", icon: Megaphone, preview: "bg-slate-800 text-white border-slate-900", category: "Promo" },
+  { value: "gift", label: "Gift/Giveaway", icon: Gift, preview: "bg-emerald-600 text-white border-emerald-700", category: "Promo" },
 ]
 
 const PAGE_OPTIONS = [

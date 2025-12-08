@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
-import { X, Info, AlertTriangle, CheckCircle, XCircle, Sparkles } from "lucide-react"
+import { X, Info, AlertTriangle, CheckCircle, XCircle, Tag, Zap, Gift, Megaphone } from "lucide-react"
 import { motion, AnimatePresence } from "motion/react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -14,42 +14,87 @@ interface Banner {
   link_url: string | null
   link_text: string | null
   icon: string | null
-  color_scheme: "info" | "warning" | "success" | "error" | "promo"
+  color_scheme: string
   pages: string[]
   is_dismissible: boolean
   dismiss_duration_hours: number | null
 }
 
-const COLOR_SCHEMES = {
+// Status banners - for system messages, alerts, confirmations
+// Promotional banners - for sales, announcements, special offers
+const COLOR_SCHEMES: Record<string, {
+  bg: string
+  text: string
+  border: string
+  icon: typeof Info
+  linkStyle: string
+  dismissStyle: string
+}> = {
+  // Status banners
   info: {
     bg: "bg-cyan-50",
-    text: "text-cyan-700",
+    text: "text-cyan-800",
     border: "border-cyan-200",
     icon: Info,
+    linkStyle: "text-cyan-700 hover:text-cyan-900",
+    dismissStyle: "hover:bg-cyan-100",
   },
   warning: {
     bg: "bg-amber-50",
-    text: "text-amber-700",
+    text: "text-amber-800",
     border: "border-amber-200",
     icon: AlertTriangle,
+    linkStyle: "text-amber-700 hover:text-amber-900",
+    dismissStyle: "hover:bg-amber-100",
   },
   success: {
     bg: "bg-green-50",
-    text: "text-green-700",
+    text: "text-green-800",
     border: "border-green-200",
     icon: CheckCircle,
+    linkStyle: "text-green-700 hover:text-green-900",
+    dismissStyle: "hover:bg-green-100",
   },
   error: {
     bg: "bg-red-50",
-    text: "text-red-700",
+    text: "text-red-800",
     border: "border-red-200",
     icon: XCircle,
+    linkStyle: "text-red-700 hover:text-red-900",
+    dismissStyle: "hover:bg-red-100",
+  },
+  // Promotional banners
+  sale: {
+    bg: "bg-rose-600",
+    text: "text-white",
+    border: "border-rose-700",
+    icon: Tag,
+    linkStyle: "text-rose-100 hover:text-white",
+    dismissStyle: "hover:bg-rose-700",
   },
   promo: {
-    bg: "bg-gradient-to-r from-cyan-600 to-purple-600",
+    bg: "bg-violet-600",
     text: "text-white",
-    border: "border-transparent",
-    icon: Sparkles,
+    border: "border-violet-700",
+    icon: Zap,
+    linkStyle: "text-violet-100 hover:text-white",
+    dismissStyle: "hover:bg-violet-700",
+  },
+  announcement: {
+    bg: "bg-slate-800",
+    text: "text-white",
+    border: "border-slate-900",
+    icon: Megaphone,
+    linkStyle: "text-slate-200 hover:text-white",
+    dismissStyle: "hover:bg-slate-700",
+  },
+  gift: {
+    bg: "bg-emerald-600",
+    text: "text-white",
+    border: "border-emerald-700",
+    icon: Gift,
+    linkStyle: "text-emerald-100 hover:text-white",
+    dismissStyle: "hover:bg-emerald-700",
   },
 }
 
@@ -120,7 +165,7 @@ export function SiteBanner() {
         link_url: b.link_url,
         link_text: b.link_text,
         icon: b.icon,
-        color_scheme: (b.color_scheme as Banner["color_scheme"]) || "info",
+        color_scheme: b.color_scheme || "info",
         pages: b.pages || [],
         is_dismissible: b.is_dismissible ?? true,
         dismiss_duration_hours: b.dismiss_duration_hours,
@@ -157,57 +202,52 @@ export function SiteBanner() {
   }
 
   return (
-    <div className="relative z-50">
-      <AnimatePresence>
-        {visibleBanners.map((banner) => {
-          const scheme = COLOR_SCHEMES[banner.color_scheme] || COLOR_SCHEMES.info
-          const IconComponent = scheme.icon
+    <AnimatePresence>
+      {visibleBanners.map((banner) => {
+        const scheme = COLOR_SCHEMES[banner.color_scheme] || COLOR_SCHEMES.info
+        const IconComponent = scheme.icon
 
-          return (
-            <motion.div
-              key={banner.id}
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className={`${scheme.bg} ${scheme.text} border-b ${scheme.border} overflow-hidden`}
-            >
-              <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-center gap-3">
-                <IconComponent className="w-4 h-4 flex-shrink-0" />
+        return (
+          <motion.div
+            key={banner.id}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="overflow-hidden"
+          >
+            <div className={`${scheme.bg} ${scheme.text} border-b ${scheme.border}`}>
+              <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-center gap-3 relative">
+                <div className="flex items-center gap-2.5">
+                  <IconComponent className="w-4 h-4 flex-shrink-0" />
+                  <p className="text-sm font-medium">
+                    {banner.message}
+                  </p>
+                </div>
 
-                <p className="text-sm font-medium text-center">
-                  {banner.message}
-                  {banner.link_url && banner.link_text && (
-                    <>
-                      {" "}
-                      <Link
-                        href={banner.link_url}
-                        className={`underline hover:no-underline font-semibold ${
-                          banner.color_scheme === "promo" ? "text-white" : ""
-                        }`}
-                      >
-                        {banner.link_text}
-                      </Link>
-                    </>
-                  )}
-                </p>
+                {banner.link_url && banner.link_text && (
+                  <Link
+                    href={banner.link_url}
+                    className={`text-sm font-semibold underline underline-offset-2 hover:no-underline transition-colors ${scheme.linkStyle}`}
+                  >
+                    {banner.link_text}
+                  </Link>
+                )}
 
                 {banner.is_dismissible && (
                   <button
                     onClick={() => handleDismiss(banner.id)}
-                    className={`p-1 rounded hover:bg-black/10 transition-colors flex-shrink-0 ${
-                      banner.color_scheme === "promo" ? "hover:bg-white/20" : ""
-                    }`}
+                    className={`absolute right-4 p-1.5 rounded-full transition-colors ${scheme.dismissStyle}`}
                     aria-label="Dismiss banner"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-3.5 h-3.5" />
                   </button>
                 )}
               </div>
-            </motion.div>
-          )
-        })}
-      </AnimatePresence>
-    </div>
+            </div>
+          </motion.div>
+        )
+      })}
+    </AnimatePresence>
   )
 }
