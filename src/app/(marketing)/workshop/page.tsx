@@ -14,15 +14,12 @@ export default async function WorkshopPage() {
   } = await supabase.auth.getUser()
 
   // If logged in, fetch user's licenses with product info
-  let licenses: Array<{
-    id: string
-    code: string
-    created_at: string | null
-    product: {
-      slug: string
-      name: string
-      description: string | null
-    } | null
+  let groupedKits: Array<{
+    slug: string
+    name: string
+    description: string | null
+    quantity: number
+    claimedAt: string | null
   }> = []
 
   if (user) {
@@ -40,9 +37,43 @@ export default async function WorkshopPage() {
       .order("created_at", { ascending: false })
 
     if (data) {
-      licenses = data as typeof licenses
+      // Group licenses by product slug
+      const kitMap = new Map<string, {
+        slug: string
+        name: string
+        description: string | null
+        quantity: number
+        claimedAt: string | null
+      }>()
+
+      for (const license of data) {
+        const product = license.product as { slug: string; name: string; description: string | null } | null
+        if (!product) continue
+
+        const existing = kitMap.get(product.slug)
+        if (existing) {
+          existing.quantity++
+          // Keep the earliest claimed date
+          if (license.created_at && (!existing.claimedAt || license.created_at < existing.claimedAt)) {
+            existing.claimedAt = license.created_at
+          }
+        } else {
+          kitMap.set(product.slug, {
+            slug: product.slug,
+            name: product.name,
+            description: product.description,
+            quantity: 1,
+            claimedAt: license.created_at,
+          })
+        }
+      }
+
+      groupedKits = Array.from(kitMap.values())
     }
   }
+
+  // Total license count for display
+  const totalLicenses = groupedKits.reduce((sum, kit) => sum + kit.quantity, 0)
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -109,12 +140,15 @@ export default async function WorkshopPage() {
                       My Kits
                     </h2>
                     <span className="text-sm text-slate-500 font-mono">
-                      {licenses.length}{" "}
-                      {licenses.length === 1 ? "kit" : "kits"}
+                      {totalLicenses}{" "}
+                      {totalLicenses === 1 ? "license" : "licenses"}
+                      {groupedKits.length !== totalLicenses && (
+                        <span className="text-slate-400"> ({groupedKits.length} {groupedKits.length === 1 ? "kit" : "kits"})</span>
+                      )}
                     </span>
                   </div>
 
-                  {licenses.length === 0 ? (
+                  {groupedKits.length === 0 ? (
                     <div className="text-center py-12">
                       <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
                         <Package className="w-8 h-8 text-slate-500" />
@@ -133,13 +167,14 @@ export default async function WorkshopPage() {
                     </div>
                   ) : (
                     <div className="grid gap-4">
-                      {licenses.map((license) => (
+                      {groupedKits.map((kit) => (
                         <KitCard
-                          key={license.id}
-                          name={license.product?.name || "Unknown Kit"}
-                          slug={license.product?.slug || ""}
-                          description={license.product?.description || ""}
-                          claimedAt={license.created_at}
+                          key={kit.slug}
+                          name={kit.name}
+                          slug={kit.slug}
+                          description={kit.description || ""}
+                          claimedAt={kit.claimedAt}
+                          quantity={kit.quantity}
                         />
                       ))}
                     </div>
