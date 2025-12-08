@@ -38,13 +38,15 @@ export function NewCustomPageForm() {
   // Auto-generate slug from title (unless manually edited)
   useEffect(() => {
     if (!slugManuallyEdited && title) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSlug(generateSlug(title))
     }
   }, [title, slugManuallyEdited])
 
-  // Check slug availability when it changes
+  // Check slug availability when it changes (debounced)
   useEffect(() => {
     if (!slug) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSlugError(null)
       return
     }

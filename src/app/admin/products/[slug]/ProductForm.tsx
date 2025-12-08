@@ -114,20 +114,11 @@ export function ProductForm({ product, initialTags = [] }: ProductFormProps) {
     )
   }
 
-  const updateDiscountPercent = (percent: number | null) => {
-    setSelectedTags((prev) =>
-      prev.map((t) => (t.tag === "discount" ? { ...t, discount_percent: percent } : t))
-    )
-  }
-
   const isTagSelected = (tagType: ProductTagType) =>
     selectedTags.some((t) => t.tag === tagType)
 
   const getTagPriority = (tagType: ProductTagType) =>
     selectedTags.find((t) => t.tag === tagType)?.priority ?? 0
-
-  const getDiscountPercent = () =>
-    selectedTags.find((t) => t.tag === "discount")?.discount_percent ?? null
 
   // Check if a tag is automated (managed by database triggers)
   const isAutomatedTag = (tagType: ProductTagType) =>
