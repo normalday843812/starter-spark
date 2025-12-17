@@ -263,7 +263,7 @@ export function MediaUploader({ productId, media, onChange, bucket = "products" 
       <div
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
+        onDrop={(e) => void handleDrop(e)}
         className={cn(
           "relative rounded-lg border-2 border-dashed p-8 text-center transition-colors",
           isDragging
@@ -281,7 +281,7 @@ export function MediaUploader({ productId, media, onChange, bucket = "products" 
             ".gltf",
             ...ACCEPTED_TYPES.document,
           ].join(",")}
-          onChange={handleFileSelect}
+          onChange={(e) => void handleFileSelect(e)}
           className="absolute inset-0 cursor-pointer opacity-0"
         />
         <Upload className="mx-auto h-10 w-10 text-slate-400" />
@@ -341,7 +341,7 @@ export function MediaUploader({ productId, media, onChange, bucket = "products" 
                           type="button"
                           size="sm"
                           variant="destructive"
-                          onClick={() => handleRemove(originalIndex)}
+                          onClick={() => void handleRemove(originalIndex)}
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>
@@ -402,7 +402,7 @@ export function MediaUploader({ productId, media, onChange, bucket = "products" 
                         type="button"
                         size="sm"
                         variant="ghost"
-                        onClick={() => handleRemove(originalIndex)}
+                        onClick={() => void handleRemove(originalIndex)}
                       >
                         <X className="h-4 w-4" />
                       </Button>
@@ -443,7 +443,7 @@ export function MediaUploader({ productId, media, onChange, bucket = "products" 
                         type="button"
                         size="sm"
                         variant="ghost"
-                        onClick={() => handleRemove(originalIndex)}
+                        onClick={() => void handleRemove(originalIndex)}
                       >
                         <X className="h-4 w-4" />
                       </Button>
@@ -484,7 +484,7 @@ export function MediaUploader({ productId, media, onChange, bucket = "products" 
                         type="button"
                         size="sm"
                         variant="ghost"
-                        onClick={() => handleRemove(originalIndex)}
+                        onClick={() => void handleRemove(originalIndex)}
                       >
                         <X className="h-4 w-4" />
                       </Button>

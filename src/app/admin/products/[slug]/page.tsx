@@ -1,9 +1,6 @@
 import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { ProductForm } from "./ProductForm"
-import { Database } from "@/lib/supabase/database.types"
-
-type ProductTagType = Database["public"]["Enums"]["product_tag_type"]
 
 export const metadata = {
   title: "Edit Product | Admin",

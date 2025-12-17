@@ -3,10 +3,7 @@ import { ShopFilters } from "./ShopFilters"
 import { Package } from "lucide-react"
 import Link from "next/link"
 import { ProductTag } from "@/components/commerce"
-import { Database } from "@/lib/supabase/database.types"
 import { getContents } from "@/lib/content"
-
-type ProductTagType = Database["public"]["Enums"]["product_tag_type"]
 
 export default async function ShopPage() {
   const supabase = await createClient()

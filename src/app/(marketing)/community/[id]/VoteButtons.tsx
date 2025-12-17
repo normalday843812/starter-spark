@@ -77,7 +77,7 @@ export function VoteButtons({
   return (
     <div className="flex flex-col items-center gap-1">
       <button
-        onClick={() => handleVote(1)}
+        onClick={() => void handleVote(1)}
         disabled={isLoading}
         className={cn(
           "p-1 transition-colors",
@@ -95,7 +95,7 @@ export function VoteButtons({
       </button>
       <span className={cn("font-mono text-slate-700", textSize)}>{votes}</span>
       <button
-        onClick={() => handleVote(-1)}
+        onClick={() => void handleVote(-1)}
         disabled={isLoading}
         className={cn(
           "p-1 transition-colors",

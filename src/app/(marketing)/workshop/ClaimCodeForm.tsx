@@ -6,6 +6,11 @@ import { Input } from "@/components/ui/input"
 import { Loader2, CheckCircle, AlertCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
 
+interface ClaimResponse {
+  message?: string
+  error?: string
+}
+
 // Format code as XXXX-XXXX-XXXX-XXXX
 function formatCode(value: string): string {
   // Strip everything except alphanumeric, convert to uppercase
@@ -46,17 +51,17 @@ export function ClaimCodeForm() {
         body: JSON.stringify({ code: code.trim().toUpperCase() }),
       })
 
-      const data = await response.json()
+      const data = (await response.json()) as ClaimResponse
 
       if (response.ok) {
         setStatus("success")
-        setMessage(data.message || "Kit claimed successfully!")
+        setMessage(data.message ?? "Kit claimed successfully!")
         setCode("")
         // Refresh the page to show the new kit
         router.refresh()
       } else {
         setStatus("error")
-        setMessage(data.error || "Failed to claim kit. Please try again.")
+        setMessage(data.error ?? "Failed to claim kit. Please try again.")
       }
     } catch {
       setStatus("error")
@@ -67,7 +72,7 @@ export function ClaimCodeForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
+    <form onSubmit={(e) => void handleSubmit(e)} className="space-y-3">
       <Input
         type="text"
         placeholder="XXXX-XXXX-XXXX-XXXX"

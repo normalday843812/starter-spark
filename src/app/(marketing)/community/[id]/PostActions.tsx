@@ -91,7 +91,7 @@ export function PostActions({ postId, isAuthenticated }: PostActionsProps) {
   return (
     <div className="flex items-center gap-4">
       <button
-        onClick={handleShare}
+        onClick={() => void handleShare()}
         className="flex items-center gap-2 text-sm text-slate-500 hover:text-cyan-700 transition-colors"
       >
         {copied ? (
@@ -107,14 +107,14 @@ export function PostActions({ postId, isAuthenticated }: PostActionsProps) {
         )}
       </button>
       <button
-        onClick={handleSave}
+        onClick={() => void handleSave()}
         className="flex items-center gap-2 text-sm text-slate-500 hover:text-cyan-700 transition-colors"
       >
         <Bookmark className="w-4 h-4" />
         Save
       </button>
       <button
-        onClick={handleReport}
+        onClick={() => void handleReport()}
         disabled={isReporting || reported}
         className={cn(
           "flex items-center gap-2 text-sm transition-colors",

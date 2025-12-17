@@ -192,7 +192,7 @@ export function TeamManager({ initialMembers }: TeamManagerProps) {
             draggable
             onDragStart={() => handleDragStart(index)}
             onDragOver={(e) => handleDragOver(e, index)}
-            onDragEnd={handleDragEnd}
+            onDragEnd={() => void handleDragEnd()}
             className={`bg-white border-slate-200 cursor-move transition-all ${
               draggedIndex === index ? "opacity-50 scale-[0.98]" : ""
             } ${!member.is_active ? "opacity-60" : ""}`}
@@ -406,7 +406,7 @@ export function TeamManager({ initialMembers }: TeamManagerProps) {
               Cancel
             </Button>
             <Button
-              onClick={handleSubmit}
+              onClick={() => void handleSubmit()}
               disabled={isSubmitting || !formData.name || !formData.role}
               className="bg-cyan-700 hover:bg-cyan-600"
             >
@@ -430,7 +430,7 @@ export function TeamManager({ initialMembers }: TeamManagerProps) {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleDelete}
+              onClick={() => void handleDelete()}
               className="bg-red-600 hover:bg-red-700"
             >
               {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}

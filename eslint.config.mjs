@@ -25,6 +25,9 @@ export default defineConfig([
     // ignore test files anywhere
     "**/*.test.{ts,tsx,js,jsx}",
     "**/*.spec.{ts,tsx,js,jsx}",
+
+    // auto-generated files
+    "src/lib/supabase/database.types.ts",
   ]),
 
 

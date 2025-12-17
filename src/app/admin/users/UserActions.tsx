@@ -61,14 +61,14 @@ export function UserActions({ userId, currentRole }: UserActionsProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem
-          onClick={() => handleRoleChange("admin")}
+          onClick={() => void handleRoleChange("admin")}
           disabled={currentRole === "admin"}
         >
           <Shield className="mr-2 h-4 w-4 text-purple-600" />
           Make Admin
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => handleRoleChange("staff")}
+          onClick={() => void handleRoleChange("staff")}
           disabled={currentRole === "staff"}
         >
           <UserCog className="mr-2 h-4 w-4 text-cyan-600" />
@@ -76,7 +76,7 @@ export function UserActions({ userId, currentRole }: UserActionsProps) {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          onClick={() => handleRoleChange("user")}
+          onClick={() => void handleRoleChange("user")}
           disabled={currentRole === "user"}
         >
           <User className="mr-2 h-4 w-4" />

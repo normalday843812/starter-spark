@@ -174,7 +174,7 @@ function CopyButton({ text }: { text: string }) {
     <Button
       variant="ghost"
       size="sm"
-      onClick={handleCopy}
+      onClick={() => void handleCopy()}
       className="h-6 w-6 p-0 hover:bg-slate-200"
     >
       {copied ? (

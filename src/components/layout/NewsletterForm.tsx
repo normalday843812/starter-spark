@@ -5,6 +5,11 @@ import { Button } from "@/components/ui/button"
 import { TechInput } from "@/components/ui/TechInput"
 import { CheckCircle, Loader2 } from "lucide-react"
 
+interface NewsletterResponse {
+  message?: string
+  error?: string
+}
+
 export function NewsletterForm() {
   const [email, setEmail] = useState("")
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle")
@@ -29,16 +34,16 @@ export function NewsletterForm() {
         body: JSON.stringify({ email }),
       })
 
-      const data = await response.json()
+      const data = (await response.json()) as NewsletterResponse
 
       if (!response.ok) {
         setStatus("error")
-        setMessage(data.error || "Something went wrong")
+        setMessage(data.error ?? "Something went wrong")
         return
       }
 
       setStatus("success")
-      setMessage(data.message)
+      setMessage(data.message ?? "Subscribed successfully!")
       setEmail("")
 
       // Reset after 5 seconds
@@ -62,7 +67,7 @@ export function NewsletterForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
+    <form onSubmit={(e) => void handleSubmit(e)} className="space-y-3">
       <div>
         <label htmlFor="newsletter-email" className="sr-only">
           Email address for newsletter

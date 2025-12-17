@@ -45,7 +45,7 @@ export default function SiteContentEditor({ content }: SiteContentEditorProps) {
     })
   }
 
-  const handleSave = async (item: ContentItem) => {
+  const handleSave = (item: ContentItem) => {
     const newContent = editedContent[item.content_key] ?? item.content
     if (newContent === item.content && !editedContent[item.content_key]) return
 
@@ -172,7 +172,7 @@ export default function SiteContentEditor({ content }: SiteContentEditorProps) {
                     <Button
                       variant={isModified ? "default" : "outline"}
                       size="sm"
-                      onClick={() => handleSave(item)}
+                      onClick={() => void handleSave(item)}
                       disabled={!isModified || isPending}
                       className={isModified ? "bg-cyan-700 hover:bg-cyan-600 h-8" : "h-8"}
                     >

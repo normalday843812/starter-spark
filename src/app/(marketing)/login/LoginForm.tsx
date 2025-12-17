@@ -107,7 +107,7 @@ export function LoginForm({ redirectTo, claimToken }: LoginFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
       <div>
         <label htmlFor="email" className="block text-sm font-mono text-slate-700 mb-2">
           Email address

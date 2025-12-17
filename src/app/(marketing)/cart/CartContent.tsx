@@ -16,6 +16,11 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 
+interface CheckoutResponse {
+  url?: string
+  error?: string
+}
+
 export interface CartContentProps {
   title?: string
   continueShopping?: string
@@ -80,7 +85,7 @@ export function CartContent({
         body: JSON.stringify({ items }),
       })
 
-      const data = await response.json()
+      const data = (await response.json()) as CheckoutResponse
 
       if (data.url) {
         window.location.href = data.url
@@ -328,7 +333,7 @@ export function CartContent({
 
                   {/* Checkout Button */}
                   <Button
-                    onClick={handleCheckout}
+                    onClick={() => void handleCheckout()}
                     disabled={isLoading}
                     className="w-full h-14 bg-cyan-700 hover:bg-cyan-600 text-white font-mono text-lg disabled:opacity-50"
                   >

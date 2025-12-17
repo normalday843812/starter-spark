@@ -14,7 +14,7 @@ export default function LearnLoading() {
           <div className="h-4 w-32 bg-slate-100 rounded animate-pulse mb-8" />
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {[...Array(3)].map((_, i) => (
+            {Array.from({ length: 3 }, (_, i) => (
               <div
                 key={i}
                 className="bg-white rounded border border-slate-200 overflow-hidden"

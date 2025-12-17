@@ -118,7 +118,7 @@ export function BannerForm({ banner }: BannerFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={(e) => void handleSubmit(e)} className="space-y-6">
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Left Column - Basic Info */}
         <Card>

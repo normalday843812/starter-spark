@@ -140,7 +140,7 @@ export function NewQuestionForm({ products }: NewQuestionFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={(e) => void handleSubmit(e)} className="space-y-6">
       {/* Title */}
       <div>
         <label

@@ -91,7 +91,9 @@ export function ProductForm({ product, initialTags = [], initialMedia = [] }: Pr
     if (product.specs && typeof product.specs === "object" && !Array.isArray(product.specs)) {
       return Object.entries(product.specs as Record<string, unknown>).map(([key, value]) => ({
         key,
-        value: String(value ?? ""),
+        value: typeof value === "string" || typeof value === "number" || typeof value === "boolean"
+          ? String(value)
+          : "",
       }))
     }
     return []
@@ -143,7 +145,7 @@ export function ProductForm({ product, initialTags = [], initialMedia = [] }: Pr
     setSpecs(newSpecs)
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
 
@@ -217,7 +219,7 @@ export function ProductForm({ product, initialTags = [], initialMedia = [] }: Pr
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={(e) => void handleSubmit(e)} className="space-y-6">
       {error && (
         <div className="rounded border border-red-200 bg-red-50 p-4 text-sm text-red-600">
           {error}
@@ -647,7 +649,7 @@ export function ProductForm({ product, initialTags = [], initialMedia = [] }: Pr
         <Button
           type="button"
           variant="destructive"
-          onClick={handleDelete}
+          onClick={() => void handleDelete()}
           disabled={isDeleting}
         >
           {isDeleting ? (

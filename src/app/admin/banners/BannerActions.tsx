@@ -86,11 +86,11 @@ export function BannerActions({ bannerId, isActive }: BannerActionsProps) {
             <Pencil className="mr-2 h-4 w-4" />
             Edit
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleDuplicate} disabled={isDuplicating}>
+          <DropdownMenuItem onClick={() => void handleDuplicate()} disabled={isDuplicating}>
             <Copy className="mr-2 h-4 w-4" />
             {isDuplicating ? "Duplicating..." : "Duplicate"}
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleToggle} disabled={isToggling}>
+          <DropdownMenuItem onClick={() => void handleToggle()} disabled={isToggling}>
             {isActive ? (
               <>
                 <PowerOff className="mr-2 h-4 w-4" />
@@ -125,7 +125,7 @@ export function BannerActions({ bannerId, isActive }: BannerActionsProps) {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleDelete}
+              onClick={() => void handleDelete()}
               disabled={isDeleting}
               className="bg-red-600 hover:bg-red-700"
             >

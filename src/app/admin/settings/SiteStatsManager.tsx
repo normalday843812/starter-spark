@@ -75,7 +75,7 @@ export function SiteStatsManager({ stats: initialStats }: SiteStatsManagerProps)
     setError(null)
   }
 
-  const handleUpdate = async (id: string) => {
+  const handleUpdate = (id: string) => {
     startTransition(async () => {
       const result = await updateSiteStat({
         id,
@@ -110,7 +110,7 @@ export function SiteStatsManager({ stats: initialStats }: SiteStatsManagerProps)
     })
   }
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
     if (!confirm("Are you sure you want to delete this stat?")) return
 
     startTransition(async () => {
@@ -125,7 +125,7 @@ export function SiteStatsManager({ stats: initialStats }: SiteStatsManagerProps)
     })
   }
 
-  const handleCreate = async () => {
+  const handleCreate = () => {
     if (!newKey.trim() || !newLabel.trim()) {
       setError("Key and label are required")
       return
@@ -291,7 +291,7 @@ export function SiteStatsManager({ stats: initialStats }: SiteStatsManagerProps)
                   </Button>
                   <Button
                     size="sm"
-                    onClick={handleCreate}
+                    onClick={() => handleCreate()}
                     disabled={isPending}
                     className="bg-cyan-700 hover:bg-cyan-600"
                   >

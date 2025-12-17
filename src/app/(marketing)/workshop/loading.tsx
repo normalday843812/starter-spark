@@ -20,7 +20,7 @@ export default function WorkshopLoading() {
                   <div className="h-4 w-12 bg-slate-100 rounded animate-pulse" />
                 </div>
                 <div className="space-y-4">
-                  {[...Array(2)].map((_, i) => (
+                  {Array.from({ length: 2 }, (_, i) => (
                     <div
                       key={i}
                       className="p-4 border border-slate-200 rounded"

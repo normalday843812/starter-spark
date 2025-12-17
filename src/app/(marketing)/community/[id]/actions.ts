@@ -4,13 +4,9 @@ import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 
 // Helper to call RPC functions that may not be in generated types yet
-async function callRpc(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supabase: any,
-  name: string,
-  args: Record<string, unknown>
-) {
-  return supabase.rpc(name, args)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+function callRpc(supabase: any, name: string, args: Record<string, unknown>) {
+  return supabase.rpc(name, args) as Promise<{ error: unknown }>
 }
 
 export async function voteOnPost(postId: string, voteType: 1 | -1) {

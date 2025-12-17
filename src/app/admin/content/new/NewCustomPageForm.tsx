@@ -51,15 +51,17 @@ export function NewCustomPageForm() {
       return
     }
 
-    const timeout = setTimeout(async () => {
-      setSlugChecking(true)
-      const result = await checkSlugAvailability(slug)
-      setSlugChecking(false)
-      if (!result.available) {
-        setSlugError(result.error || "Slug not available")
-      } else {
-        setSlugError(null)
-      }
+    const timeout = setTimeout(() => {
+      void (async () => {
+        setSlugChecking(true)
+        const result = await checkSlugAvailability(slug)
+        setSlugChecking(false)
+        if (!result.available) {
+          setSlugError(result.error || "Slug not available")
+        } else {
+          setSlugError(null)
+        }
+      })()
     }, 300)
 
     return () => clearTimeout(timeout)

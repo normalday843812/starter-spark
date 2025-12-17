@@ -12,7 +12,7 @@ export default function ShopLoading() {
       <section className="pb-24 px-6 lg:px-20">
         <div className="max-w-7xl mx-auto">
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {[...Array(3)].map((_, i) => (
+            {Array.from({ length: 3 }, (_, i) => (
               <div
                 key={i}
                 className="bg-white rounded border border-slate-200 overflow-hidden"

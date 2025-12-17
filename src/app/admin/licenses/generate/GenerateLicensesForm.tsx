@@ -24,7 +24,7 @@ export function GenerateLicensesForm({ products }: GenerateLicensesFormProps) {
   const [quantity, setQuantity] = useState(1)
   const [source, setSource] = useState<"online_purchase" | "physical_card">("physical_card")
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setGeneratedCodes([])
@@ -80,11 +80,11 @@ export function GenerateLicensesForm({ products }: GenerateLicensesFormProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex gap-2">
-            <Button variant="outline" onClick={handleCopyAll}>
+            <Button variant="outline" onClick={() => void handleCopyAll()}>
               <Copy className="mr-2 h-4 w-4" />
               Copy All
             </Button>
-            <Button variant="outline" onClick={handleDownloadCSV}>
+            <Button variant="outline" onClick={() => void handleDownloadCSV()}>
               <Download className="mr-2 h-4 w-4" />
               Download CSV
             </Button>
@@ -100,7 +100,7 @@ export function GenerateLicensesForm({ products }: GenerateLicensesFormProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => handleCopyCode(code, index)}
+                  onClick={() => void handleCopyCode(code, index)}
                 >
                   {copiedIndex === index ? (
                     <Check className="h-4 w-4 text-green-600" />
@@ -135,7 +135,7 @@ export function GenerateLicensesForm({ products }: GenerateLicensesFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={(e) => void handleSubmit(e)} className="space-y-6">
       {error && (
         <div className="rounded border border-red-200 bg-red-50 p-4 text-sm text-red-600">
           {error}

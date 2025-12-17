@@ -22,7 +22,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const { token } = await request.json()
+    const { token } = (await request.json()) as { token: unknown }
 
     if (!token || typeof token !== "string") {
       return NextResponse.json(

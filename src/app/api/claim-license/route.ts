@@ -22,7 +22,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const { code } = await request.json()
+    const { code } = (await request.json()) as { code: unknown }
 
     if (!code || typeof code !== "string") {
       return NextResponse.json(

@@ -53,7 +53,7 @@ export function EditEventForm({ event }: EditEventFormProps) {
   const [capacity, setCapacity] = useState<number | "">(event.capacity || "")
   const [isPublic, setIsPublic] = useState(event.is_public)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
 
@@ -81,7 +81,7 @@ export function EditEventForm({ event }: EditEventFormProps) {
     })
   }
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!confirm("Are you sure you want to delete this event? This cannot be undone.")) {
       return
     }
@@ -98,7 +98,7 @@ export function EditEventForm({ event }: EditEventFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={(e) => void handleSubmit(e)} className="space-y-6">
       {error && (
         <div className="rounded border border-red-200 bg-red-50 p-4 text-sm text-red-600">
           {error}
@@ -293,7 +293,7 @@ export function EditEventForm({ event }: EditEventFormProps) {
           type="button"
           variant="outline"
           className="text-red-600 hover:bg-red-50 hover:text-red-700"
-          onClick={handleDelete}
+          onClick={() => void handleDelete()}
           disabled={isPending}
         >
           Delete Event

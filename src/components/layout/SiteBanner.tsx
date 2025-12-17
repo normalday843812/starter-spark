@@ -184,7 +184,7 @@ export function SiteBanner() {
       setIsLoading(false)
     }
 
-    fetchBanners()
+    void fetchBanners()
   }, [])
 
   const handleDismiss = (bannerId: string) => {
