@@ -1,12 +1,13 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ArrowRight, ImageIcon } from "lucide-react"
+import { ArrowRight, ImageIcon, ZoomIn } from "lucide-react"
 import { motion } from "motion/react"
 import Link from "next/link"
 import { useState, useCallback } from "react"
 import { ProductImage, ThumbnailImage } from "@/components/ui/optimized-image"
 import { cn } from "@/lib/utils"
+import { ProductImageLightbox } from "@/components/commerce/ProductImageLightbox"
 
 // Default specs shown when product.specs is not available
 const defaultSpecs = [
@@ -31,6 +32,7 @@ interface ProductSpotlightProps {
 
 export function ProductSpotlightSection({ product }: ProductSpotlightProps) {
   const [selectedImage, setSelectedImage] = useState(0)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
   const images = product.images || []
   const hasImages = images.length > 0
 
@@ -70,26 +72,43 @@ export function ProductSpotlightSection({ product }: ProductSpotlightProps) {
           >
             <div className="relative aspect-[4/3] bg-white rounded border border-slate-200 shadow-sm overflow-hidden">
               {hasImages ? (
-                <ProductImage
-                  src={images[selectedImage]}
-                  alt={`${product.name} - Image ${selectedImage + 1}`}
-                  sizes="(max-width: 1024px) 100vw, 800px"
-                  quality={90}
-                  priority
-                  wrapperClassName="absolute inset-0"
-                  fallback={
-                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
-                      <div className="text-center p-8">
-                        <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
-                          <ImageIcon className="w-12 h-12 text-slate-400" />
+                <button
+                  type="button"
+                  onClick={() => setLightboxOpen(true)}
+                  className="absolute inset-0 cursor-zoom-in group"
+                  aria-label="Open image viewer"
+                >
+                  <ProductImage
+                    src={images[selectedImage]}
+                    alt={`${product.name} - Image ${selectedImage + 1}`}
+                    sizes="(max-width: 1024px) 100vw, 800px"
+                    quality={95}
+                    priority
+                    wrapperClassName="absolute inset-0"
+                    fallback={
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+                        <div className="text-center p-8">
+                          <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
+                            <ImageIcon className="w-12 h-12 text-slate-400" />
+                          </div>
+                          <p className="text-slate-400 font-mono text-sm">
+                            Failed to load image
+                          </p>
                         </div>
-                        <p className="text-slate-400 font-mono text-sm">
-                          Failed to load image
-                        </p>
                       </div>
-                    </div>
-                  }
-                />
+                    }
+                  />
+                  <div
+                    className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors"
+                    aria-hidden="true"
+                  />
+                  <div
+                    className="absolute bottom-3 right-3 rounded-full bg-black/60 text-white p-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                    aria-hidden="true"
+                  >
+                    <ZoomIn className="size-4" />
+                  </div>
+                </button>
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
                   <div className="text-center p-8">
@@ -106,17 +125,19 @@ export function ProductSpotlightSection({ product }: ProductSpotlightProps) {
 
             {/* Thumbnail strip - only show if we have multiple images */}
             {images.length > 1 && (
-              <div className="flex gap-2 mt-4">
+              <div className="flex gap-2 mt-4 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {images.map((imageUrl, idx) => (
                   <button
-                    key={idx}
+                    key={imageUrl + idx}
+                    type="button"
                     onClick={() => handleSelectImage(idx)}
                     className={cn(
-                      "flex-1 max-w-[80px] aspect-square rounded border overflow-hidden transition-all cursor-pointer relative",
+                      "shrink-0 size-20 rounded border overflow-hidden transition-all cursor-pointer relative",
                       selectedImage === idx
                         ? "border-cyan-700 ring-2 ring-cyan-700/20"
                         : "border-slate-200 hover:border-slate-300"
                     )}
+                    aria-label={`View image ${idx + 1}`}
                   >
                     <ThumbnailImage
                       src={imageUrl}
@@ -128,6 +149,15 @@ export function ProductSpotlightSection({ product }: ProductSpotlightProps) {
                 ))}
               </div>
             )}
+
+            <ProductImageLightbox
+              open={lightboxOpen}
+              onOpenChange={setLightboxOpen}
+              images={images}
+              productName={product.name}
+              activeIndex={selectedImage}
+              onActiveIndexChange={handleSelectImage}
+            />
           </motion.div>
 
           {/* Right - Content (40%) */}

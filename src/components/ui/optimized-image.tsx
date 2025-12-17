@@ -106,7 +106,7 @@ export function OptimizedImage({
 }
 
 /**
- * ProductImage - For product displays with object-cover
+ * ProductImage - For product displays with object-contain
  */
 export function ProductImage({
   src,
@@ -114,7 +114,7 @@ export function ProductImage({
   wrapperClassName,
   priority = false,
   sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw",
-  quality = 85,
+  quality = 95,
   ...props
 }: Omit<OptimizedImageProps, "fill" | "showSkeleton" | "className"> & {
   priority?: boolean
@@ -124,7 +124,7 @@ export function ProductImage({
       src={src}
       alt={alt}
       fill
-      className="object-cover"
+      className="object-contain"
       wrapperClassName={wrapperClassName}
       sizes={sizes}
       quality={quality}
@@ -155,7 +155,7 @@ export function ThumbnailImage({
       className="object-cover"
       wrapperClassName={wrapperClassName}
       sizes={`${size}px`}
-      quality={75}
+      quality={80}
       showSkeleton
       fadeInDuration={200}
       {...props}

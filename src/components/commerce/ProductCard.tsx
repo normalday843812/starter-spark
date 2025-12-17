@@ -92,16 +92,16 @@ export function ProductCard({
           <div className="relative aspect-square bg-gradient-to-br from-slate-50 to-slate-100 overflow-hidden">
             {/* Product Image with loading skeleton, or Placeholder */}
             {image ? (
-              <ProductImage
-                src={image}
-                alt={name}
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
-                quality={85}
-                wrapperClassName="absolute inset-0"
-                fallback={
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
-                    <div className="w-16 h-16 mb-3 rounded-full bg-slate-200 flex items-center justify-center">
-                      <ImageIcon className="w-8 h-8 text-slate-400" />
+                <ProductImage
+                  src={image}
+                  alt={name}
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
+                  quality={90}
+                  wrapperClassName="absolute inset-0"
+                  fallback={
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+                      <div className="w-16 h-16 mb-3 rounded-full bg-slate-200 flex items-center justify-center">
+                        <ImageIcon className="w-8 h-8 text-slate-400" />
                     </div>
                     <p className="text-slate-400 font-mono text-xs">Failed to load</p>
                   </div>
