@@ -37,16 +37,17 @@ export async function POST(request: Request) {
   // Handle the event
   switch (event.type) {
     case "checkout.session.completed": {
-      const session = event.data.object as Stripe.Checkout.Session
+      const session = event.data.object
 
       // Idempotency check: See if we already processed this session
-      const { data: existingLicense } = await supabaseAdmin
+      // Note: A session can have multiple licenses (for quantity > 1), so we check for ANY
+      const { data: existingLicenses } = await supabaseAdmin
         .from("licenses")
         .select("id")
         .eq("stripe_session_id", session.id)
-        .single()
+        .limit(1)
 
-      if (existingLicense) {
+      if (existingLicenses && existingLicenses.length > 0) {
         console.log(`Session ${session.id} already processed, skipping`)
         return NextResponse.json({ received: true, status: "already_processed" })
       }
@@ -82,11 +83,11 @@ export async function POST(request: Request) {
         })
       }
 
-      // Look up products by slug
+      // Look up products by slug (include inventory fields for stock decrement)
       const slugs = productItems.map(item => item.slug)
       const { data: products, error: productsError } = await supabaseAdmin
         .from("products")
-        .select("id, slug, name")
+        .select("id, slug, name, track_inventory, stock_quantity")
         .in("slug", slugs)
 
       if (productsError || !products) {
@@ -157,6 +158,11 @@ export async function POST(request: Request) {
         .select()
 
       if (insertError) {
+        // Check if it's a duplicate key error (already processed)
+        if (insertError.code === "23505" || insertError.message?.includes("duplicate key")) {
+          console.log(`Session ${session.id} already processed (duplicate key), returning success`)
+          return NextResponse.json({ received: true, status: "already_processed" })
+        }
         console.error("Error creating licenses:", insertError)
         return NextResponse.json(
           { error: "Failed to create licenses" },
@@ -165,6 +171,29 @@ export async function POST(request: Request) {
       }
 
       console.log(`Created ${createdLicenses.length} licenses for session ${session.id}`)
+
+      // Decrement stock for products with inventory tracking (Phase 14.4)
+      for (const item of productItems) {
+        const product = productMap.get(item.slug)
+        if (!product) continue
+
+        // Only decrement if inventory tracking is enabled
+        if (product.track_inventory && product.stock_quantity !== null) {
+          const newQuantity = Math.max(0, product.stock_quantity - item.quantity)
+
+          const { error: stockError } = await supabaseAdmin
+            .from("products")
+            .update({ stock_quantity: newQuantity })
+            .eq("id", product.id)
+
+          if (stockError) {
+            console.error("Failed to decrement stock for product:", item.slug, stockError)
+            // Don't fail the webhook, just log the error
+          } else {
+            console.log(`Decremented stock for ${item.slug}: ${product.stock_quantity} -> ${newQuantity}`)
+          }
+        }
+      }
 
       // Send purchase confirmation email
       const isGuestPurchase = !ownerId

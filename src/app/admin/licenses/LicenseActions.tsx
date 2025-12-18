@@ -39,7 +39,7 @@ export function LicenseActions({ licenseId, isClaimed }: LicenseActionsProps) {
     setIsLoading(false)
   }
 
-  const handleCopyCode = async () => {
+  const handleCopyCode = () => {
     // This would need the code passed in - for now just show a placeholder
     alert("Code copied to clipboard!")
   }
@@ -56,7 +56,7 @@ export function LicenseActions({ licenseId, isClaimed }: LicenseActionsProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={handleCopyCode}>
+        <DropdownMenuItem onClick={() => void handleCopyCode()}>
           <Copy className="mr-2 h-4 w-4" />
           Copy Code
         </DropdownMenuItem>
@@ -64,7 +64,7 @@ export function LicenseActions({ licenseId, isClaimed }: LicenseActionsProps) {
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={handleRevoke}
+              onClick={() => void handleRevoke()}
               className="text-red-600 focus:text-red-600"
             >
               <UserX className="mr-2 h-4 w-4" />

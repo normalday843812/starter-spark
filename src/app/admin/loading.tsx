@@ -8,7 +8,7 @@ export default function AdminLoading() {
         <Skeleton className="mt-2 h-4 w-64" />
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-        {[...Array(5)].map((_, i) => (
+        {Array.from({ length: 5 }, (_, i) => (
           <Skeleton key={i} className="h-32 rounded-lg" />
         ))}
       </div>

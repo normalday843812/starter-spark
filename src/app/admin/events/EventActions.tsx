@@ -66,7 +66,7 @@ export function EventActions({ eventId, slug }: EventActionsProps) {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          onClick={handleDelete}
+          onClick={() => void handleDelete()}
           className="text-red-600 focus:text-red-600"
         >
           <Trash2 className="mr-2 h-4 w-4" />

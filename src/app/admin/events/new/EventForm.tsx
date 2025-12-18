@@ -42,7 +42,7 @@ export function EventForm() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
 
@@ -71,7 +71,7 @@ export function EventForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={(e) => void handleSubmit(e)} className="space-y-6">
       {error && (
         <div className="rounded border border-red-200 bg-red-50 p-4 text-sm text-red-600">
           {error}

@@ -2,6 +2,10 @@
 
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
+import { Database } from "@/lib/supabase/database.types"
+import { logAuditEvent } from "@/lib/audit"
+
+type ProductTagType = Database["public"]["Enums"]["product_tag_type"]
 
 interface ProductData {
   name: string
@@ -10,7 +14,20 @@ interface ProductData {
   price_cents: number
   stripe_price_id: string | null
   specs: Record<string, string> | null
-  is_featured: boolean
+  // Discount fields (Phase 14.3)
+  discount_percent: number | null
+  discount_expires_at: string | null
+  original_price_cents: number | null
+  // Inventory fields (Phase 14.4)
+  track_inventory: boolean
+  stock_quantity: number | null
+  low_stock_threshold: number | null
+}
+
+interface TagData {
+  tag: ProductTagType
+  priority: number | null
+  discount_percent: number | null
 }
 
 export async function updateProduct(
@@ -35,15 +52,6 @@ export async function updateProduct(
     return { error: "Unauthorized" }
   }
 
-  // If setting as featured, unset any existing featured product first
-  if (data.is_featured) {
-    await supabase
-      .from("products")
-      .update({ is_featured: false })
-      .neq("id", id)
-      .eq("is_featured", true)
-  }
-
   const { error } = await supabase
     .from("products")
     .update({
@@ -53,7 +61,14 @@ export async function updateProduct(
       price_cents: data.price_cents,
       stripe_price_id: data.stripe_price_id,
       specs: data.specs,
-      is_featured: data.is_featured,
+      // Discount fields (Phase 14.3)
+      discount_percent: data.discount_percent,
+      discount_expires_at: data.discount_expires_at,
+      original_price_cents: data.original_price_cents,
+      // Inventory fields (Phase 14.4)
+      track_inventory: data.track_inventory,
+      stock_quantity: data.stock_quantity,
+      low_stock_threshold: data.low_stock_threshold,
     })
     .eq("id", id)
 
@@ -61,6 +76,19 @@ export async function updateProduct(
     console.error("Error updating product:", error)
     return { error: error.message }
   }
+
+  // Log audit event
+  await logAuditEvent({
+    userId: user.id,
+    action: 'product.updated',
+    resourceType: 'product',
+    resourceId: id,
+    details: {
+      name: data.name,
+      slug: data.slug,
+      priceCents: data.price_cents,
+    },
+  })
 
   revalidatePath("/admin/products")
   revalidatePath("/shop")
@@ -98,12 +126,31 @@ export async function deleteProduct(id: string): Promise<{ error: string | null 
     return { error: "Cannot delete product with existing licenses" }
   }
 
+  // Get product info before deleting for audit log
+  const { data: product } = await supabase
+    .from("products")
+    .select("name, slug")
+    .eq("id", id)
+    .single()
+
   const { error } = await supabase.from("products").delete().eq("id", id)
 
   if (error) {
     console.error("Error deleting product:", error)
     return { error: error.message }
   }
+
+  // Log audit event
+  await logAuditEvent({
+    userId: user.id,
+    action: 'product.deleted',
+    resourceType: 'product',
+    resourceId: id,
+    details: {
+      name: product?.name,
+      slug: product?.slug,
+    },
+  })
 
   revalidatePath("/admin/products")
   revalidatePath("/shop")
@@ -133,14 +180,6 @@ export async function createProduct(
     return { error: "Unauthorized", id: null }
   }
 
-  // If setting as featured, unset any existing featured product first
-  if (data.is_featured) {
-    await supabase
-      .from("products")
-      .update({ is_featured: false })
-      .eq("is_featured", true)
-  }
-
   const { data: product, error } = await supabase
     .from("products")
     .insert({
@@ -150,7 +189,14 @@ export async function createProduct(
       price_cents: data.price_cents,
       stripe_price_id: data.stripe_price_id,
       specs: data.specs,
-      is_featured: data.is_featured,
+      // Discount fields (Phase 14.3)
+      discount_percent: data.discount_percent,
+      discount_expires_at: data.discount_expires_at,
+      original_price_cents: data.original_price_cents,
+      // Inventory fields (Phase 14.4)
+      track_inventory: data.track_inventory,
+      stock_quantity: data.stock_quantity,
+      low_stock_threshold: data.low_stock_threshold,
     })
     .select("id")
     .single()
@@ -160,9 +206,207 @@ export async function createProduct(
     return { error: error.message, id: null }
   }
 
+  // Log audit event
+  await logAuditEvent({
+    userId: user.id,
+    action: 'product.created',
+    resourceType: 'product',
+    resourceId: product.id,
+    details: {
+      name: data.name,
+      slug: data.slug,
+      priceCents: data.price_cents,
+    },
+  })
+
   revalidatePath("/admin/products")
   revalidatePath("/shop")
   revalidatePath("/")
 
   return { error: null, id: product.id }
+}
+
+export async function updateProductTags(
+  productId: string,
+  tags: TagData[]
+): Promise<{ error: string | null }> {
+  const supabase = await createClient()
+
+  // Check if user is admin/staff
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return { error: "Unauthorized" }
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single()
+
+  if (!profile || (profile.role !== "admin" && profile.role !== "staff")) {
+    return { error: "Unauthorized" }
+  }
+
+  // Delete existing tags for this product
+  const { error: deleteError } = await supabase
+    .from("product_tags")
+    .delete()
+    .eq("product_id", productId)
+
+  if (deleteError) {
+    console.error("Error deleting existing tags:", deleteError)
+    return { error: deleteError.message }
+  }
+
+  // Insert new tags if any
+  if (tags.length > 0) {
+    const { error: insertError } = await supabase
+      .from("product_tags")
+      .insert(
+        tags.map((t) => ({
+          product_id: productId,
+          tag: t.tag,
+          priority: t.priority,
+          discount_percent: t.discount_percent,
+        }))
+      )
+
+    if (insertError) {
+      console.error("Error inserting tags:", insertError)
+      return { error: insertError.message }
+    }
+  }
+
+  // Log audit event
+  await logAuditEvent({
+    userId: user.id,
+    action: 'product.tags_updated',
+    resourceType: 'product',
+    resourceId: productId,
+    details: {
+      tags: tags.map(t => t.tag),
+      tagCount: tags.length,
+    },
+  })
+
+  revalidatePath("/admin/products")
+  revalidatePath("/shop")
+  revalidatePath("/")
+
+  return { error: null }
+}
+
+type ProductImageType = "hero" | "knolling" | "detail" | "action" | "packaging" | "other"
+
+interface MediaData {
+  id?: string
+  type: "image" | "video" | "3d_model" | "document"
+  url: string
+  storage_path?: string
+  filename: string
+  file_size?: number
+  mime_type?: string
+  alt_text?: string
+  is_primary?: boolean
+  sort_order?: number
+  image_type?: ProductImageType
+  isNew?: boolean
+}
+
+export async function saveProductMedia(
+  productId: string,
+  media: MediaData[]
+): Promise<{ error: string | null }> {
+  const supabase = await createClient()
+
+  // Check if user is admin/staff
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return { error: "Unauthorized" }
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single()
+
+  if (!profile || !profile.role || !["admin", "staff"].includes(profile.role)) {
+    return { error: "Unauthorized" }
+  }
+
+  // Get existing media for this product
+  const { data: existingMedia } = await supabase
+    .from("product_media")
+    .select("id")
+    .eq("product_id", productId)
+
+  const existingIds = new Set((existingMedia || []).map((m) => m.id))
+  const currentIds = new Set(media.filter((m) => m.id).map((m) => m.id))
+
+  // Delete media that's no longer in the list
+  const toDelete = [...existingIds].filter((id) => !currentIds.has(id))
+  if (toDelete.length > 0) {
+    const { error: deleteError } = await supabase
+      .from("product_media")
+      .delete()
+      .in("id", toDelete)
+
+    if (deleteError) {
+      console.error("Error deleting media:", deleteError)
+      return { error: deleteError.message }
+    }
+  }
+
+  // Update existing media (alt_text, is_primary, sort_order, image_type)
+  for (const item of media.filter((m) => m.id && existingIds.has(m.id))) {
+    if (!item.id) continue // TypeScript guard
+    const { error: updateError } = await supabase
+      .from("product_media")
+      .update({
+        alt_text: item.alt_text || null,
+        is_primary: item.is_primary || false,
+        sort_order: item.sort_order ?? 0,
+        image_type: item.image_type || null,
+      })
+      .eq("id", item.id)
+
+    if (updateError) {
+      console.error("Error updating media:", updateError)
+      return { error: updateError.message }
+    }
+  }
+
+  // Insert new media
+  const newMedia = media.filter((m) => !m.id || m.isNew)
+  if (newMedia.length > 0) {
+    const { error: insertError } = await supabase.from("product_media").insert(
+      newMedia.map((m) => ({
+        product_id: productId,
+        type: m.type,
+        url: m.url,
+        storage_path: m.storage_path || null,
+        filename: m.filename,
+        file_size: m.file_size || null,
+        mime_type: m.mime_type || null,
+        alt_text: m.alt_text || null,
+        is_primary: m.is_primary || false,
+        sort_order: m.sort_order ?? 0,
+        image_type: m.image_type || null,
+        created_by: user.id,
+      }))
+    )
+
+    if (insertError) {
+      console.error("Error inserting media:", insertError)
+      return { error: insertError.message }
+    }
+  }
+
+  revalidatePath(`/admin/products/${productId}`)
+  revalidatePath("/admin/products")
+  revalidatePath("/shop")
+
+  return { error: null }
 }

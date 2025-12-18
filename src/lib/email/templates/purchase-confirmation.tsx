@@ -52,7 +52,7 @@ export function PurchaseConfirmationEmail({
           <Section key={index} style={licenseCard}>
             <Text style={productName}>{license.productName}</Text>
             <Text style={licenseCode}>
-              License Code: <span style={codeValue}>{maskLicenseCode(license.code)}</span>
+              License Code: <span style={codeValue}>{license.code}</span>
             </Text>
           </Section>
         ))}
@@ -143,16 +143,6 @@ export function PurchaseConfirmationEmail({
       </Text>
     </BaseLayout>
   )
-}
-
-// Helper to mask license code for display (show first and last 4 chars)
-function maskLicenseCode(code: string): string {
-  // Format: XXXX-XXXX-XXXX-XXXX -> XXXX-****-****-XXXX
-  const parts = code.split("-")
-  if (parts.length === 4) {
-    return `${parts[0]}-****-****-${parts[3]}`
-  }
-  return code
 }
 
 // Styles

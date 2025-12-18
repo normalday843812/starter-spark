@@ -20,7 +20,6 @@ export function NewProductForm() {
   const [description, setDescription] = useState("")
   const [priceCents, setPriceCents] = useState(0)
   const [stripePriceId, setStripePriceId] = useState("")
-  const [isFeatured, setIsFeatured] = useState(false)
   const [specs, setSpecs] = useState<{ key: string; value: string }[]>([])
 
   // Auto-generate slug from name
@@ -53,7 +52,7 @@ export function NewProductForm() {
     setSpecs(newSpecs)
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
 
@@ -73,7 +72,14 @@ export function NewProductForm() {
         price_cents: priceCents,
         stripe_price_id: stripePriceId || null,
         specs: Object.keys(specsObject).length > 0 ? specsObject : null,
-        is_featured: isFeatured,
+        // Discount fields (Phase 14.3) - null for new products
+        discount_percent: null,
+        discount_expires_at: null,
+        original_price_cents: null,
+        // Inventory fields (Phase 14.4) - disabled by default for new products
+        track_inventory: false,
+        stock_quantity: null,
+        low_stock_threshold: null,
       })
 
       if (result.error) {
@@ -86,7 +92,7 @@ export function NewProductForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={(e) => void handleSubmit(e)} className="space-y-6">
       {error && (
         <div className="rounded border border-red-200 bg-red-50 p-4 text-sm text-red-600">
           {error}
@@ -121,7 +127,7 @@ export function NewProductForm() {
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
                 required
-                pattern="[a-z0-9-]+"
+                pattern="[a-z0-9\-]+"
                 title="Lowercase letters, numbers, and hyphens only"
               />
             </div>
@@ -175,18 +181,6 @@ export function NewProductForm() {
                 placeholder="price_..."
               />
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="featured"
-              checked={isFeatured}
-              onChange={(e) => setIsFeatured(e.target.checked)}
-              className="h-4 w-4 rounded border-slate-300 text-cyan-700 focus:ring-cyan-700"
-            />
-            <label htmlFor="featured" className="text-sm text-slate-900">
-              Featured product (shown on homepage)
-            </label>
           </div>
         </CardContent>
       </Card>

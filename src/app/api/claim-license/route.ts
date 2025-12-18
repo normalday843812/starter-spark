@@ -22,7 +22,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const { code } = await request.json()
+    const { code } = (await request.json()) as { code: unknown }
 
     if (!code || typeof code !== "string") {
       return NextResponse.json(
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
 
     const normalizedCode = code.trim().toUpperCase()
 
-    if (normalizedCode.length < 4 || normalizedCode.length > 16) {
+    if (normalizedCode.length < 4 || normalizedCode.length > 19) {
       return NextResponse.json(
         { error: "Invalid code format" },
         { status: 400 }

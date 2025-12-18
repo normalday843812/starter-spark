@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
 import { supabaseAdmin } from "@/lib/supabase/admin"
+import { logAuditEvent } from "@/lib/audit"
 
 export async function createEvent(formData: {
   title: string
@@ -36,15 +37,29 @@ export async function createEvent(formData: {
     return { error: "Unauthorized" }
   }
 
-  const { error } = await supabaseAdmin.from("events").insert({
+  const { data: event, error } = await supabaseAdmin.from("events").insert({
     ...formData,
     capacity: formData.capacity || null,
-  })
+  }).select("id").single()
 
   if (error) {
     console.error("Error creating event:", error)
     return { error: error.message }
   }
+
+  // Log audit event
+  await logAuditEvent({
+    userId: user.id,
+    action: 'event.created',
+    resourceType: 'event',
+    resourceId: event.id,
+    details: {
+      title: formData.title,
+      slug: formData.slug,
+      eventDate: formData.event_date,
+      eventType: formData.event_type,
+    },
+  })
 
   revalidatePath("/admin/events")
   revalidatePath("/events")
@@ -101,6 +116,19 @@ export async function updateEvent(
     return { error: error.message }
   }
 
+  // Log audit event
+  await logAuditEvent({
+    userId: user.id,
+    action: 'event.updated',
+    resourceType: 'event',
+    resourceId: eventId,
+    details: {
+      title: formData.title,
+      slug: formData.slug,
+      eventDate: formData.event_date,
+    },
+  })
+
   revalidatePath("/admin/events")
   revalidatePath("/events")
 
@@ -126,12 +154,31 @@ export async function deleteEvent(eventId: string): Promise<{ error: string | nu
     return { error: "Only admins can delete events" }
   }
 
+  // Get event info before deleting for audit log
+  const { data: event } = await supabaseAdmin
+    .from("events")
+    .select("title, slug")
+    .eq("id", eventId)
+    .single()
+
   const { error } = await supabaseAdmin.from("events").delete().eq("id", eventId)
 
   if (error) {
     console.error("Error deleting event:", error)
     return { error: error.message }
   }
+
+  // Log audit event
+  await logAuditEvent({
+    userId: user.id,
+    action: 'event.deleted',
+    resourceType: 'event',
+    resourceId: eventId,
+    details: {
+      title: event?.title,
+      slug: event?.slug,
+    },
+  })
 
   revalidatePath("/admin/events")
   revalidatePath("/events")

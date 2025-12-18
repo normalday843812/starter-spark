@@ -7,9 +7,10 @@ interface KitCardProps {
   slug: string
   description: string
   claimedAt: string | null
+  quantity?: number
 }
 
-export function KitCard({ name, slug, description, claimedAt }: KitCardProps) {
+export function KitCard({ name, slug, description, claimedAt, quantity = 1 }: KitCardProps) {
   const formattedDate = claimedAt
     ? new Date(claimedAt).toLocaleDateString("en-US", {
         year: "numeric",
@@ -20,11 +21,19 @@ export function KitCard({ name, slug, description, claimedAt }: KitCardProps) {
 
   return (
     <div className="flex items-start gap-4 p-4 rounded border border-slate-200 hover:border-cyan-700 transition-colors bg-white">
-      <div className="w-12 h-12 rounded bg-slate-100 flex items-center justify-center flex-shrink-0">
+      <div className="relative w-12 h-12 rounded bg-slate-100 flex items-center justify-center flex-shrink-0">
         <Package className="w-6 h-6 text-cyan-700" />
+        {quantity > 1 && (
+          <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-cyan-700 text-white text-xs font-mono font-bold flex items-center justify-center">
+            {quantity}
+          </span>
+        )}
       </div>
       <div className="flex-1 min-w-0">
-        <h3 className="font-mono text-lg text-slate-900 mb-1">{name}</h3>
+        <h3 className="font-mono text-lg text-slate-900 mb-1">
+          {name}
+          {quantity > 1 && <span className="text-sm text-slate-500 font-normal ml-2">×{quantity}</span>}
+        </h3>
         {description && (
           <p className="text-sm text-slate-600 mb-2 line-clamp-2">
             {description}

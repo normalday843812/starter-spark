@@ -83,7 +83,7 @@ test.describe("Product Page - Buy Box", () => {
     const increaseBtn = page.getByLabel("Increase quantity")
 
     // Initial quantity should be 1
-    let quantity = page.locator(".text-center.font-mono").first()
+    const quantity = page.locator(".text-center.font-mono").first()
     await expect(quantity).toHaveText("1")
 
     // Click increase
@@ -103,7 +103,7 @@ test.describe("Product Page - Buy Box", () => {
     await increaseBtn.click()
     await increaseBtn.click()
 
-    let quantity = page.locator(".text-center.font-mono").first()
+    const quantity = page.locator(".text-center.font-mono").first()
     await expect(quantity).toHaveText("3")
 
     // Decrease
@@ -120,7 +120,7 @@ test.describe("Product Page - Buy Box", () => {
     await decreaseBtn.click()
     await decreaseBtn.click()
 
-    let quantity = page.locator(".text-center.font-mono").first()
+    const quantity = page.locator(".text-center.font-mono").first()
     await expect(quantity).toHaveText("1")
   })
 
@@ -143,7 +143,7 @@ test.describe("Product Page - Buy Box", () => {
     await expect(page.getByRole("dialog")).toBeHidden({ timeout: 3000 })
 
     // Quantity should reset to 1
-    let quantity = page.locator(".text-center.font-mono").first()
+    const quantity = page.locator(".text-center.font-mono").first()
     await expect(quantity).toHaveText("1")
   })
 

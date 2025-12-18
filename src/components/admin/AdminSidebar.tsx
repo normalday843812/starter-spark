@@ -13,6 +13,9 @@ import {
   Settings,
   LogOut,
   ChevronLeft,
+  FileText,
+  ScrollText,
+  Megaphone,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -26,7 +29,10 @@ const navItems = [
   { href: "/admin/orders", label: "Orders", icon: CreditCard },
   { href: "/admin/community", label: "Community", icon: MessageSquare },
   { href: "/admin/events", label: "Events", icon: Calendar },
+  { href: "/admin/content", label: "Content", icon: FileText },
+  { href: "/admin/banners", label: "Banners", icon: Megaphone },
   { href: "/admin/users", label: "Users", icon: Users },
+  { href: "/admin/audit", label: "Audit Log", icon: ScrollText },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ]
 
@@ -45,14 +51,15 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
     <div className="flex h-full w-64 flex-col border-r border-slate-200 bg-white">
       {/* Header */}
       <div className="flex h-16 items-center justify-between border-b border-slate-200 px-4">
-        <Link href="/admin" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded bg-cyan-700">
-            <span className="font-mono text-sm font-bold text-white">SS</span>
-          </div>
-          <span className="font-mono text-sm font-semibold text-slate-900">
+        <div className="flex items-center gap-2">
+          <Link href="/" className="font-mono text-sm font-bold text-cyan-700 hover:text-cyan-600 transition-colors">
+            StarterSpark
+          </Link>
+          <span className="text-slate-300">/</span>
+          <Link href="/admin" className="font-mono text-sm font-semibold text-slate-900 hover:text-slate-600 transition-colors">
             Admin
-          </span>
-        </Link>
+          </Link>
+        </div>
         <Link href="/">
           <Button variant="ghost" size="icon" className="h-8 w-8" title="Back to site">
             <ChevronLeft className="h-4 w-4" />

@@ -8,55 +8,67 @@ interface ProductViewer3DProps {
   modelPath: string
 }
 
-function Model({ path }: { path: string }) {
+function Model({ path, onLoad }: { path: string; onLoad: () => void }) {
   const { scene } = useGLTF(path)
+
+  useEffect(() => {
+    // Once the model is loaded and the scene is available, trigger onLoad
+    if (scene) {
+      onLoad()
+    }
+  }, [scene, onLoad])
+
   return <primitive object={scene} />
 }
 
-function LoadingIndicator({ onLoaded }: { onLoaded: () => void }) {
-  useEffect(() => {
-    onLoaded()
-  }, [onLoaded])
-  return null
-}
-
-export default function ProductViewer3D({ modelPath }: ProductViewer3DProps) {
+export default function ProductViewer3D({
+  modelPath,
+}: ProductViewer3DProps) {
   const [isLoaded, setIsLoaded] = useState(false)
 
   return (
     <div
-      className="relative w-full h-full"
+      className="relative w-full h-full overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100"
       role="img"
       aria-label="Interactive 3D product viewer - use mouse to rotate and zoom"
     >
-      {/* Loading State */}
+      {/* Loading indicator */}
       {!isLoaded && (
-        <div className="absolute inset-0 flex items-center justify-center bg-slate-100/80 z-10 rounded" aria-hidden="true">
+        <div
+          className="absolute inset-0 flex items-center justify-center z-20"
+          aria-hidden="true"
+        >
           <div className="flex flex-col items-center gap-3">
-            <div className="w-8 h-8 border-2 border-slate-200 border-t-cyan-700 rounded-full animate-spin" aria-hidden="true" />
-            <p className="text-sm text-slate-500 font-mono">Loading 3D Model...</p>
+            <div
+              className="w-10 h-10 border-2 border-slate-200 border-t-cyan-700 rounded-full animate-spin"
+              aria-hidden="true"
+            />
+            <p className="text-sm font-mono text-slate-500">Loading 3D…</p>
           </div>
         </div>
       )}
-      <Canvas camera={{ position: [0, 0, 5], fov: 45 }} aria-hidden="true">
-        <Suspense fallback={null}>
-          <Stage
-            intensity={0.8}
-            environment="city"
-            shadows="contact"
-            adjustCamera={false}
-          >
-            <Model path={modelPath} />
-          </Stage>
-          <OrbitControls
-            enableZoom={true}
-            enablePan={false}
-            minPolarAngle={Math.PI / 4}
-            maxPolarAngle={Math.PI / 1.5}
-          />
-          <LoadingIndicator onLoaded={() => setIsLoaded(true)} />
-        </Suspense>
-      </Canvas>
+
+      {/* 3D Canvas - no fade transitions (instant) */}
+      <div className="absolute inset-0">
+        <Canvas camera={{ position: [0, 0, 5], fov: 45 }} aria-hidden="true">
+          <Suspense fallback={null}>
+            <Stage
+              intensity={0.8}
+              environment="city"
+              shadows="contact"
+              adjustCamera={false}
+            >
+              <Model path={modelPath} onLoad={() => setIsLoaded(true)} />
+            </Stage>
+            <OrbitControls
+              enableZoom={true}
+              enablePan={false}
+              minPolarAngle={Math.PI / 4}
+              maxPolarAngle={Math.PI / 1.5}
+            />
+          </Suspense>
+        </Canvas>
+      </div>
     </div>
   )
 }

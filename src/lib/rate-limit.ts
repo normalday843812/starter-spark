@@ -47,6 +47,25 @@ export const rateLimitConfigs = {
 
 type RateLimitConfig = keyof typeof rateLimitConfigs
 
+function getRateLimitConfig(configKey: RateLimitConfig) {
+  switch (configKey) {
+    case "claimLicense":
+      return rateLimitConfigs.claimLicense
+    case "claimByToken":
+      return rateLimitConfigs.claimByToken
+    case "checkout":
+      return rateLimitConfigs.checkout
+    case "adminMutation":
+      return rateLimitConfigs.adminMutation
+    case "default":
+      return rateLimitConfigs.default
+    default: {
+      const exhaustiveCheck: never = configKey
+      return exhaustiveCheck
+    }
+  }
+}
+
 /**
  * Rate limit a request using Upstash Redis
  * @param request - The incoming request
@@ -67,7 +86,7 @@ export async function rateLimit(
   const ip = forwarded?.split(",")[0]?.trim() ?? "127.0.0.1"
   const identifier = `${configKey}:${ip}`
 
-  const config = rateLimitConfigs[configKey]
+  const config = getRateLimitConfig(configKey)
 
   try {
     const { success, reset } = await ratelimit.limit(identifier)
@@ -102,7 +121,7 @@ export async function rateLimit(
  * Create rate limit headers for successful requests
  */
 export function rateLimitHeaders(configKey: RateLimitConfig = "default"): HeadersInit {
-  const config = rateLimitConfigs[configKey]
+  const config = getRateLimitConfig(configKey)
   return {
     "X-RateLimit-Limit": config.requests.toString(),
   }

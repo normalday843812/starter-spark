@@ -5,8 +5,24 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Save, Pencil, X, Plus, Trash2, RefreshCw } from "lucide-react"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Loader2, Save, Pencil, X, Plus, Trash2, RefreshCw, Database } from "lucide-react"
 import { updateSiteStat, createSiteStat, deleteSiteStat } from "./actions"
+
+// Available auto sources for stats calculation
+const AUTO_SOURCES = [
+  { value: "licenses_count", label: "Claimed Licenses", description: "Count of licenses with an owner" },
+  { value: "events_count", label: "Past Events", description: "Count of past public events" },
+  { value: "profiles_count", label: "Registered Users", description: "Total registered users" },
+  { value: "posts_count", label: "Community Posts", description: "Published community questions" },
+  { value: "comments_count", label: "Comments/Answers", description: "Total answers in community" },
+] as const
 
 interface SiteStat {
   id: string
@@ -15,6 +31,7 @@ interface SiteStat {
   label: string
   suffix: string | null
   is_auto_calculated: boolean | null
+  auto_source: string | null
 }
 
 interface SiteStatsManagerProps {
@@ -32,6 +49,8 @@ export function SiteStatsManager({ stats: initialStats }: SiteStatsManagerProps)
   const [editValue, setEditValue] = useState(0)
   const [editLabel, setEditLabel] = useState("")
   const [editSuffix, setEditSuffix] = useState("")
+  const [editIsAuto, setEditIsAuto] = useState(false)
+  const [editAutoSource, setEditAutoSource] = useState<string | null>(null)
 
   // New stat form state
   const [newKey, setNewKey] = useState("")
@@ -39,12 +58,15 @@ export function SiteStatsManager({ stats: initialStats }: SiteStatsManagerProps)
   const [newLabel, setNewLabel] = useState("")
   const [newSuffix, setNewSuffix] = useState("")
   const [newIsAuto, setNewIsAuto] = useState(false)
+  const [newAutoSource, setNewAutoSource] = useState<string | null>(null)
 
   const startEditing = (stat: SiteStat) => {
     setEditingId(stat.id)
     setEditValue(stat.value)
     setEditLabel(stat.label)
     setEditSuffix(stat.suffix || "")
+    setEditIsAuto(stat.is_auto_calculated || false)
+    setEditAutoSource(stat.auto_source || null)
     setError(null)
   }
 
@@ -53,13 +75,15 @@ export function SiteStatsManager({ stats: initialStats }: SiteStatsManagerProps)
     setError(null)
   }
 
-  const handleUpdate = async (id: string) => {
+  const handleUpdate = (id: string) => {
     startTransition(async () => {
       const result = await updateSiteStat({
         id,
         value: editValue,
         label: editLabel,
         suffix: editSuffix,
+        is_auto_calculated: editIsAuto,
+        auto_source: editIsAuto ? editAutoSource : null,
       })
 
       if (result.error) {
@@ -69,7 +93,14 @@ export function SiteStatsManager({ stats: initialStats }: SiteStatsManagerProps)
         setStats(
           stats.map((s) =>
             s.id === id
-              ? { ...s, value: editValue, label: editLabel, suffix: editSuffix }
+              ? {
+                  ...s,
+                  value: editValue,
+                  label: editLabel,
+                  suffix: editSuffix,
+                  is_auto_calculated: editIsAuto,
+                  auto_source: editIsAuto ? editAutoSource : null,
+                }
               : s
           )
         )
@@ -79,7 +110,7 @@ export function SiteStatsManager({ stats: initialStats }: SiteStatsManagerProps)
     })
   }
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
     if (!confirm("Are you sure you want to delete this stat?")) return
 
     startTransition(async () => {
@@ -94,9 +125,14 @@ export function SiteStatsManager({ stats: initialStats }: SiteStatsManagerProps)
     })
   }
 
-  const handleCreate = async () => {
+  const handleCreate = () => {
     if (!newKey.trim() || !newLabel.trim()) {
       setError("Key and label are required")
+      return
+    }
+
+    if (newIsAuto && !newAutoSource) {
+      setError("Please select a data source for auto-calculation")
       return
     }
 
@@ -107,6 +143,7 @@ export function SiteStatsManager({ stats: initialStats }: SiteStatsManagerProps)
         label: newLabel,
         suffix: newSuffix,
         is_auto_calculated: newIsAuto,
+        auto_source: newIsAuto ? newAutoSource : null,
       })
 
       if (result.error) {
@@ -118,6 +155,7 @@ export function SiteStatsManager({ stats: initialStats }: SiteStatsManagerProps)
         setNewLabel("")
         setNewSuffix("")
         setNewIsAuto(false)
+        setNewAutoSource(null)
         setIsAdding(false)
         setError(null)
         // Note: Page will revalidate and show new stat
@@ -204,28 +242,56 @@ export function SiteStatsManager({ stats: initialStats }: SiteStatsManagerProps)
                   />
                 </div>
               </div>
-              <div className="mt-3 flex items-center justify-between">
-                <label className="flex items-center gap-2 text-sm text-slate-600">
-                  <input
-                    type="checkbox"
-                    checked={newIsAuto}
-                    onChange={(e) => setNewIsAuto(e.target.checked)}
-                    className="h-4 w-4 rounded border-slate-300 text-cyan-700"
-                  />
-                  Auto-calculated from database
-                </label>
-                <div className="flex gap-2">
+              <div className="mt-3 space-y-3">
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={newIsAuto}
+                      onChange={(e) => {
+                        setNewIsAuto(e.target.checked)
+                        if (!e.target.checked) setNewAutoSource(null)
+                      }}
+                      className="h-4 w-4 rounded border-slate-300 text-cyan-700 cursor-pointer"
+                    />
+                    Auto-calculated from database
+                  </label>
+                  {newIsAuto && (
+                    <Select
+                      value={newAutoSource || ""}
+                      onValueChange={(value) => setNewAutoSource(value)}
+                    >
+                      <SelectTrigger className="w-[200px] text-sm">
+                        <SelectValue placeholder="Select data source" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {AUTO_SOURCES.map((source) => (
+                          <SelectItem key={source.value} value={source.value}>
+                            <div className="flex items-center gap-2">
+                              <Database className="h-3 w-3 text-cyan-600" />
+                              {source.label}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+                <div className="flex justify-end gap-2">
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setIsAdding(false)}
+                    onClick={() => {
+                      setIsAdding(false)
+                      setNewAutoSource(null)
+                    }}
                     disabled={isPending}
                   >
                     Cancel
                   </Button>
                   <Button
                     size="sm"
-                    onClick={handleCreate}
+                    onClick={() => handleCreate()}
                     disabled={isPending}
                     className="bg-cyan-700 hover:bg-cyan-600"
                   >
@@ -249,8 +315,8 @@ export function SiteStatsManager({ stats: initialStats }: SiteStatsManagerProps)
             >
               {editingId === stat.id ? (
                 /* Edit mode */
-                <div className="flex flex-1 items-center gap-4">
-                  <div className="flex-1 grid gap-3 sm:grid-cols-3">
+                <div className="flex-1 space-y-3">
+                  <div className="grid gap-3 sm:grid-cols-3">
                     <div>
                       <label className="mb-1 block text-xs text-slate-500">
                         Label
@@ -272,7 +338,7 @@ export function SiteStatsManager({ stats: initialStats }: SiteStatsManagerProps)
                           setEditValue(parseInt(e.target.value) || 0)
                         }
                         className="text-sm"
-                        disabled={stat.is_auto_calculated === true}
+                        disabled={editIsAuto}
                       />
                     </div>
                     <div>
@@ -287,27 +353,63 @@ export function SiteStatsManager({ stats: initialStats }: SiteStatsManagerProps)
                       />
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={cancelEditing}
-                      disabled={isPending}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      onClick={() => handleUpdate(stat.id)}
-                      disabled={isPending}
-                      className="bg-cyan-700 hover:bg-cyan-600"
-                    >
-                      {isPending ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Save className="h-4 w-4" />
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={editIsAuto}
+                          onChange={(e) => {
+                            setEditIsAuto(e.target.checked)
+                            if (!e.target.checked) setEditAutoSource(null)
+                          }}
+                          className="h-4 w-4 rounded border-slate-300 text-cyan-700 cursor-pointer"
+                        />
+                        Auto-calculated
+                      </label>
+                      {editIsAuto && (
+                        <Select
+                          value={editAutoSource || ""}
+                          onValueChange={(value) => setEditAutoSource(value)}
+                        >
+                          <SelectTrigger className="w-[180px] text-sm">
+                            <SelectValue placeholder="Select source" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {AUTO_SOURCES.map((source) => (
+                              <SelectItem key={source.value} value={source.value}>
+                                <div className="flex items-center gap-2">
+                                  <Database className="h-3 w-3 text-cyan-600" />
+                                  {source.label}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       )}
-                    </Button>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={cancelEditing}
+                        disabled={isPending}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        onClick={() => handleUpdate(stat.id)}
+                        disabled={isPending || (editIsAuto && !editAutoSource)}
+                        className="bg-cyan-700 hover:bg-cyan-600"
+                      >
+                        {isPending ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Save className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -332,9 +434,12 @@ export function SiteStatsManager({ stats: initialStats }: SiteStatsManagerProps)
                           <Badge
                             variant="outline"
                             className="border-cyan-200 text-cyan-700 text-xs"
+                            title={stat.auto_source ? `Source: ${AUTO_SOURCES.find(s => s.value === stat.auto_source)?.label || stat.auto_source}` : "Auto-calculated"}
                           >
                             <RefreshCw className="mr-1 h-3 w-3" />
-                            Auto
+                            {stat.auto_source
+                              ? AUTO_SOURCES.find(s => s.value === stat.auto_source)?.label || "Auto"
+                              : "Auto"}
                           </Badge>
                         )}
                       </div>

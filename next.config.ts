@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
   images: {
     // Enable modern image formats
     formats: ["image/avif", "image/webp"],
+    // Restrict to a small, known set of qualities used in the app
+    qualities: [20, 75, 80, 90, 95, 100],
     // Allow placeholder images from external sources if needed
     remotePatterns: [
       {

@@ -2,12 +2,23 @@ import { createClient } from "@/lib/supabase/server"
 import { formatDuration } from "@/lib/utils"
 import { BookOpen, Clock, Target, ChevronRight, Lock } from "lucide-react"
 import Link from "next/link"
+import { getContents } from "@/lib/content"
 
 export default async function LearnPage() {
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
+
+  // Fetch dynamic content
+  const content = await getContents(
+    ["learn.header.title", "learn.header.description", "learn.empty"],
+    {
+      "learn.header.title": "Learn",
+      "learn.header.description": "Step-by-step guides to build, wire, and program your robotics kits. Each course breaks complex concepts into manageable lessons.",
+      "learn.empty": "No courses available yet. Check back soon.",
+    }
+  )
 
   // Fetch all courses with their product info and module/lesson counts
   const { data: courses, error } = await supabase
@@ -66,11 +77,10 @@ export default async function LearnPage() {
         <div className="max-w-7xl mx-auto">
           <p className="text-sm font-mono text-cyan-700 mb-2">Documentation</p>
           <h1 className="font-mono text-4xl lg:text-5xl font-bold text-slate-900 mb-4">
-            Learn
+            {content["learn.header.title"]}
           </h1>
           <p className="text-lg text-slate-600 max-w-2xl">
-            Step-by-step guides to build, wire, and program your robotics kits.
-            Each course breaks complex concepts into manageable lessons.
+            {content["learn.header.description"]}
           </p>
         </div>
       </section>
@@ -210,7 +220,7 @@ export default async function LearnPage() {
                 <BookOpen className="w-8 h-8 text-slate-500" />
               </div>
               <p className="text-slate-600">
-                No courses available yet. Check back soon.
+                {content["learn.empty"]}
               </p>
             </div>
           )}

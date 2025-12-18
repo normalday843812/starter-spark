@@ -90,7 +90,7 @@ export function AnswerForm({ postId }: AnswerFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded p-6">
+    <form onSubmit={(e) => void handleSubmit(e)} className="bg-white border border-slate-200 rounded p-6">
       {/* Toolbar */}
       <div className="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
         <button

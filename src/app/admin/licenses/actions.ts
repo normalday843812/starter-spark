@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
 import { supabaseAdmin } from "@/lib/supabase/admin"
 import { generateLicenseCode } from "@/lib/validation"
+import { logAuditEvent } from "@/lib/audit"
 
 export async function revokeLicense(
   licenseId: string
@@ -26,6 +27,13 @@ export async function revokeLicense(
     return { error: "Only admins can revoke licenses" }
   }
 
+  // Get license info before revoking for audit log
+  const { data: license } = await supabaseAdmin
+    .from("licenses")
+    .select("code, owner_id, product_id")
+    .eq("id", licenseId)
+    .single()
+
   // Use admin client to bypass RLS
   const { error } = await supabaseAdmin
     .from("licenses")
@@ -39,6 +47,19 @@ export async function revokeLicense(
     console.error("Error revoking license:", error)
     return { error: error.message }
   }
+
+  // Log audit event
+  await logAuditEvent({
+    userId: user.id,
+    action: 'license.revoked',
+    resourceType: 'license',
+    resourceId: licenseId,
+    details: {
+      code: license?.code,
+      previousOwnerId: license?.owner_id,
+      productId: license?.product_id,
+    },
+  })
 
   revalidatePath("/admin/licenses")
 
@@ -106,6 +127,21 @@ export async function generateLicenses(
     return { error: error.message, codes: [] }
   }
 
+  // Log audit event for bulk license creation
+  await logAuditEvent({
+    userId: user.id,
+    action: 'license.bulk_created',
+    resourceType: 'license',
+    resourceId: productId,
+    details: {
+      quantity,
+      source,
+      productId,
+      // Don't log all codes - could be sensitive
+      sampleCodes: codes.slice(0, 3),
+    },
+  })
+
   revalidatePath("/admin/licenses")
 
   return { error: null, codes }
@@ -144,6 +180,13 @@ export async function assignLicense(
     return { error: "User not found" }
   }
 
+  // Get license info for audit log
+  const { data: license } = await supabaseAdmin
+    .from("licenses")
+    .select("code, product_id")
+    .eq("id", licenseId)
+    .single()
+
   // Assign license
   const { error } = await supabaseAdmin
     .from("licenses")
@@ -158,6 +201,20 @@ export async function assignLicense(
     console.error("Error assigning license:", error)
     return { error: error.message }
   }
+
+  // Log audit event
+  await logAuditEvent({
+    userId: user.id,
+    action: 'license.assigned',
+    resourceType: 'license',
+    resourceId: licenseId,
+    details: {
+      code: license?.code,
+      productId: license?.product_id,
+      assignedToEmail: userEmail,
+      assignedToId: targetUser.id,
+    },
+  })
 
   revalidatePath("/admin/licenses")
 

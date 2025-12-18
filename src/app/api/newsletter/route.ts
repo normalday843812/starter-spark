@@ -8,7 +8,7 @@ const subscribeSchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
+    const body: unknown = await request.json()
     const { email } = subscribeSchema.parse(body)
 
     // Check if audience ID is configured

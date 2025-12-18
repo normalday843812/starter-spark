@@ -10,6 +10,16 @@ export interface Stat {
   suffix: string
 }
 
+export interface MissionContentProps {
+  title?: string
+  subtitle?: string
+  story1?: string
+  story2?: string
+  commitmentTitle?: string
+  commitmentText?: string
+  commitmentSubtext?: string
+}
+
 function AnimatedCounter({ value, suffix }: { value: number; suffix: string }) {
   const [count, setCount] = useState(0)
   const ref = useRef<HTMLSpanElement>(null)
@@ -44,11 +54,20 @@ function AnimatedCounter({ value, suffix }: { value: number; suffix: string }) {
   )
 }
 
-interface MissionImpactSectionProps {
+interface MissionImpactSectionProps extends MissionContentProps {
   stats: Stat[]
 }
 
-export function MissionImpactSection({ stats }: MissionImpactSectionProps) {
+export function MissionImpactSection({
+  stats,
+  title = "More Than a Kit",
+  subtitle = "We're building the next generation of Hawaii's engineers.",
+  story1 = "StarterSpark started as a classroom project: students teaching students how to build robots with whatever parts we could find. We saw how hands-on learning sparked curiosity in ways textbooks never could.",
+  story2 = "Now we're taking that experience and packaging it for anyone to access. Each kit represents hundreds of hours of curriculum development, testing with real students, and refinement based on their feedback.",
+  commitmentTitle = "Our Commitment",
+  commitmentText = "70% of every dollar goes directly to local STEM charities and school robotics programs. 30% funds new kit development and operations.",
+  commitmentSubtext = "Your purchase directly impacts Hawaii's next generation of engineers.",
+}: MissionImpactSectionProps) {
   return (
     <section className="py-24 px-6 lg:px-20 bg-slate-50">
       <div className="max-w-7xl mx-auto">
@@ -59,10 +78,10 @@ export function MissionImpactSection({ stats }: MissionImpactSectionProps) {
           className="text-center mb-16"
         >
           <h2 className="font-mono text-3xl lg:text-4xl text-slate-900 mb-4">
-            More Than a Kit
+            {title}
           </h2>
           <p className="text-slate-600 max-w-2xl mx-auto">
-            We&apos;re building the next generation of Hawaii&apos;s engineers.
+            {subtitle}
           </p>
         </motion.div>
 
@@ -77,30 +96,23 @@ export function MissionImpactSection({ stats }: MissionImpactSectionProps) {
             {/* The Story */}
             <div className="space-y-4 text-slate-600 leading-relaxed">
               <p>
-                Description
+                {story1}
               </p>
               <p>
-                Description
+                {story2}
               </p>
             </div>
 
             {/* The 70/30 Model Callout */}
             <div className="bg-white rounded border-l-4 border-amber-500 p-6 shadow-sm">
               <h3 className="font-mono text-lg text-slate-900 mb-2">
-                Our Commitment
+                {commitmentTitle}
               </h3>
               <p className="text-slate-600">
-                <span className="font-mono text-amber-600 font-semibold">
-                  70%
-                </span>{" "}
-                of every dollar goes directly to local STEM charities and school
-                robotics programs.{" "}
-                <span className="font-mono text-slate-500">30%</span> funds new kit
-                development and operations.
+                {commitmentText}
               </p>
               <p className="text-slate-500 text-sm mt-3">
-                Your purchase directly impacts Hawaii&apos;s next generation of
-                engineers.
+                {commitmentSubtext}
               </p>
             </div>
 

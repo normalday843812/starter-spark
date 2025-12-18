@@ -55,10 +55,22 @@ export default async function ProductDetailPage({
   const { slug } = await params
   const supabase = await createClient()
 
-  // Fetch product from database
+  // Fetch product from database with tags and media
   const { data: product, error } = await supabase
     .from("products")
-    .select("*")
+    .select(`
+      *,
+      product_tags (tag),
+      product_media (
+        id,
+        type,
+        url,
+        alt_text,
+        is_primary,
+        image_type,
+        sort_order
+      )
+    `)
     .eq("slug", slug)
     .single()
 
@@ -67,14 +79,40 @@ export default async function ProductDetailPage({
   }
 
   const specs = product.specs as ProductSpecs | null
+  const tags = (product.product_tags || []).map((t: { tag: string }) => t.tag)
 
-  // Extract data from specs with defaults
-  const modelPath = specs?.modelPath
-  const inStock = specs?.inStock ?? true
+  // Determine stock status from inventory tracking or tags
+  const hasOutOfStockTag = tags.includes("out_of_stock")
+  const hasLimitedTag = tags.includes("limited")
+
+  // inStock: check inventory tracking first, then fall back to specs
+  const inStock = product.track_inventory
+    ? (product.stock_quantity ?? 0) > 0
+    : !hasOutOfStockTag && (specs?.inStock ?? true)
+
+  // Extract data from specs with defaults (modelPath now handled after media extraction)
   const learningOutcomes = specs?.learningOutcomes || []
   const includedItems = specs?.includedItems || []
   const technicalSpecs = specs?.technicalSpecs || []
   const price = product.price_cents / 100
+  const originalPrice = product.original_price_cents ? product.original_price_cents / 100 : null
+  const discountPercent = product.discount_percent
+  const discountExpiresAt = product.discount_expires_at
+
+  // Extract images and 3D models from product_media, sorted by sort_order
+  const allMedia = (product.product_media || [])
+    .sort((a: { sort_order?: number | null }) => (a.sort_order ?? 0))
+
+  // Filter images only (exclude 3D models, videos, documents)
+  const imageMedia = allMedia.filter((m: { type?: string }) => m.type === 'image' || !m.type)
+  const images = imageMedia.map((m: { url: string }) => m.url)
+  const primaryImage = imageMedia.find((m: { is_primary?: boolean | null }) => m.is_primary)?.url || images[0]
+
+  // Get 3D model if available (from product_media or specs)
+  const modelMedia = allMedia.find((m: { type?: string }) => m.type === '3d_model')
+  const modelPathFromMedia = modelMedia?.url
+  const modelPathFromSpecs = specs?.modelPath
+  const finalModelPath = modelPathFromMedia || modelPathFromSpecs
 
   // Generate structured data for SEO
   const productSchema = getProductSchema({
@@ -122,7 +160,9 @@ export default async function ProductDetailPage({
             {/* Left - Gallery (60%) */}
             <div className="w-full lg:w-3/5">
               <ProductGallery
-                modelPath={modelPath}
+                images={images}
+                modelPath={finalModelPath}
+                modelPreviewUrl={primaryImage}
                 productName={product.name}
               />
             </div>
@@ -135,6 +175,11 @@ export default async function ProductDetailPage({
                 name={product.name}
                 price={price}
                 inStock={inStock}
+                originalPrice={originalPrice}
+                discountPercent={discountPercent}
+                discountExpiresAt={discountExpiresAt}
+                stockQuantity={product.track_inventory ? product.stock_quantity : null}
+                isLimitedStock={hasLimitedTag}
               />
             </div>
           </div>

@@ -1,6 +1,6 @@
 "use client"
 
-import { ProductCard } from "@/components/commerce"
+import { ProductCard, ProductTag } from "@/components/commerce"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Search, Filter } from "lucide-react"
@@ -12,8 +12,14 @@ interface Product {
   price: number
   inStock: boolean
   badge?: string
+  tags?: ProductTag[]
   category: string
   status: "active" | "coming_soon" | "draft"
+  image?: string
+  // Discount fields (Phase 14.3)
+  originalPrice?: number | null
+  discountPercent?: number | null
+  discountExpiresAt?: string | null
 }
 
 interface ShopFiltersProps {
@@ -92,9 +98,14 @@ export function ShopFilters({ products }: ShopFiltersProps) {
                   slug={product.slug}
                   name={product.name}
                   price={product.price}
+                  image={product.image}
                   inStock={product.inStock}
                   badge={product.badge}
+                  tags={product.tags}
                   status={product.status}
+                  originalPrice={product.originalPrice}
+                  discountPercent={product.discountPercent}
+                  discountExpiresAt={product.discountExpiresAt}
                 />
               ))}
             </div>

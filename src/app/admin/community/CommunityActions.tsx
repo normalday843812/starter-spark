@@ -65,26 +65,26 @@ export function CommunityActions({ postId, status }: CommunityActionsProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         {status !== "published" && (
-          <DropdownMenuItem onClick={() => handleStatusChange("published")}>
+          <DropdownMenuItem onClick={() => void handleStatusChange("published")}>
             <Check className="mr-2 h-4 w-4 text-green-600" />
             Approve
           </DropdownMenuItem>
         )}
         {status !== "pending" && (
-          <DropdownMenuItem onClick={() => handleStatusChange("pending")}>
+          <DropdownMenuItem onClick={() => void handleStatusChange("pending")}>
             <X className="mr-2 h-4 w-4" />
             Set Pending
           </DropdownMenuItem>
         )}
         {status !== "flagged" && (
-          <DropdownMenuItem onClick={() => handleStatusChange("flagged")}>
+          <DropdownMenuItem onClick={() => void handleStatusChange("flagged")}>
             <Flag className="mr-2 h-4 w-4 text-amber-600" />
             Flag
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          onClick={handleDelete}
+          onClick={() => void handleDelete()}
           className="text-red-600 focus:text-red-600"
         >
           <Trash2 className="mr-2 h-4 w-4" />

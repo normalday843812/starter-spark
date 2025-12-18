@@ -5,6 +5,11 @@ import { Button } from "@/components/ui/button"
 import { Loader2, CheckCircle, AlertCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
 
+interface ClaimResponse {
+  message?: string
+  error?: string
+}
+
 interface ClaimButtonProps {
   token: string
 }
@@ -28,18 +33,18 @@ export function ClaimButton({ token }: ClaimButtonProps) {
         body: JSON.stringify({ token }),
       })
 
-      const data = await response.json()
+      const data = (await response.json()) as ClaimResponse
 
       if (response.ok) {
         setStatus("success")
-        setMessage(data.message || "Kit claimed successfully!")
+        setMessage(data.message ?? "Kit claimed successfully!")
         // Redirect to workshop after a brief delay
         setTimeout(() => {
           router.push("/workshop?claimed=true")
         }, 1500)
       } else {
         setStatus("error")
-        setMessage(data.error || "Failed to claim kit. Please try again.")
+        setMessage(data.error ?? "Failed to claim kit. Please try again.")
       }
     } catch {
       setStatus("error")
@@ -64,7 +69,7 @@ export function ClaimButton({ token }: ClaimButtonProps) {
   return (
     <div className="space-y-4">
       <Button
-        onClick={handleClaim}
+        onClick={() => void handleClaim()}
         disabled={isLoading}
         className="w-full bg-cyan-700 hover:bg-cyan-600 text-white font-mono"
       >

@@ -17,7 +17,7 @@ export default function CommunityLoading() {
               <div className="bg-white rounded border border-slate-200 p-4">
                 <div className="h-5 w-24 bg-slate-200 rounded animate-pulse mb-4" />
                 <div className="space-y-2">
-                  {[...Array(5)].map((_, i) => (
+                  {Array.from({ length: 5 }, (_, i) => (
                     <div key={i} className="h-8 w-full bg-slate-100 rounded animate-pulse" />
                   ))}
                 </div>
@@ -32,7 +32,7 @@ export default function CommunityLoading() {
               </div>
 
               <div className="space-y-4">
-                {[...Array(5)].map((_, i) => (
+                {Array.from({ length: 5 }, (_, i) => (
                   <div
                     key={i}
                     className="bg-white rounded border border-slate-200 p-4"

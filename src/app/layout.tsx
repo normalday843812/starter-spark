@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google"
 import { Providers } from "./providers"
 import { siteConfig } from "@/config/site"
 import "./globals.css"
+import "photoswipe/style.css"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
