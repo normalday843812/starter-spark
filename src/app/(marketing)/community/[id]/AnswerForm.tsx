@@ -140,7 +140,7 @@ export function AnswerForm({ postId }: AnswerFormProps) {
         id="answer-content"
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        placeholder="Write your answer... (Markdown supported)"
+        placeholder="Write your answer..."
         rows={8}
         className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded text-slate-700 placeholder:text-slate-500 focus:outline-none focus:border-cyan-700 focus:bg-white resize-y min-h-[150px]"
       />
