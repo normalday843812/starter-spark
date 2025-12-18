@@ -39,6 +39,10 @@ export function ProductGallery({
     if (!hasImages) return 0
     return ((selectedImage % imageCount) + imageCount) % imageCount
   }, [hasImages, imageCount, selectedImage])
+  const displayImageSrc = useMemo(() => {
+    if (!hasImages) return null
+    return images.at(displayImageIndex) ?? images.at(0) ?? null
+  }, [displayImageIndex, hasImages, images])
 
   // Handle image selection from thumbnail
   const handleSelectImage = useCallback((idx: number) => {
@@ -83,7 +87,7 @@ export function ProductGallery({
           <ProductViewer3D
             modelPath={modelPath}
           />
-        ) : hasImages ? (
+        ) : hasImages && displayImageSrc ? (
           <button
             type="button"
             onClick={handleOpenLightbox}
@@ -93,7 +97,7 @@ export function ProductGallery({
             <div className="relative h-full w-full">
               {/* Soft backdrop so letterboxing feels intentional */}
               <Image
-                src={images[displayImageIndex]}
+                src={displayImageSrc}
                 alt=""
                 fill
                 sizes="(max-width: 1024px) 100vw, 60vw"
@@ -103,7 +107,7 @@ export function ProductGallery({
               />
               <div className="absolute inset-0 bg-white/55" aria-hidden="true" />
               <ProductImage
-                src={images[displayImageIndex]}
+                src={displayImageSrc}
                 alt={`${productName} - Image ${displayImageIndex + 1}`}
                 sizes="(max-width: 1024px) 100vw, 60vw"
                 quality={95}

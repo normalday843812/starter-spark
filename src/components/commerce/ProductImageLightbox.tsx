@@ -57,21 +57,20 @@ export function ProductImageLightbox({
   const ensureDimensions = useCallback(
     (index: number) => {
       const idx = wrapIndex(index, images.length)
-      const existing = dimensionsRef.current[idx]
+      const existing = dimensionsRef.current.at(idx)
       if (existing) return Promise.resolve(existing)
 
       const pending = pendingRef.current.get(idx)
       if (pending) return pending
 
-      const src = images[idx]
       const promise = new Promise<Dimensions>((resolve) => {
+        const src = images.at(idx)
         const img = new window.Image()
         img.decoding = "async"
-        img.src = src
 
         const finalize = (nextDims: Dimensions) => {
           pendingRef.current.delete(idx)
-          dimensionsRef.current[idx] = nextDims
+          dimensionsRef.current.splice(idx, 1, nextDims)
           const galleryEl = document.getElementById(galleryId)
           const anchorEl = galleryEl?.querySelectorAll("a").item(idx) ?? null
           if (anchorEl) {
@@ -79,16 +78,23 @@ export function ProductImageLightbox({
             anchorEl.setAttribute("data-pswp-height", String(nextDims.height))
           }
           setDimensions((prev) => {
-            if (prev[idx]?.width === nextDims.width && prev[idx]?.height === nextDims.height) {
+            const current = prev.at(idx)
+            if (current?.width === nextDims.width && current?.height === nextDims.height) {
               return prev
             }
             const next = [...prev]
-            next[idx] = nextDims
+            next.splice(idx, 1, nextDims)
             return next
           })
           resolve(nextDims)
         }
 
+        if (!src) {
+          finalize({ width: 1600, height: 1600 })
+          return
+        }
+
+        img.src = src
         img.onload = () => {
           const width = img.naturalWidth || 1600
           const height = img.naturalHeight || 1600
@@ -164,7 +170,7 @@ export function ProductImageLightbox({
   return (
     <div id={galleryId} className={className} data-pswp-product={productName} hidden>
       {images.map((src, idx) => {
-        const itemDims = dimensions[idx] || { width: 1600, height: 1600 }
+        const itemDims = dimensions.at(idx) ?? { width: 1600, height: 1600 }
         return (
           <a
             key={`${src}-${idx}`}
