@@ -3,13 +3,9 @@
 import { Canvas } from "@react-three/fiber"
 import { OrbitControls, Stage, useGLTF } from "@react-three/drei"
 import { Suspense, useState, useEffect } from "react"
-import { Box } from "lucide-react"
-import { cn } from "@/lib/utils"
 
 interface ProductViewer3DProps {
   modelPath: string
-  previewUrl?: string
-  previewAlt?: string
 }
 
 function Model({ path, onLoad }: { path: string; onLoad: () => void }) {
@@ -32,38 +28,28 @@ export default function ProductViewer3D({
 
   return (
     <div
-      className="relative w-full h-full overflow-hidden"
+      className="relative w-full h-full overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100"
       role="img"
       aria-label="Interactive 3D product viewer - use mouse to rotate and zoom"
     >
       {/* Loading indicator */}
       {!isLoaded && (
         <div
-          className="absolute inset-0 flex items-center justify-center z-20 bg-gradient-to-br from-slate-50 to-slate-100"
+          className="absolute inset-0 flex items-center justify-center z-20"
           aria-hidden="true"
         >
           <div className="flex flex-col items-center gap-3">
-            <div className="relative">
-              <Box className="w-10 h-10 text-cyan-700" />
-              <div
-                className="absolute inset-0 w-10 h-10 border-2 border-slate-200 border-t-cyan-700 rounded-full animate-spin"
-                aria-hidden="true"
-              />
-            </div>
-            <p className="text-sm font-mono text-slate-500">
-              Loading 3D Model...
-            </p>
+            <div
+              className="w-10 h-10 border-2 border-slate-200 border-t-cyan-700 rounded-full animate-spin"
+              aria-hidden="true"
+            />
+            <p className="text-sm font-mono text-slate-500">Loading 3D…</p>
           </div>
         </div>
       )}
 
-      {/* 3D Canvas - always rendered, opacity transitions when loaded */}
-      <div
-        className={cn(
-          "absolute inset-0 transition-opacity duration-500",
-          isLoaded ? "opacity-100" : "opacity-0"
-        )}
-      >
+      {/* 3D Canvas - no fade transitions (instant) */}
+      <div className="absolute inset-0">
         <Canvas camera={{ position: [0, 0, 5], fov: 45 }} aria-hidden="true">
           <Suspense fallback={null}>
             <Stage

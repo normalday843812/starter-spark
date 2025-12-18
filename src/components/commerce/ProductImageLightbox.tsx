@@ -1,6 +1,7 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
+import type React from "react"
 import { ChevronLeft, ChevronRight, XIcon } from "lucide-react"
 import Image from "next/image"
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog"
@@ -15,7 +16,6 @@ interface ProductImageLightboxProps {
   productName: string
   activeIndex: number
   onActiveIndexChange: (index: number) => void
-  aspectRatioHint?: number
   className?: string
 }
 
@@ -26,19 +26,9 @@ export function ProductImageLightbox({
   productName,
   activeIndex,
   onActiveIndexChange,
-  aspectRatioHint,
   className,
 }: ProductImageLightboxProps) {
   const count = images.length
-  const [activeAspectRatio, setActiveAspectRatio] = useState<number | null>(null)
-  const [viewport, setViewport] = useState(() => {
-    if (typeof window === "undefined") return { width: 0, height: 0 }
-    return { width: window.innerWidth, height: window.innerHeight }
-  })
-  const [chromeHeights, setChromeHeights] = useState(() => ({
-    header: 52,
-    thumbs: 92,
-  }))
 
   const displayIndex = useMemo(() => {
     if (count === 0) return 0
@@ -74,85 +64,15 @@ export function ProductImageLightbox({
   }, [open, count, goPrev, goNext])
 
   const pointerStartRef = useRef<{ x: number; y: number; id: number } | null>(null)
-  const headerRef = useRef<HTMLDivElement | null>(null)
-  const thumbsRef = useRef<HTMLDivElement | null>(null)
-  const aspectCacheRef = useRef<Record<string, number>>({})
 
-  useEffect(() => {
-    if (typeof window === "undefined") return
-    const onResize = () => setViewport({ width: window.innerWidth, height: window.innerHeight })
-    window.addEventListener("resize", onResize)
-    return () => window.removeEventListener("resize", onResize)
-  }, [])
-
-  useEffect(() => {
-    if (!open) return
-    const headerHeight = headerRef.current?.getBoundingClientRect().height ?? chromeHeights.header
-    const thumbsHeight = thumbsRef.current?.getBoundingClientRect().height ?? chromeHeights.thumbs
-    setChromeHeights({ header: headerHeight, thumbs: thumbsHeight })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, count, displayIndex, viewport.width, viewport.height])
-
-  useEffect(() => {
-    if (!open || count === 0) return
-    if (typeof window === "undefined") return
-
-    const url = images[displayIndex]
-    if (!url) {
-      setActiveAspectRatio(null)
-      return
-    }
-
-    const hintedRatio =
-      typeof aspectRatioHint === "number" && Number.isFinite(aspectRatioHint) && aspectRatioHint > 0
-        ? Math.max(1, Math.min(2.4, aspectRatioHint))
-        : null
-
-    const cachedRatio = aspectCacheRef.current[url]
-    if (typeof cachedRatio === "number") setActiveAspectRatio(cachedRatio)
-    else if (hintedRatio) setActiveAspectRatio(hintedRatio)
-
-    let cancelled = false
-    const img = new window.Image()
-    img.decoding = "async"
-    img.src = url
-
-    img.onload = () => {
-      if (cancelled) return
-      const ratio = img.naturalWidth && img.naturalHeight ? img.naturalWidth / img.naturalHeight : 0
-      if (!Number.isFinite(ratio) || ratio <= 0) return
-      const clamped = Math.max(1, Math.min(2.4, ratio))
-      aspectCacheRef.current[url] = clamped
-      setActiveAspectRatio(clamped)
-    }
-
-    img.onerror = () => {
-      if (cancelled) return
-      setActiveAspectRatio(null)
-    }
-
-    return () => {
-      cancelled = true
-    }
-  }, [open, count, images, displayIndex, aspectRatioHint])
-
-  const modalWidth = useMemo(() => {
-    if (!open) return 0
-    const ratio = activeAspectRatio ?? 1
-    // Increased max width from 1152 to 1400 (~20% larger) and reduced padding from 32px to 16px
-    const maxWidth = Math.max(0, Math.min(1400, viewport.width - 16))
-    const maxHeight = Math.max(0, viewport.height - 16)
-    const reservedHeight = chromeHeights.header + (count > 1 ? chromeHeights.thumbs : 0)
-    const availableHeight = Math.max(240, maxHeight - reservedHeight)
-    const minWidth = Math.min(320, maxWidth)
-    return Math.max(minWidth, Math.min(maxWidth, availableHeight * ratio))
-  }, [open, activeAspectRatio, viewport.width, viewport.height, chromeHeights.header, chromeHeights.thumbs, count])
-
-  const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    if (count < 2) return
-    if (e.pointerType === "mouse") return
-    pointerStartRef.current = { x: e.clientX, y: e.clientY, id: e.pointerId }
-  }, [count])
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      if (count < 2) return
+      if (e.pointerType === "mouse") return
+      pointerStartRef.current = { x: e.clientX, y: e.clientY, id: e.pointerId }
+    },
+    [count]
+  )
 
   const handlePointerUp = useCallback(
     (e: React.PointerEvent) => {
@@ -177,131 +97,130 @@ export function ProductImageLightbox({
 
   if (count === 0) return null
 
+  const activeSrc = images[displayIndex]
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
         className={cn(
-          "p-0 gap-0 overflow-hidden bg-white text-slate-900 border border-slate-200 shadow-2xl",
+          "!w-[calc(100vw-2rem)] !h-[calc(100vh-2rem)] !max-w-[calc(100vw-2rem)] !max-h-[calc(100vh-2rem)] !p-0 !gap-0 overflow-hidden bg-white text-slate-900 border border-slate-200 shadow-2xl",
           className
         )}
-        style={{
-          width: modalWidth ? `${modalWidth}px` : undefined,
-          maxWidth: "calc(100vw - 1rem)",
-          maxHeight: "calc(100vh - 1rem)",
-        }}
       >
         <DialogTitle className="sr-only">{productName} images</DialogTitle>
 
-        {/* Header */}
-        <div
-          ref={headerRef}
-          className="flex items-center justify-between border-b border-slate-200 px-4 py-3"
-        >
-          <div className="min-w-0">
-            <p className="truncate font-mono text-sm text-slate-700">{productName}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-xs text-slate-500">
-              {displayIndex + 1} / {count}
-            </span>
-            <DialogClose asChild>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                aria-label="Close image viewer"
+        <div className="relative h-full w-full">
+          <DialogClose asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-lg"
+              className="absolute right-3 top-3 z-30 bg-white/90 hover:bg-white border border-slate-200 shadow-sm text-slate-800"
+              aria-label="Close image viewer"
+            >
+              <XIcon className="size-5" />
+            </Button>
+          </DialogClose>
+
+          <div className="grid h-full w-full grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px]">
+            {/* Left: image */}
+            <div className="relative flex items-center justify-center p-3 sm:p-5 lg:p-6">
+              <div
+                className="relative w-full max-w-[calc(100vh-6rem)] aspect-square overflow-hidden rounded border border-slate-200 bg-slate-50"
+                onPointerDown={handlePointerDown}
+                onPointerUp={handlePointerUp}
+                onPointerCancel={handlePointerCancel}
               >
-                <XIcon />
-              </Button>
-            </DialogClose>
-          </div>
-        </div>
+                {/* Soft backdrop to make letterboxing feel intentional */}
+                <Image
+                  src={activeSrc}
+                  alt=""
+                  fill
+                  sizes="100vw"
+                  quality={20}
+                  className="object-cover blur-2xl scale-110 opacity-25 pointer-events-none"
+                  aria-hidden={true}
+                />
+                <div className="absolute inset-0 bg-white/55" aria-hidden="true" />
 
-        {/* Main Image */}
-        <div
-          className="relative w-full bg-slate-50 touch-pan-y"
-          style={{
-            aspectRatio: activeAspectRatio ?? 1,
-          }}
-          onPointerDown={handlePointerDown}
-          onPointerUp={handlePointerUp}
-          onPointerCancel={handlePointerCancel}
-        >
-          <Image
-            src={images[displayIndex]}
-            alt=""
-            fill
-            sizes="100vw"
-            quality={25}
-            className="object-cover blur-2xl scale-110 opacity-30 pointer-events-none"
-            aria-hidden={true}
-          />
-          <div className="absolute inset-0 bg-white/60" aria-hidden="true" />
+                <ProductImage
+                  key={activeSrc}
+                  src={activeSrc}
+                  alt={`${productName} - Image ${displayIndex + 1}`}
+                  sizes="100vw"
+                  quality={100}
+                  wrapperClassName="absolute inset-0"
+                />
 
-          <ProductImage
-            src={images[displayIndex]}
-            alt={`${productName} - Image ${displayIndex + 1}`}
-            sizes="100vw"
-            quality={100}
-            wrapperClassName="absolute inset-0"
-          />
+                {count > 1 && (
+                  <>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-lg"
+                      onClick={goPrev}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white border border-slate-200 shadow-sm text-slate-800"
+                      aria-label="Previous image"
+                    >
+                      <ChevronLeft className="size-5" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-lg"
+                      onClick={goNext}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white border border-slate-200 shadow-sm text-slate-800"
+                      aria-label="Next image"
+                    >
+                      <ChevronRight className="size-5" />
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
 
-          {count > 1 && (
-            <>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-lg"
-                onClick={goPrev}
-                className="absolute left-3 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white border border-slate-200 shadow-sm text-slate-800"
-                aria-label="Previous image"
-              >
-                <ChevronLeft className="size-5" />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-lg"
-                onClick={goNext}
-                className="absolute right-3 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white border border-slate-200 shadow-sm text-slate-800"
-                aria-label="Next image"
-              >
-                <ChevronRight className="size-5" />
-              </Button>
-            </>
-          )}
-        </div>
+            {/* Right: title + thumbnails */}
+            <div className="border-t lg:border-t-0 lg:border-l border-slate-200 bg-white p-3 sm:p-5 lg:p-6">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-mono text-sm text-slate-900 line-clamp-2">{productName}</p>
+                  <p className="mt-1 font-mono text-xs text-slate-500">
+                    {displayIndex + 1} / {count}
+                  </p>
+                </div>
+              </div>
 
-        {/* Thumbnails */}
-        {count > 1 && (
-          <div ref={thumbsRef} className="border-t border-slate-200 bg-white px-3 py-3">
-            <div className="flex gap-2 overflow-x-auto pr-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {images.map((imageUrl, idx) => (
-                <button
-                  key={imageUrl + idx}
-                  type="button"
-                  onClick={() => selectIndex(idx)}
-                  className={cn(
-                    "relative shrink-0 size-16 rounded border overflow-hidden transition-all",
-                    idx === displayIndex
-                      ? "border-cyan-700 ring-2 ring-cyan-700/20"
-                      : "border-slate-200 hover:border-slate-300"
-                  )}
-                  aria-label={`View image ${idx + 1}`}
-                >
-                  <ThumbnailImage
-                    src={imageUrl}
-                    alt={`${productName} thumbnail ${idx + 1}`}
-                    size={64}
-                    wrapperClassName="absolute inset-0"
-                  />
-                </button>
-              ))}
+              {count > 1 && (
+                <div className="mt-4 grid grid-cols-6 sm:grid-cols-8 lg:grid-cols-4 gap-2">
+                  {images.map((imageUrl, idx) => (
+                    <button
+                      key={imageUrl + idx}
+                      type="button"
+                      onMouseEnter={() => selectIndex(idx)}
+                      onFocus={() => selectIndex(idx)}
+                      onClick={() => selectIndex(idx)}
+                      className={cn(
+                        "relative aspect-square w-full rounded border overflow-hidden transition-all",
+                        idx === displayIndex
+                          ? "border-cyan-700 ring-2 ring-cyan-700/20"
+                          : "border-slate-200 hover:border-slate-300"
+                      )}
+                      aria-label={`View image ${idx + 1}`}
+                    >
+                      <ThumbnailImage
+                        src={imageUrl}
+                        alt={`${productName} thumbnail ${idx + 1}`}
+                        size={64}
+                        wrapperClassName="absolute inset-0"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
-        )}
+        </div>
       </DialogContent>
     </Dialog>
   )
