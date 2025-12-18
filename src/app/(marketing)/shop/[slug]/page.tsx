@@ -178,19 +178,13 @@ export default async function ProductDetailPage({
     { name: product.name, url: `/shop/${slug}` },
   ])
 
-  return (
-    <div className="min-h-screen bg-slate-50">
-      {/* JSON-LD Structured Data for SEO */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
-      />
-      {/* Breadcrumb */}
-      <section className="pt-24 pb-4 px-6 lg:px-20">
+	  return (
+	    <div className="min-h-screen bg-slate-50">
+	      {/* JSON-LD Structured Data for SEO */}
+	      <script type="application/ld+json">{JSON.stringify(productSchema)}</script>
+	      <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
+	      {/* Breadcrumb */}
+	      <section className="pt-24 pb-4 px-6 lg:px-20">
         <div className="max-w-7xl mx-auto">
           <Link
             href="/shop"

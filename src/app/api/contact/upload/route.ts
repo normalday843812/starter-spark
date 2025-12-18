@@ -44,23 +44,50 @@ function sanitizeFilename(filename: string): string {
 }
 
 // Generate a secure random path to prevent enumeration
-function generateSecurePath(originalFilename: string, mimeType: string): string {
+function getExtensionForMimeType(mimeType: AllowedMimeType): string {
+  switch (mimeType) {
+    case "image/jpeg":
+      return "jpg"
+    case "image/png":
+      return "png"
+    case "image/gif":
+      return "gif"
+    case "image/webp":
+      return "webp"
+    case "video/mp4":
+      return "mp4"
+    case "video/webm":
+      return "webm"
+    case "video/quicktime":
+      return "mov"
+  }
+}
+
+function getAllowedTypeConfig(mimeType: AllowedMimeType): { maxSize: number } {
+  switch (mimeType) {
+    case "image/jpeg":
+      return ALLOWED_TYPES["image/jpeg"]
+    case "image/png":
+      return ALLOWED_TYPES["image/png"]
+    case "image/gif":
+      return ALLOWED_TYPES["image/gif"]
+    case "image/webp":
+      return ALLOWED_TYPES["image/webp"]
+    case "video/mp4":
+      return ALLOWED_TYPES["video/mp4"]
+    case "video/webm":
+      return ALLOWED_TYPES["video/webm"]
+    case "video/quicktime":
+      return ALLOWED_TYPES["video/quicktime"]
+  }
+}
+
+function generateSecurePath(originalFilename: string, mimeType: AllowedMimeType): string {
   const timestamp = Date.now()
   const randomId = crypto.randomBytes(16).toString("hex")
   const sanitizedName = sanitizeFilename(originalFilename)
 
-  // Get extension from MIME type as fallback
-  const extMap: Record<string, string> = {
-    "image/jpeg": "jpg",
-    "image/png": "png",
-    "image/gif": "gif",
-    "image/webp": "webp",
-    "video/mp4": "mp4",
-    "video/webm": "webm",
-    "video/quicktime": "mov",
-  }
-
-  const ext = extMap[mimeType] || sanitizedName.split(".").pop() || "bin"
+  const ext = getExtensionForMimeType(mimeType) || sanitizedName.split(".").pop() || "bin"
 
   // Path format: YYYY/MM/DD/randomId_timestamp.ext
   const date = new Date()
@@ -139,7 +166,7 @@ export async function POST(request: NextRequest) {
       }
 
       const mimeType = detectedType.mime as AllowedMimeType
-      const typeConfig = ALLOWED_TYPES[mimeType]
+      const typeConfig = getAllowedTypeConfig(mimeType)
 
       // Check individual file size limit
       if (file.size > typeConfig.maxSize) {
@@ -213,6 +240,6 @@ export async function POST(request: NextRequest) {
 }
 
 // Only allow POST
-export async function GET() {
+export function GET() {
   return NextResponse.json({ error: "Method not allowed" }, { status: 405 })
 }

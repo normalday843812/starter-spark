@@ -3,7 +3,7 @@ import { Suspense } from "react"
 import Link from "next/link"
 import type { Metadata } from "next"
 import { SupportArticles } from "./SupportArticles"
-import { Search, MessageCircle, BookOpen, Mail } from "lucide-react"
+import { MessageCircle, BookOpen, Mail } from "lucide-react"
 
 export const metadata: Metadata = {
   title: "Support & Troubleshooting",

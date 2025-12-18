@@ -147,19 +147,13 @@ export default async function CoursePage({
     { name: course.title, url: `/learn/${product.slug}` },
   ])
 
-  return (
-    <div className="min-h-screen bg-slate-50">
-      {/* JSON-LD Structured Data for SEO */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(courseSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
-      />
-      {/* Header */}
-      <section className="pt-32 pb-8 px-6 lg:px-20 bg-white border-b border-slate-200">
+	  return (
+	    <div className="min-h-screen bg-slate-50">
+	      {/* JSON-LD Structured Data for SEO */}
+	      <script type="application/ld+json">{JSON.stringify(courseSchema)}</script>
+	      <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
+	      {/* Header */}
+	      <section className="pt-32 pb-8 px-6 lg:px-20 bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto">
           <Link
             href="/learn"

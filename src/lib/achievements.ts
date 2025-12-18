@@ -7,6 +7,7 @@
  */
 
 import { supabaseAdmin } from "@/lib/supabase/admin"
+import type { Database, Json } from "@/lib/supabase/database.types"
 
 export type AchievementKey =
   | "first_kit"
@@ -41,14 +42,13 @@ export interface AwardResult {
 export async function awardAchievement(
   userId: string,
   achievementKey: AchievementKey,
-  metadata?: Record<string, unknown>
+  metadata?: Json
 ): Promise<AwardResult> {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await supabaseAdmin.rpc("award_achievement", {
       p_user_id: userId,
       p_achievement_key: achievementKey,
-      p_metadata: (metadata ?? null) as any,
+      p_metadata: metadata ?? null,
     })
 
     if (error) {
@@ -258,7 +258,7 @@ export interface Achievement {
 export interface UserAchievement {
   achievement_id: string
   earned_at: string
-  metadata?: Record<string, unknown>
+  metadata: Json | null
 }
 
 export interface UserAchievementsResult {
@@ -266,6 +266,9 @@ export interface UserAchievementsResult {
   userAchievements: UserAchievement[]
   totalPoints: number
 }
+
+type AchievementRow = Database["public"]["Tables"]["achievements"]["Row"]
+type UserAchievementRow = Database["public"]["Tables"]["user_achievements"]["Row"]
 
 /**
  * Get all achievements with user's earned status
@@ -283,7 +286,8 @@ export async function getUserAchievements(userId: string): Promise<UserAchieveme
   }
 
   // Map to proper types
-  const achievements: Achievement[] = (achievementsData || []).map((a) => ({
+  const achievementsRows = (achievementsData ?? []) as AchievementRow[]
+  const achievements: Achievement[] = achievementsRows.map((a) => ({
     id: a.id,
     key: a.key,
     name: a.name,
@@ -307,10 +311,11 @@ export async function getUserAchievements(userId: string): Promise<UserAchieveme
   }
 
   // Map to proper types
-  const userAchievements: UserAchievement[] = (userAchievementsData || []).map((ua) => ({
+  const userAchievementRows = (userAchievementsData ?? []) as UserAchievementRow[]
+  const userAchievements: UserAchievement[] = userAchievementRows.map((ua) => ({
     achievement_id: ua.achievement_id,
     earned_at: ua.earned_at ?? new Date().toISOString(),
-    metadata: ua.metadata as Record<string, unknown> | undefined,
+    metadata: ua.metadata,
   }))
 
   // Calculate total points

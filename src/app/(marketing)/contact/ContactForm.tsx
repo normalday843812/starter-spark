@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { submitContactForm, ContactFormData } from "./actions"
-import { Send, CheckCircle2, AlertCircle, Loader2, Upload, X, FileImage, FileVideo } from "lucide-react"
+import { Send, CheckCircle2, AlertCircle, Loader2, Upload, X, FileVideo } from "lucide-react"
 import Link from "next/link"
 
 // Max file sizes
@@ -34,13 +34,26 @@ interface FilePreview {
   isVideo: boolean
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null
+}
+
+function isUploadedFile(value: unknown): value is UploadedFile {
+  return (
+    isRecord(value) &&
+    typeof value.name === "string" &&
+    typeof value.path === "string" &&
+    typeof value.size === "number" &&
+    typeof value.type === "string"
+  )
+}
+
 export function ContactForm() {
   const [isPending, startTransition] = useTransition()
   const [isUploading, setIsUploading] = useState(false)
   const [result, setResult] = useState<{ success: boolean; error?: string } | null>(null)
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [filePreviews, setFilePreviews] = useState<FilePreview[]>([])
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
   const [uploadError, setUploadError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -104,10 +117,10 @@ export function ContactForm() {
   }
 
   const removeFile = (index: number) => {
-    const newPreviews = [...filePreviews]
-    URL.revokeObjectURL(newPreviews[index].preview)
-    newPreviews.splice(index, 1)
-    setFilePreviews(newPreviews)
+    const preview = filePreviews.at(index)
+    if (!preview) return
+    URL.revokeObjectURL(preview.preview)
+    setFilePreviews((prev) => prev.filter((_, i) => i !== index))
   }
 
   const uploadFiles = async (): Promise<UploadedFile[] | null> => {
@@ -122,23 +135,29 @@ export function ContactForm() {
         formData.append("files", preview.file)
       }
 
-      const response = await fetch("/api/contact/upload", {
-        method: "POST",
-        body: formData,
-      })
+	      const response = await fetch("/api/contact/upload", {
+	        method: "POST",
+	        body: formData,
+	      })
 
-      const data = await response.json()
+	      const data: unknown = await response.json()
 
-      if (!response.ok) {
-        setUploadError(data.error || "Upload failed")
-        return null
-      }
+	      if (!response.ok) {
+	        const message = isRecord(data) && typeof data.error === "string" ? data.error : "Upload failed"
+	        setUploadError(message)
+	        return null
+	      }
 
-      return data.files
-    } catch {
-      setUploadError("Failed to upload files. Please try again.")
-      return null
-    } finally {
+	      if (!isRecord(data) || !Array.isArray(data.files) || !data.files.every(isUploadedFile)) {
+	        setUploadError("Upload failed")
+	        return null
+	      }
+
+	      return data.files
+	    } catch {
+	      setUploadError("Failed to upload files. Please try again.")
+	      return null
+	    } finally {
       setIsUploading(false)
     }
   }
@@ -171,13 +190,12 @@ export function ContactForm() {
 
       if (response.success) {
         // Clean up previews
-        filePreviews.forEach((p) => URL.revokeObjectURL(p.preview))
-        setFilePreviews([])
-        setUploadedFiles([])
-        setAcceptedTerms(false)
-        setFormData({
-          name: "",
-          email: "",
+	        filePreviews.forEach((p) => URL.revokeObjectURL(p.preview))
+	        setFilePreviews([])
+	        setAcceptedTerms(false)
+	        setFormData({
+	          name: "",
+	          email: "",
           subject: "",
           situation: "",
         })
@@ -213,8 +231,11 @@ export function ContactForm() {
 
   const isSubmitting = isPending || isUploading
 
-  return (
-    <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-lg p-6 md:p-8 space-y-6">
+	  return (
+	    <form
+	      onSubmit={(e) => void handleSubmit(e)}
+	      className="bg-white border border-slate-200 rounded-lg p-6 md:p-8 space-y-6"
+	    >
       {(result?.error || uploadError) && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />

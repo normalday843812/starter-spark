@@ -136,12 +136,12 @@ export function SupportArticles({ articlesByCategory, categories }: SupportArtic
                       {/* Feedback */}
                       <div className="mt-6 pt-4 border-t border-slate-100">
                         <p className="text-sm text-slate-600 mb-3">Was this helpful?</p>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleFeedback(article.id, true)}
-                            disabled={!!feedback[article.id]}
-                            className={cn(
-                              "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors",
+	                        <div className="flex gap-2">
+	                          <button
+	                            onClick={() => void handleFeedback(article.id, true)}
+	                            disabled={!!feedback[article.id]}
+	                            className={cn(
+	                              "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors",
                               feedback[article.id] === "helpful"
                                 ? "bg-emerald-100 text-emerald-700"
                                 : feedback[article.id]
@@ -151,12 +151,12 @@ export function SupportArticles({ articlesByCategory, categories }: SupportArtic
                           >
                             <ThumbsUp className="w-4 h-4" />
                             Yes
-                          </button>
-                          <button
-                            onClick={() => handleFeedback(article.id, false)}
-                            disabled={!!feedback[article.id]}
-                            className={cn(
-                              "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors",
+	                          </button>
+	                          <button
+	                            onClick={() => void handleFeedback(article.id, false)}
+	                            disabled={!!feedback[article.id]}
+	                            className={cn(
+	                              "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors",
                               feedback[article.id] === "not_helpful"
                                 ? "bg-red-100 text-red-700"
                                 : feedback[article.id]
@@ -205,11 +205,10 @@ function SolutionsContent({ content }: { content: string }) {
     }
   }
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i]
+	  for (const line of lines) {
 
-    // Code block start/end
-    if (line.startsWith('```')) {
+	    // Code block start/end
+	    if (line.startsWith('```')) {
       if (inCodeBlock) {
         // End code block
         elements.push(

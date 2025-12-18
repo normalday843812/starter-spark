@@ -126,7 +126,7 @@ export function SupportActions({ submission }: SupportActionsProps) {
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleViewOpen}>
+          <DropdownMenuItem onClick={() => void handleViewOpen()}>
             <Eye className="mr-2 h-4 w-4" />
             View Details
           </DropdownMenuItem>
@@ -139,28 +139,28 @@ export function SupportActions({ submission }: SupportActionsProps) {
           <DropdownMenuSeparator />
           <DropdownMenuLabel>Update Status</DropdownMenuLabel>
           <DropdownMenuItem
-            onClick={() => updateStatus("pending")}
+            onClick={() => void updateStatus("pending")}
             disabled={(submission.status || "pending") === "pending"}
           >
             <Clock className="mr-2 h-4 w-4 text-amber-500" />
             Mark Pending
           </DropdownMenuItem>
           <DropdownMenuItem
-            onClick={() => updateStatus("in_progress")}
+            onClick={() => void updateStatus("in_progress")}
             disabled={(submission.status || "pending") === "in_progress"}
           >
             <Clock className="mr-2 h-4 w-4 text-cyan-500" />
             Mark In Progress
           </DropdownMenuItem>
           <DropdownMenuItem
-            onClick={() => updateStatus("resolved")}
+            onClick={() => void updateStatus("resolved")}
             disabled={(submission.status || "pending") === "resolved"}
           >
             <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
             Mark Resolved
           </DropdownMenuItem>
           <DropdownMenuItem
-            onClick={() => updateStatus("closed")}
+            onClick={() => void updateStatus("closed")}
             disabled={(submission.status || "pending") === "closed"}
           >
             <XCircle className="mr-2 h-4 w-4 text-slate-500" />

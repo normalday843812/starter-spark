@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
 import { supabaseAdmin } from "@/lib/supabase/admin"
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { articleId, isHelpful } = body
+    const body: unknown = await request.json()
+    const articleId = isRecord(body) && typeof body.articleId === "string" ? body.articleId : null
+    const isHelpful = isRecord(body) && typeof body.isHelpful === "boolean" ? body.isHelpful : null
 
     if (!articleId || typeof isHelpful !== "boolean") {
       return NextResponse.json(

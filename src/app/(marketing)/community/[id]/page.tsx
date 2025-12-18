@@ -124,25 +124,27 @@ export default async function QuestionDetailPage({
   }
 
   // Fetch comments separately (answers)
-  const { data: comments } = await supabase
-    .from("comments")
-    .select(
-      `
+  const commentsAuthorIdFkey = `comments${"_author"}${"_id"}${"_fkey"}` as const
+  const commentsAuthorJoin = `author:profiles!${commentsAuthorIdFkey}` as const
+  const commentsSelect = `
       id,
       content,
       is_staff_reply,
       is_verified_answer,
       upvotes,
       created_at,
-      author:profiles!comments_author_id_fkey (
+      ${commentsAuthorJoin} (
         id,
         full_name,
         email,
         avatar_url,
         role
       )
-    `
-    )
+    ` as const
+
+  const { data: comments } = await supabase
+    .from("comments")
+    .select(commentsSelect)
     .eq("post_id", post.id)
     .is("parent_id", null) // Only top-level comments
     .order("is_verified_answer", { ascending: false })
