@@ -59,13 +59,21 @@ export default async function CoursePage({
     notFound()
   }
 
-  const product = course.product as { id: string; slug: string; name: string } | null
+  const product = course.product as unknown as { id: string; slug: string; name: string } | null
   if (!product) {
     notFound()
   }
 
   // Sort modules and lessons by sort_order
-  const sortedModules = course.modules
+  type ModuleWithLessons = {
+    id: string
+    title: string
+    description: string | null
+    sort_order: number
+    lessons: { id: string; slug: string; title: string; description: string | null; duration_minutes: number; sort_order: number }[] | null
+  }
+  const modules = course.modules as unknown as ModuleWithLessons[] | null
+  const sortedModules = modules
     ?.sort((a, b) => a.sort_order - b.sort_order)
     .map((mod) => ({
       ...mod,

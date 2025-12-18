@@ -93,7 +93,7 @@ export async function POST(request: Request) {
     }
 
     const productName =
-      (claimedLicense.product as { name: string } | null)?.name || "Kit"
+      (claimedLicense.product as unknown as { name: string } | null)?.name || "Kit"
 
     return NextResponse.json({
       message: `${productName} claimed successfully!`,

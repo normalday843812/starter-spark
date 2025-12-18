@@ -86,7 +86,7 @@ export default async function WorkshopPage() {
       }>()
 
       for (const license of data) {
-        const product = license.product as { slug: string; name: string; description: string | null } | null
+        const product = license.product as unknown as { slug: string; name: string; description: string | null } | null
         if (!product) continue
 
         const existing = kitMap.get(product.slug)
