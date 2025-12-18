@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { ArrowRight, ImageIcon, ZoomIn } from "lucide-react"
 import { motion } from "motion/react"
 import Link from "next/link"
-import { useState, useCallback } from "react"
+import { useMemo, useState, useCallback } from "react"
 import { ProductImage, ThumbnailImage } from "@/components/ui/optimized-image"
 import { cn } from "@/lib/utils"
 import { ProductImageLightbox } from "@/components/commerce/ProductImageLightbox"
@@ -33,8 +33,17 @@ interface ProductSpotlightProps {
 export function ProductSpotlightSection({ product }: ProductSpotlightProps) {
   const [selectedImage, setSelectedImage] = useState(0)
   const [lightboxOpen, setLightboxOpen] = useState(false)
-  const images = product.images || []
+  const images = useMemo(() => product.images ?? [], [product.images])
   const hasImages = images.length > 0
+  const imageCount = images.length
+  const displayImageIndex = useMemo(() => {
+    if (imageCount === 0) return 0
+    return ((selectedImage % imageCount) + imageCount) % imageCount
+  }, [imageCount, selectedImage])
+  const displayImageSrc = useMemo(() => {
+    if (imageCount === 0) return null
+    return images.at(displayImageIndex) ?? null
+  }, [displayImageIndex, imageCount, images])
 
   const handleSelectImage = useCallback((idx: number) => {
     setSelectedImage(idx)
@@ -70,21 +79,21 @@ export function ProductSpotlightSection({ product }: ProductSpotlightProps) {
             viewport={{ once: true }}
             className="w-full lg:w-3/5"
           >
-            <div className="relative aspect-[4/3] bg-white rounded border border-slate-200 shadow-sm overflow-hidden">
-              {hasImages ? (
-                <button
-                  type="button"
-                  onClick={() => setLightboxOpen(true)}
-                  className="absolute inset-0 cursor-zoom-in group"
-                  aria-label="Open image viewer"
-                >
-                  <ProductImage
-                    src={images[selectedImage]}
-                    alt={`${product.name} - Image ${selectedImage + 1}`}
-                    sizes="(max-width: 1024px) 100vw, 800px"
-                    quality={95}
-                    priority
-                    wrapperClassName="absolute inset-0"
+	            <div className="relative aspect-[4/3] bg-white rounded border border-slate-200 shadow-sm overflow-hidden">
+	              {hasImages && displayImageSrc ? (
+	                <button
+	                  type="button"
+	                  onClick={() => setLightboxOpen(true)}
+	                  className="absolute inset-0 cursor-zoom-in group"
+	                  aria-label="Open image viewer"
+	                >
+	                  <ProductImage
+	                    src={displayImageSrc}
+	                    alt={`${product.name} - Image ${displayImageIndex + 1}`}
+	                    sizes="(max-width: 1024px) 100vw, 800px"
+	                    quality={95}
+	                    priority
+	                    wrapperClassName="absolute inset-0"
                     fallback={
                       <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
                         <div className="text-center p-8">
@@ -150,14 +159,14 @@ export function ProductSpotlightSection({ product }: ProductSpotlightProps) {
               </div>
             )}
 
-            <ProductImageLightbox
-              open={lightboxOpen}
-              onOpenChange={setLightboxOpen}
-              images={images}
-              productName={product.name}
-              activeIndex={selectedImage}
-              onActiveIndexChange={handleSelectImage}
-            />
+	            <ProductImageLightbox
+	              open={lightboxOpen}
+	              onOpenChange={setLightboxOpen}
+	              images={images}
+	              productName={product.name}
+	              activeIndex={displayImageIndex}
+	              onActiveIndexChange={handleSelectImage}
+	            />
           </motion.div>
 
           {/* Right - Content (40%) */}

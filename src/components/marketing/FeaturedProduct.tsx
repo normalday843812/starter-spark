@@ -67,17 +67,14 @@ export async function FeaturedProduct() {
     inStock: true,
   })
 
-  return (
-    <>
-      {/* Product Schema JSON-LD for SEO */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
-      />
-      <ProductSpotlightSection
-        product={{
-          name: product.name,
-          slug: product.slug,
+	  return (
+	    <>
+	      {/* Product Schema JSON-LD for SEO */}
+	      <script type="application/ld+json">{JSON.stringify(productSchema)}</script>
+	      <ProductSpotlightSection
+	        product={{
+	          name: product.name,
+	          slug: product.slug,
           description: product.description,
           priceCents: product.price_cents,
           specs: product.specs,
