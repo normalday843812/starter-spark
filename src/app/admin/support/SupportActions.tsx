@@ -28,6 +28,38 @@ interface Attachment {
   type: string
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null
+}
+
+function isValidAttachmentPath(path: string): boolean {
+  if (!path || path.length > 500) return false
+  if (path.startsWith("/") || path.includes("..") || path.includes("\\")) return false
+
+  const allowedExt = "(?:jpg|png|gif|webp|mp4|webm|mov)"
+  const legacyPattern = new RegExp(
+    `^\\d{4}\\/\\d{2}\\/\\d{2}\\/[a-f0-9]{32}_\\d+\\.${allowedExt}$`,
+    "i"
+  )
+  const sessionPattern = new RegExp(
+    `^contact\\/[a-f0-9]{32}\\/\\d{4}\\/\\d{2}\\/\\d{2}\\/[a-f0-9]{32}_\\d+\\.${allowedExt}$`,
+    "i"
+  )
+
+  return legacyPattern.test(path) || sessionPattern.test(path)
+}
+
+function isAttachment(value: unknown): value is Attachment {
+  return (
+    isRecord(value) &&
+    typeof value.name === "string" &&
+    typeof value.path === "string" &&
+    typeof value.size === "number" &&
+    typeof value.type === "string" &&
+    isValidAttachmentPath(value.path)
+  )
+}
+
 interface Submission {
   id: string
   name: string
@@ -53,7 +85,7 @@ export function SupportActions({ submission }: SupportActionsProps) {
 
   // Parse attachments from JSON
   const attachments: Attachment[] = Array.isArray(submission.attachments)
-    ? (submission.attachments as Attachment[])
+    ? submission.attachments.filter(isAttachment)
     : []
 
   // Fetch signed URLs when dialog opens

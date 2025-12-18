@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
 import { supabaseAdmin } from "@/lib/supabase/admin"
+import { rateLimit, rateLimitHeaders } from "@/lib/rate-limit"
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = await rateLimit(request, "supportFeedback")
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const body: unknown = await request.json()
     const articleId = isRecord(body) && typeof body.articleId === "string" ? body.articleId : null
@@ -32,7 +36,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true }, { headers: rateLimitHeaders("supportFeedback") })
   } catch (error) {
     console.error("Error in feedback endpoint:", error)
     return NextResponse.json(

@@ -1,5 +1,6 @@
 import { headers } from 'next/headers'
 import { supabaseAdmin } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import type { Json } from '@/lib/supabase/database.types'
 
 /**
@@ -125,7 +126,7 @@ export async function logAuditEvent({
 
 /**
  * Fetch audit logs with optional filters
- * Only admins can access this function (enforced by RLS)
+ * Only admins/staff can access this function (enforced in code before using service role)
  */
 export async function getAuditLogs(options?: {
   userId?: string
@@ -136,6 +137,26 @@ export async function getAuditLogs(options?: {
   offset?: number
 }) {
   const { userId, action, resourceType, resourceId, limit = 50, offset = 0 } = options || {}
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser()
+
+  if (userError || !user) {
+    return []
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (profileError || !profile || (profile.role !== 'admin' && profile.role !== 'staff')) {
+    return []
+  }
 
   let query = supabaseAdmin
     .from('admin_audit_log')

@@ -23,9 +23,7 @@ export function generateLicenseCode(): string {
   for (let i = 0; i < LICENSE_CODE_SEGMENTS; i++) {
     let segment = ""
     for (let j = 0; j < LICENSE_CODE_SEGMENT_LENGTH; j++) {
-      segment += LICENSE_CODE_CHARS.charAt(
-        Math.floor(Math.random() * LICENSE_CODE_CHARS.length)
-      )
+      segment += LICENSE_CODE_CHARS.charAt(crypto.randomInt(LICENSE_CODE_CHARS.length))
     }
     parts.push(segment)
   }

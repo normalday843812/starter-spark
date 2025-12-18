@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og"
 import { NextRequest } from "next/server"
+import { rateLimit } from "@/lib/rate-limit"
 
 export const runtime = "edge"
 
@@ -9,14 +10,75 @@ const size = {
   height: 630,
 }
 
+function getAllowedImageHosts(): Set<string> {
+  const allowed = new Set<string>(["images.unsplash.com"])
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  if (supabaseUrl) {
+    try {
+      allowed.add(new URL(supabaseUrl).hostname)
+    } catch {
+      // ignore invalid env
+    }
+  }
+
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (process.env.VERCEL_BRANCH_URL ? `https://${process.env.VERCEL_BRANCH_URL}` : null) ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null)
+
+  if (siteUrl) {
+    try {
+      allowed.add(new URL(siteUrl).hostname)
+    } catch {
+      // ignore invalid env
+    }
+  }
+
+  return allowed
+}
+
+function sanitizeOgImageUrl(value: string | null): string | null {
+  if (!value) return null
+  if (value.length > 2048) return null
+
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (process.env.VERCEL_BRANCH_URL ? `https://${process.env.VERCEL_BRANCH_URL}` : null) ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
+
+  let url: URL
+  try {
+    url = value.startsWith("/") ? new URL(value, siteUrl) : new URL(value)
+  } catch {
+    return null
+  }
+
+  const isLocalDev =
+    process.env.NODE_ENV !== "production" &&
+    (url.hostname === "localhost" || url.hostname === "127.0.0.1")
+
+  if (url.protocol !== "https:" && !(isLocalDev && url.protocol === "http:")) {
+    return null
+  }
+
+  const allowedHosts = getAllowedImageHosts()
+  if (!allowedHosts.has(url.hostname)) return null
+
+  return url.toString()
+}
+
 export async function GET(request: NextRequest) {
+  const rateLimitResponse = await rateLimit(request, "ogImage")
+  if (rateLimitResponse) return rateLimitResponse
+
   const { searchParams } = request.nextUrl
 
   // Get dynamic content from query params
-  const title = searchParams.get("title") || "StarterSpark"
-  const subtitle = searchParams.get("subtitle") || "Open Source Robotics Kits"
+  const title = (searchParams.get("title") || "StarterSpark").slice(0, 140)
+  const subtitle = (searchParams.get("subtitle") || "Open Source Robotics Kits").slice(0, 240)
   const type = searchParams.get("type") || "default" // default, product, event, post
-  const imageUrl = searchParams.get("image") // Optional product/event image
+  const imageUrl = sanitizeOgImageUrl(searchParams.get("image")) // Optional product/event image
 
   // Load fonts
   const fontOrigin = "https://fonts.gstatic.com"

@@ -2,9 +2,15 @@ import { createClient } from "@/lib/supabase/server"
 import { supabaseAdmin } from "@/lib/supabase/admin"
 import { NextResponse } from "next/server"
 import { sendWelcomeEmail } from "@/lib/email/send"
+import { isValidClaimToken } from "@/lib/validation"
+
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  (process.env.VERCEL_BRANCH_URL ? `https://${process.env.VERCEL_BRANCH_URL}` : null) ||
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url)
+  const { searchParams } = new URL(request.url)
   const code = searchParams.get("code")
   const claimToken = searchParams.get("claim")
   const redirectTo = searchParams.get("redirect")
@@ -15,7 +21,7 @@ export async function GET(request: Request) {
 
     if (error) {
       console.error("Auth callback error:", error)
-      return NextResponse.redirect(`${origin}/login?error=auth_failed`)
+      return NextResponse.redirect(new URL("/login?error=auth_failed", SITE_URL))
     }
 
     const user = data.user
@@ -47,7 +53,7 @@ export async function GET(request: Request) {
     }
 
     // If there's a claim token, claim the license
-    if (claimToken && user) {
+    if (claimToken && user && isValidClaimToken(claimToken)) {
       try {
         // Atomically claim the license using the claim token
         const { data: claimedLicense, error: claimError } = await supabaseAdmin
@@ -73,7 +79,7 @@ export async function GET(request: Request) {
       }
 
       // Redirect to workshop after claiming
-      return NextResponse.redirect(`${origin}/workshop?claimed=true`)
+      return NextResponse.redirect(new URL("/workshop?claimed=true", SITE_URL))
     }
 
     // Redirect to the requested page or default to workshop
@@ -92,9 +98,9 @@ export async function GET(request: Request) {
         destination = redirectTo
       }
     }
-    return NextResponse.redirect(`${origin}${destination}`)
+    return NextResponse.redirect(new URL(destination, SITE_URL))
   }
 
   // No code provided, redirect to login
-  return NextResponse.redirect(`${origin}/login`)
+  return NextResponse.redirect(new URL("/login", SITE_URL))
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { fileTypeFromBuffer } from "file-type"
 import { supabaseAdmin } from "@/lib/supabase/admin"
 import crypto from "crypto"
+import { rateLimit, rateLimitHeaders } from "@/lib/rate-limit"
 
 // Allowed file types with their magic byte signatures
 const ALLOWED_TYPES = {
@@ -82,24 +83,33 @@ function getAllowedTypeConfig(mimeType: AllowedMimeType): { maxSize: number } {
   }
 }
 
-function generateSecurePath(originalFilename: string, mimeType: AllowedMimeType): string {
+function generateSecurePath(
+  originalFilename: string,
+  mimeType: AllowedMimeType,
+  uploadSession: string
+): string {
   const timestamp = Date.now()
   const randomId = crypto.randomBytes(16).toString("hex")
   const sanitizedName = sanitizeFilename(originalFilename)
 
   const ext = getExtensionForMimeType(mimeType) || sanitizedName.split(".").pop() || "bin"
 
-  // Path format: YYYY/MM/DD/randomId_timestamp.ext
+  // Path format: contact/<session>/YYYY/MM/DD/randomId_timestamp.ext
   const date = new Date()
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, "0")
   const day = String(date.getDate()).padStart(2, "0")
 
-  return `${year}/${month}/${day}/${randomId}_${timestamp}.${ext}`
+  return `contact/${uploadSession}/${year}/${month}/${day}/${randomId}_${timestamp}.${ext}`
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = await rateLimit(request, "contactUpload")
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
+    const uploadSession = crypto.randomBytes(16).toString("hex")
+
     // Parse multipart form data
     const formData = await request.formData()
     const files = formData.getAll("files") as File[]
@@ -199,7 +209,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Generate secure storage path
-      const storagePath = generateSecurePath(file.name, mimeType)
+      const storagePath = generateSecurePath(file.name, mimeType, uploadSession)
 
       // Upload to Supabase Storage using service role
       const { error: uploadError } = await supabaseAdmin.storage
@@ -225,10 +235,14 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    return NextResponse.json({
-      success: true,
-      files: uploadedFiles,
-    })
+    return NextResponse.json(
+      {
+        success: true,
+        uploadSession,
+        files: uploadedFiles,
+      },
+      { headers: rateLimitHeaders("contactUpload") }
+    )
 
   } catch (error) {
     console.error("Upload error:", error)
