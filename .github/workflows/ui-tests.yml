@@ -87,7 +87,7 @@ jobs:
         run: npx playwright install --with-deps chrome
 
       - name: Run Playwright tests
-        run: npx playwright test --project=chromium
+        run: npx playwright test
         env:
           HOME: /root
           PLAYWRIGHT_SKIP_WEBSERVER: 1
@@ -154,7 +154,7 @@ jobs:
         run: npx playwright install --with-deps chrome
 
       - name: Run Playwright tests (sharded)
-        run: npx playwright test --project=chromium --shard=${{ matrix.shard }}/${{ strategy.job-total }}
+        run: npx playwright test --shard=${{ matrix.shard }}/${{ strategy.job-total }}
         env:
           HOME: /root
           PLAYWRIGHT_SKIP_WEBSERVER: 1
