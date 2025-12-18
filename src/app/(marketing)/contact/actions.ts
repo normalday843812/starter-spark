@@ -2,11 +2,19 @@
 
 import { supabaseAdmin } from "@/lib/supabase/admin"
 
+export type Attachment = {
+  name: string
+  path: string
+  size: number
+  type: string
+}
+
 export type ContactFormData = {
   name: string
   email: string
-  subject: "general" | "technical" | "educator" | "partnership" | "press"
-  message: string
+  subject: string
+  situation: string
+  attachments?: Attachment[]
 }
 
 export type ContactFormResult = {
@@ -26,21 +34,35 @@ export async function submitContactForm(
     return { success: false, error: "Please enter a valid email address" }
   }
 
-  if (!data.message || data.message.trim().length < 10) {
-    return { success: false, error: "Message must be at least 10 characters" }
+  if (!data.subject || data.subject.trim().length < 2) {
+    return { success: false, error: "Subject must be at least 2 characters" }
   }
 
-  const validSubjects = ["general", "technical", "educator", "partnership", "press"]
-  if (!validSubjects.includes(data.subject)) {
-    return { success: false, error: "Please select a valid subject" }
+  if (!data.situation || data.situation.trim().length < 10) {
+    return { success: false, error: "Please describe your situation in at least 10 characters" }
+  }
+
+  // Validate attachments if present
+  if (data.attachments && data.attachments.length > 0) {
+    if (data.attachments.length > 5) {
+      return { success: false, error: "Maximum 5 attachments allowed" }
+    }
+
+    // Validate each attachment has required fields
+    for (const attachment of data.attachments) {
+      if (!attachment.name || !attachment.path || !attachment.type) {
+        return { success: false, error: "Invalid attachment data" }
+      }
+    }
   }
 
   try {
     const { error } = await supabaseAdmin.from("contact_submissions").insert({
       name: data.name.trim(),
       email: data.email.trim().toLowerCase(),
-      subject: data.subject,
-      message: data.message.trim(),
+      subject: data.subject.trim(),
+      message: data.situation.trim(), // stored as 'message' in DB
+      attachments: data.attachments || [],
     })
 
     if (error) {
