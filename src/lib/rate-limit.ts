@@ -35,6 +35,7 @@ export const rateLimitConfigs = {
   ogImage: { requests: 60 * multiplier, window: "1 m" as const },
   // Admin actions - moderate limits
   adminMutation: { requests: 20 * multiplier, window: "1 m" as const },
+  learnUpload: { requests: 10 * multiplier, window: "1 m" as const },
   // General API - more permissive
   default: { requests: 30 * multiplier, window: "1 m" as const },
 }
@@ -61,6 +62,8 @@ function getRateLimitConfig(configKey: RateLimitConfig) {
       return rateLimitConfigs.ogImage
     case "adminMutation":
       return rateLimitConfigs.adminMutation
+    case "learnUpload":
+      return rateLimitConfigs.learnUpload
     case "default":
       return rateLimitConfigs.default
     default: {

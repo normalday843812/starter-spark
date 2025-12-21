@@ -27,7 +27,7 @@ export default async function PrivacyPage() {
     : null
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="bg-slate-50">
       <section className="pt-32 pb-24 px-6 lg:px-20">
         <div className="max-w-3xl mx-auto">
           <h1 className="font-mono text-4xl font-bold text-slate-900 mb-8">

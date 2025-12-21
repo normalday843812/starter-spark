@@ -156,12 +156,12 @@ void loop() {
             <p className="text-slate-600 leading-relaxed mb-6">
               {block1Description2}
             </p>
-            <Link href="/learn">
-              <Button className="bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
+            <Button asChild className="bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
+              <Link href="/learn">
                 {block1Cta}
                 <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </motion.div>
         </div>
 
@@ -185,15 +185,16 @@ void loop() {
             <p className="text-slate-600 mb-6 leading-relaxed">
               {block2Description2}
             </p>
-            <Link href="/community">
-              <Button
-                variant="outline"
-                className="border-slate-200 hover:border-cyan-700 text-slate-600 hover:text-cyan-700 font-mono"
-              >
+            <Button
+              asChild
+              variant="outline"
+              className="border-slate-200 hover:border-cyan-700 text-slate-600 hover:text-cyan-700 font-mono"
+            >
+              <Link href="/community">
                 {block2Cta}
                 <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </motion.div>
 
           <motion.div

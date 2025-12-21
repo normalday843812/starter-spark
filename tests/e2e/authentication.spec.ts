@@ -190,8 +190,8 @@ test.describe("Protected Routes - Unauthenticated", () => {
   }) => {
     await page.goto("/claim/test-token-123")
 
-    // Wait for loading to complete
-    await page.waitForLoadState("networkidle")
+    // Wait for initial render to complete
+    await page.waitForLoadState("domcontentloaded")
 
     // Wait for content to load (page may show Loading... initially)
     const invalidHeading = page.getByRole("heading", { name: /invalid/i })
@@ -202,7 +202,7 @@ test.describe("Protected Routes - Unauthenticated", () => {
       invalidHeading.waitFor({ timeout: 10000 }),
       claimHeading.waitFor({ timeout: 10000 }),
       signInText.waitFor({ timeout: 10000 }),
-      page.waitForURL(/\/login/, { timeout: 10000 })
+      expect(page).toHaveURL(/\/login/, { timeout: 10000 })
     ]).catch(() => {})
 
     // With invalid token: shows "Invalid Claim Link" with shop buttons

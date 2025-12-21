@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { Calendar, MapPin, Clock, ExternalLink } from "lucide-react"
 import Link from "next/link"
+import { headers } from "next/headers"
 import { EventsToggle } from "./EventsToggle"
 import { getEventSchema, getBreadcrumbSchema } from "@/lib/structured-data"
 import { getContents } from "@/lib/content"
@@ -227,6 +228,7 @@ function EventCard({ event, isPast = false }: { event: Event; isPast?: boolean }
 }
 
 export default async function EventsPage() {
+  const nonce = (await headers()).get("x-nonce") ?? undefined
   const supabase = await createClient()
 
   // Fetch dynamic content
@@ -279,14 +281,16 @@ export default async function EventsPage() {
   ])
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="bg-slate-50">
       {/* JSON-LD Structured Data for SEO */}
       {eventSchemas.map((schema, index) => (
-        <script key={index} type="application/ld+json">
+        <script key={index} nonce={nonce} type="application/ld+json">
           {JSON.stringify(schema)}
         </script>
       ))}
-      <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
+      <script nonce={nonce} type="application/ld+json">
+        {JSON.stringify(breadcrumbSchema)}
+      </script>
       {/* Hero */}
       <section className="pt-32 pb-16 px-6 lg:px-20">
         <div className="max-w-4xl mx-auto text-center">

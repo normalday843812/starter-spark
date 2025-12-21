@@ -209,6 +209,11 @@ body {
   animation: shimmer 1.5s ease-in-out infinite;
 }
 
+.progress-bar-fill {
+  transition: width 600ms ease-out;
+  will-change: width;
+}
+
 /* Reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
   *,

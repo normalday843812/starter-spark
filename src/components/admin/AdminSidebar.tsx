@@ -17,6 +17,7 @@ import {
   ScrollText,
   Megaphone,
   LifeBuoy,
+  GraduationCap,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -26,6 +27,7 @@ import { Separator } from "@/components/ui/separator"
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/products", label: "Products", icon: Package },
+  { href: "/admin/learn", label: "Learn", icon: GraduationCap },
   { href: "/admin/licenses", label: "Licenses", icon: KeyRound },
   { href: "/admin/orders", label: "Orders", icon: CreditCard },
   { href: "/admin/support", label: "Support", icon: LifeBuoy },
@@ -50,7 +52,7 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
   const pathname = usePathname()
 
   return (
-    <div className="flex h-full w-64 flex-col border-r border-slate-200 bg-white">
+    <div className="flex h-full min-h-0 w-64 flex-col border-r border-slate-200 bg-white">
       {/* Header */}
       <div className="flex h-16 items-center justify-between border-b border-slate-200 px-4">
         <div className="flex items-center gap-2">
@@ -62,11 +64,11 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
             Admin
           </Link>
         </div>
-        <Link href="/">
-          <Button variant="ghost" size="icon" className="h-8 w-8" title="Back to site">
+        <Button asChild variant="ghost" size="icon" className="h-8 w-8" title="Back to site">
+          <Link href="/" aria-label="Back to site">
             <ChevronLeft className="h-4 w-4" />
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
 
       {/* Navigation */}

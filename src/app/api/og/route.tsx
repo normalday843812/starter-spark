@@ -245,7 +245,7 @@ export async function GET(request: NextRequest) {
                     color: "#64748B",
                   }}
                 >
-                  starterspark.com
+                  starter-spark.com
                 </span>
               </div>
             </div>

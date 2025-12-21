@@ -40,8 +40,8 @@ test.describe("POST /api/checkout", () => {
       data: {
         items: [
           {
-            slug: "4dof-robotic-arm-kit",
-            name: "4DOF Robotic Arm Kit",
+            slug: "4dof-arm",
+            name: "The 4DOF Robotic Arm",
             price: 99,
             quantity: 1,
           },
@@ -65,14 +65,14 @@ test.describe("POST /api/checkout", () => {
       data: {
         items: [
           {
-            slug: "4dof-robotic-arm-kit",
-            name: "4DOF Robotic Arm Kit",
+            slug: "4dof-arm",
+            name: "The 4DOF Robotic Arm",
             price: 99,
             quantity: 2,
           },
           {
-            slug: "another-kit",
-            name: "Another Kit",
+            slug: "sensor-kit",
+            name: "Sensor Starter Kit",
             price: 49,
             quantity: 1,
           },
@@ -93,8 +93,8 @@ test.describe("POST /api/checkout", () => {
       data: {
         items: [
           {
-            slug: "4dof-robotic-arm-kit",
-            name: "4DOF Robotic Arm Kit",
+            slug: "4dof-arm",
+            name: "The 4DOF Robotic Arm",
             price: 99,
             quantity: 1,
           },
@@ -141,8 +141,8 @@ test.describe("POST /api/checkout", () => {
       data: {
         items: [
           {
-            slug: "test",
-            name: "Test",
+            slug: "4dof-arm",
+            name: "The 4DOF Robotic Arm",
             price: 99,
             quantity: 1,
           },

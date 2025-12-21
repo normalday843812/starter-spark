@@ -126,7 +126,7 @@ export default async function CommunityPage({
   const availableTags = Array.from(allTags).sort()
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="bg-slate-50">
       {/* Hero */}
       <section className="pt-32 pb-8 px-6 lg:px-20">
         <div className="max-w-7xl mx-auto">
@@ -147,12 +147,12 @@ export default async function CommunityPage({
             {/* Sidebar */}
             <div className="w-full lg:w-64 flex-shrink-0">
               {/* Ask Question CTA */}
-              <Link href="/community/new">
-                <Button className="w-full bg-cyan-700 hover:bg-cyan-600 text-white font-mono mb-6">
+              <Button asChild className="w-full bg-cyan-700 hover:bg-cyan-600 text-white font-mono mb-6">
+                <Link href="/community/new">
                   <Plus className="w-4 h-4 mr-2" />
                   Ask a Question
-                </Button>
-              </Link>
+                </Link>
+              </Button>
 
               {/* Filters */}
               <Suspense fallback={<div className="animate-pulse bg-slate-100 rounded h-48" />}>
@@ -290,12 +290,12 @@ export default async function CommunityPage({
                   <p className="text-slate-600 mb-6">
                     {content["community.empty"]}
                   </p>
-                  <Link href="/community/new">
-                    <Button className="bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
+                  <Button asChild className="bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
+                    <Link href="/community/new">
                       <Plus className="w-4 h-4 mr-2" />
                       Ask a Question
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 </div>
               )}
             </div>

@@ -22,8 +22,8 @@ test.describe("Product Page - Loading", () => {
 
   test("should display product title", async ({ page }) => {
     await page.goto("/shop")
-    await page.locator('a[href^="/shop/"]').first().click()
-    await page.waitForURL(/\/shop\/.+/)
+    await page.locator('main a[href^="/shop/"]').first().click()
+    await expect(page).toHaveURL(/\/shop\/.+/)
 
     const heading = page.getByRole("heading", { level: 1 })
     await expect(heading).toBeVisible()
@@ -33,8 +33,8 @@ test.describe("Product Page - Loading", () => {
 
   test("should display product price", async ({ page }) => {
     await page.goto("/shop")
-    await page.locator('a[href^="/shop/"]').first().click()
-    await page.waitForURL(/\/shop\/.+/)
+    await page.locator('main a[href^="/shop/"]').first().click()
+    await expect(page).toHaveURL(/\/shop\/.+/)
 
     // Look for price format $XX
     const price = page.locator("text=/\\$\\d+/")
@@ -43,8 +43,8 @@ test.describe("Product Page - Loading", () => {
 
   test("should display stock status badge", async ({ page }) => {
     await page.goto("/shop")
-    await page.locator('a[href^="/shop/"]').first().click()
-    await page.waitForURL(/\/shop\/.+/)
+    await page.locator('main a[href^="/shop/"]').first().click()
+    await expect(page).toHaveURL(/\/shop\/.+/)
 
     const stockBadge = page.getByText(/in stock|pre-order/i)
     await expect(stockBadge.first()).toBeVisible()
@@ -54,8 +54,8 @@ test.describe("Product Page - Loading", () => {
 test.describe("Product Page - Buy Box", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/shop")
-    await page.locator('a[href^="/shop/"]').first().click()
-    await page.waitForURL(/\/shop\/.+/)
+    await page.locator('main a[href^="/shop/"]').first().click()
+    await expect(page).toHaveURL(/\/shop\/.+/)
 
     // Clear cart
     await page.evaluate(() => {
@@ -171,8 +171,8 @@ test.describe("Product Page - Buy Box", () => {
 test.describe("Product Page - Trust Signals", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/shop")
-    await page.locator('a[href^="/shop/"]').first().click()
-    await page.waitForURL(/\/shop\/.+/)
+    await page.locator('main a[href^="/shop/"]').first().click()
+    await expect(page).toHaveURL(/\/shop\/.+/)
   })
 
   test("should display free shipping notice", async ({ page }) => {
@@ -199,8 +199,8 @@ test.describe("Product Page - Trust Signals", () => {
 test.describe("Product Page - Tabs", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/shop")
-    await page.locator('a[href^="/shop/"]').first().click()
-    await page.waitForURL(/\/shop\/.+/)
+    await page.locator('main a[href^="/shop/"]').first().click()
+    await expect(page).toHaveURL(/\/shop\/.+/)
   })
 
   test("should display product tabs", async ({ page }) => {
@@ -234,8 +234,8 @@ test.describe("Product Page - Tabs", () => {
 test.describe("Product Page - Gallery", () => {
   test("should display product gallery or 3D viewer", async ({ page }) => {
     await page.goto("/shop")
-    await page.locator('a[href^="/shop/"]').first().click()
-    await page.waitForURL(/\/shop\/.+/)
+    await page.locator('main a[href^="/shop/"]').first().click()
+    await expect(page).toHaveURL(/\/shop\/.+/)
 
     // Either canvas (3D) or image gallery should be visible
     const canvas = page.locator("canvas")
@@ -256,8 +256,8 @@ test.describe("Product Page - Gallery", () => {
 test.describe("Product Page - SEO", () => {
   test("should have appropriate page title", async ({ page }) => {
     await page.goto("/shop")
-    await page.locator('a[href^="/shop/"]').first().click()
-    await page.waitForURL(/\/shop\/.+/)
+    await page.locator('main a[href^="/shop/"]').first().click()
+    await expect(page).toHaveURL(/\/shop\/.+/)
 
     // Wait for page content to fully load
     await page.getByRole("heading", { level: 1 }).waitFor()
@@ -270,8 +270,8 @@ test.describe("Product Page - SEO", () => {
 
   test("should have heading structure", async ({ page }) => {
     await page.goto("/shop")
-    await page.locator('a[href^="/shop/"]').first().click()
-    await page.waitForURL(/\/shop\/.+/)
+    await page.locator('main a[href^="/shop/"]').first().click()
+    await expect(page).toHaveURL(/\/shop\/.+/)
 
     // Should have h1 for product name
     const h1 = page.getByRole("heading", { level: 1 })

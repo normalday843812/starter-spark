@@ -159,12 +159,12 @@ export default async function AdminDashboard() {
                 <CardTitle className="text-lg">Unclaimed Licenses</CardTitle>
                 <CardDescription>Licenses waiting to be claimed</CardDescription>
               </div>
-              <Link href="/admin/licenses?filter=unclaimed">
-                <Button variant="ghost" size="sm">
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/admin/licenses?filter=unclaimed">
                   View all
                   <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           </CardHeader>
           <CardContent>
@@ -208,12 +208,12 @@ export default async function AdminDashboard() {
                 <CardTitle className="text-lg">Open Questions</CardTitle>
                 <CardDescription>Community questions needing attention</CardDescription>
               </div>
-              <Link href="/admin/community?filter=open">
-                <Button variant="ghost" size="sm">
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/admin/community?filter=open">
                   View all
                   <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           </CardHeader>
           <CardContent>
@@ -255,30 +255,30 @@ export default async function AdminDashboard() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-3">
-            <Link href="/admin/products/new">
-              <Button variant="outline">
+            <Button asChild variant="outline">
+              <Link href="/admin/products/new">
                 <Package className="mr-2 h-4 w-4" />
                 Add Product
-              </Button>
-            </Link>
-            <Link href="/admin/licenses/generate">
-              <Button variant="outline">
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/admin/licenses/generate">
                 <KeyRound className="mr-2 h-4 w-4" />
                 Generate Licenses
-              </Button>
-            </Link>
-            <Link href="/admin/events/new">
-              <Button variant="outline">
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/admin/events/new">
                 <Calendar className="mr-2 h-4 w-4" />
                 Create Event
-              </Button>
-            </Link>
-            <Link href="/admin/community?filter=open">
-              <Button variant="outline">
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/admin/community?filter=open">
                 <MessageSquare className="mr-2 h-4 w-4" />
                 Review Questions
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </CardContent>
       </Card>

@@ -4,6 +4,7 @@
 /node_modules
 /.pnp
 .pnp.*
+.npm-cache/
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
@@ -35,6 +36,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+!.env.*.example
 .gemini
 AUDIT.md
 REPORT.md

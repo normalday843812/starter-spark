@@ -37,7 +37,7 @@ export default async function ClaimPage({ params }: ClaimPageProps) {
   // Invalid or missing token
   if (error || !license) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="bg-slate-50">
         <section className="pt-32 pb-24 px-6 lg:px-20">
           <div className="max-w-md mx-auto text-center">
             <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-red-100 flex items-center justify-center">
@@ -51,20 +51,19 @@ export default async function ClaimPage({ params }: ClaimPageProps) {
               a kit, check your email for a valid claim link or contact support.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/shop">
-                <Button className="bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
+              <Button asChild className="bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
+                <Link href="/shop">
                   <Package className="w-4 h-4 mr-2" />
                   Shop Kits
-                </Button>
-              </Link>
-              <Link href="/workshop">
-                <Button
-                  variant="outline"
-                  className="border-slate-200 hover:border-cyan-700 text-slate-600 hover:text-cyan-700 font-mono"
-                >
-                  Go to Workshop
-                </Button>
-              </Link>
+                </Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                className="border-slate-200 hover:border-cyan-700 text-slate-600 hover:text-cyan-700 font-mono"
+              >
+                <Link href="/workshop">Go to Workshop</Link>
+              </Button>
             </div>
           </div>
         </section>
@@ -75,7 +74,7 @@ export default async function ClaimPage({ params }: ClaimPageProps) {
   // Already claimed
   if (license.owner_id) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="bg-slate-50">
         <section className="pt-32 pb-24 px-6 lg:px-20">
           <div className="max-w-md mx-auto text-center">
             <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-green-100 flex items-center justify-center">
@@ -88,12 +87,12 @@ export default async function ClaimPage({ params }: ClaimPageProps) {
               This kit has already been claimed. If you own this kit, you can
               access it in your Workshop.
             </p>
-            <Link href="/workshop">
-              <Button className="bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
+            <Button asChild className="bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
+              <Link href="/workshop">
                 Go to Workshop
                 <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </section>
       </div>
@@ -105,7 +104,7 @@ export default async function ClaimPage({ params }: ClaimPageProps) {
   // Not logged in - redirect to login with claim token
   if (!user) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="bg-slate-50">
         <section className="pt-32 pb-24 px-6 lg:px-20">
           <div className="max-w-lg mx-auto">
             <div className="text-center mb-8">
@@ -134,12 +133,12 @@ export default async function ClaimPage({ params }: ClaimPageProps) {
               </div>
             </div>
 
-            <Link href={`/login?claim=${token}`}>
-              <Button className="w-full bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
+            <Button asChild className="w-full bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
+              <Link href={`/login?claim=${token}`}>
                 <LogIn className="w-4 h-4 mr-2" />
                 Sign In to Claim
-              </Button>
-            </Link>
+              </Link>
+            </Button>
 
             <p className="text-center text-sm text-slate-500 mt-4">
               We&apos;ll send you a magic link - no password needed.
@@ -152,7 +151,7 @@ export default async function ClaimPage({ params }: ClaimPageProps) {
 
   // User is logged in - show claim confirmation
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="bg-slate-50">
       <section className="pt-32 pb-24 px-6 lg:px-20">
         <div className="max-w-lg mx-auto">
           <div className="text-center mb-8">

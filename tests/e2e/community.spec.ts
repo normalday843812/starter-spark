@@ -85,11 +85,8 @@ test.describe("Community Page - Question Detail", () => {
     const count = await questionLinks.count()
 
     if (count > 0) {
-      // Wait for navigation after click
-      await Promise.all([
-        page.waitForURL(/\/community\/.+/),
-        questionLinks.first().click()
-      ])
+      await questionLinks.first().click()
+      await expect(page).toHaveURL(/\/community\/.+/)
 
       // Should be on a question detail page
       const url = page.url()
@@ -107,11 +104,8 @@ test.describe("Community Page - Question Detail", () => {
     const count = await questionLinks.count()
 
     if (count > 0) {
-      // Wait for navigation after click
-      await Promise.all([
-        page.waitForURL(/\/community\/.+/),
-        questionLinks.first().click()
-      ])
+      await questionLinks.first().click()
+      await expect(page).toHaveURL(/\/community\/.+/)
 
       // Should have question heading
       const heading = page.getByRole("heading", { level: 1 })
@@ -128,11 +122,8 @@ test.describe("Community Page - Question Detail", () => {
     const count = await questionLinks.count()
 
     if (count > 0) {
-      // Wait for navigation after click
-      await Promise.all([
-        page.waitForURL(/\/community\/.+/),
-        questionLinks.first().click()
-      ])
+      await questionLinks.first().click()
+      await expect(page).toHaveURL(/\/community\/.+/)
 
       // Page should have content
       await expect(page.locator("body")).toBeVisible()
@@ -153,11 +144,8 @@ test.describe("Community Page - Question Detail", () => {
     const count = await questionLinks.count()
 
     if (count > 0) {
-      // Wait for navigation after click
-      await Promise.all([
-        page.waitForURL(/\/community\/.+/),
-        questionLinks.first().click()
-      ])
+      await questionLinks.first().click()
+      await expect(page).toHaveURL(/\/community\/.+/)
 
       // Voting buttons may be present (arrows or vote icons)
       const voteButtons = page.getByRole("button", { name: /vote|upvote|downvote/i })
@@ -174,11 +162,8 @@ test.describe("Community Page - Question Detail", () => {
     const count = await questionLinks.count()
 
     if (count > 0) {
-      // Wait for navigation after click
-      await Promise.all([
-        page.waitForURL(/\/community\/.+/),
-        questionLinks.first().click()
-      ])
+      await questionLinks.first().click()
+      await expect(page).toHaveURL(/\/community\/.+/)
 
       // Author info may be displayed
       const authorText = page.getByText(/asked by|posted by|author/i)

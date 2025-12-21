@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import Link from "next/link"
 import {
   CheckCircle2,
@@ -10,6 +10,7 @@ import {
   Menu,
   X,
 } from "lucide-react"
+import { AnimatedProgressFill } from "@/components/learn/AnimatedProgressFill"
 
 interface LessonSidebarProps {
   product: string
@@ -23,6 +24,7 @@ interface LessonSidebarProps {
   }
   completedLessonIds: Set<string>
   progressPercent: number
+  progressStorageKey: string
 }
 
 export function LessonSidebar({
@@ -31,11 +33,33 @@ export function LessonSidebar({
   course,
   completedLessonIds,
   progressPercent,
+  progressStorageKey,
 }: LessonSidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [expandedModules, setExpandedModules] = useState<Set<number>>(
     new Set([0, 1, 2]) // All expanded by default
   )
+
+  const displayProgressPercent = useMemo(() => {
+    if (typeof window === "undefined") return progressPercent
+
+    const safeReadNumber = (key: string): number | null => {
+      try {
+        const raw = sessionStorage.getItem(key)
+        if (!raw) return null
+        const num = Number(raw)
+        return Number.isFinite(num) ? num : null
+      } catch {
+        return null
+      }
+    }
+
+    const stored = safeReadNumber(progressStorageKey)
+    const pending = safeReadNumber(`${progressStorageKey}:pending`)
+
+    const clamp = (value: number) => Math.min(100, Math.max(0, value))
+    return clamp(Math.max(progressPercent, stored ?? 0, pending ?? 0))
+  }, [progressPercent, progressStorageKey])
 
   const toggleModule = (index: number) => {
     setExpandedModules((prev) => {
@@ -75,12 +99,13 @@ export function LessonSidebar({
       <div className="p-4 border-b border-slate-100">
         <div className="flex items-center justify-between text-xs mb-2">
           <span className="text-slate-500">Progress</span>
-          <span className="font-mono text-slate-700">{progressPercent}%</span>
+          <span className="font-mono text-slate-700">{displayProgressPercent}%</span>
         </div>
         <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-cyan-700 rounded-full transition-all"
-            style={{ width: `${progressPercent}%` }}
+          <AnimatedProgressFill
+            progress={displayProgressPercent}
+            storageKey={progressStorageKey}
+            className="h-full bg-cyan-700 rounded-full"
           />
         </div>
       </div>

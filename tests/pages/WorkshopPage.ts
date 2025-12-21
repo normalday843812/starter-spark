@@ -65,8 +65,8 @@ export class WorkshopPage {
   }
 
   async expectPageLoaded() {
-    // Wait for page to fully load
-    await this.page.waitForLoadState("networkidle")
+    await expect(this.page.locator("main")).toBeVisible()
+    await expect(this.pageTitle.first()).toBeVisible()
   }
 
   async expectSignInRequired() {
@@ -101,6 +101,6 @@ export class WorkshopPage {
 
   async clickSignIn() {
     await this.signInButton.click()
-    await this.page.waitForURL("**/login**")
+    await expect(this.page).toHaveURL(/\/login/)
   }
 }

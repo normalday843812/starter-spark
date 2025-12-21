@@ -70,7 +70,7 @@ function TeamSkeleton() {
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen">
+    <div>
       <Suspense fallback={<HeroSkeleton />}>
         <AboutHeroWrapper />
       </Suspense>

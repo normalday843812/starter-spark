@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "13.0.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       achievements: {
@@ -261,32 +236,44 @@ export type Database = {
       }
       courses: {
         Row: {
+          cover_image_url: string | null
           created_at: string | null
           description: string | null
           difficulty: string
           duration_minutes: number
+          icon: string | null
           id: string
+          is_published: boolean | null
           product_id: string
+          slug: string | null
           title: string
           updated_at: string | null
         }
         Insert: {
+          cover_image_url?: string | null
           created_at?: string | null
           description?: string | null
           difficulty?: string
           duration_minutes?: number
+          icon?: string | null
           id?: string
+          is_published?: boolean | null
           product_id: string
+          slug?: string | null
           title: string
           updated_at?: string | null
         }
         Update: {
+          cover_image_url?: string | null
           created_at?: string | null
           description?: string | null
           difficulty?: string
           duration_minutes?: number
+          icon?: string | null
           id?: string
+          is_published?: boolean | null
           product_id?: string
+          slug?: string | null
           title?: string
           updated_at?: string | null
         }
@@ -354,6 +341,50 @@ export type Database = {
         }
         Relationships: []
       }
+      lesson_content: {
+        Row: {
+          code_solution: string | null
+          code_starter: string | null
+          content: string
+          content_blocks: Json
+          downloads: Json
+          lesson_id: string
+          updated_at: string | null
+          video_url: string | null
+          visual_blocks: Json | null
+        }
+        Insert: {
+          code_solution?: string | null
+          code_starter?: string | null
+          content?: string
+          content_blocks?: Json
+          downloads?: Json
+          lesson_id: string
+          updated_at?: string | null
+          video_url?: string | null
+          visual_blocks?: Json | null
+        }
+        Update: {
+          code_solution?: string | null
+          code_starter?: string | null
+          content?: string
+          content_blocks?: Json
+          downloads?: Json
+          lesson_id?: string
+          updated_at?: string | null
+          video_url?: string | null
+          visual_blocks?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_content_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: true
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_progress: {
         Row: {
           completed_at: string | null
@@ -392,36 +423,51 @@ export type Database = {
       }
       lessons: {
         Row: {
-          content: string
           created_at: string | null
           description: string | null
+          difficulty: string | null
           duration_minutes: number
+          estimated_minutes: number | null
           id: string
+          is_optional: boolean | null
+          is_published: boolean | null
+          lesson_type: string | null
           module_id: string
+          prerequisites: string[] | null
           slug: string
           sort_order: number
           title: string
           updated_at: string | null
         }
         Insert: {
-          content: string
           created_at?: string | null
           description?: string | null
+          difficulty?: string | null
           duration_minutes?: number
+          estimated_minutes?: number | null
           id?: string
+          is_optional?: boolean | null
+          is_published?: boolean | null
+          lesson_type?: string | null
           module_id: string
+          prerequisites?: string[] | null
           slug: string
           sort_order?: number
           title: string
           updated_at?: string | null
         }
         Update: {
-          content?: string
           created_at?: string | null
           description?: string | null
+          difficulty?: string | null
           duration_minutes?: number
+          estimated_minutes?: number | null
           id?: string
+          is_optional?: boolean | null
+          is_published?: boolean | null
+          lesson_type?: string | null
           module_id?: string
+          prerequisites?: string[] | null
           slug?: string
           sort_order?: number
           title?: string
@@ -448,6 +494,7 @@ export type Database = {
           owner_id: string | null
           product_id: string
           source: string | null
+          status: Database["public"]["Enums"]["license_status"]
           stripe_session_id: string | null
         }
         Insert: {
@@ -460,6 +507,7 @@ export type Database = {
           owner_id?: string | null
           product_id: string
           source?: string | null
+          status?: Database["public"]["Enums"]["license_status"]
           stripe_session_id?: string | null
         }
         Update: {
@@ -472,6 +520,7 @@ export type Database = {
           owner_id?: string | null
           product_id?: string
           source?: string | null
+          status?: Database["public"]["Enums"]["license_status"]
           stripe_session_id?: string | null
         }
         Relationships: [
@@ -496,25 +545,37 @@ export type Database = {
           course_id: string
           created_at: string | null
           description: string | null
+          icon: string | null
           id: string
+          is_published: boolean | null
+          slug: string | null
           sort_order: number
           title: string
+          updated_at: string | null
         }
         Insert: {
           course_id: string
           created_at?: string | null
           description?: string | null
+          icon?: string | null
           id?: string
+          is_published?: boolean | null
+          slug?: string | null
           sort_order?: number
           title: string
+          updated_at?: string | null
         }
         Update: {
           course_id?: string
           created_at?: string | null
           description?: string | null
+          icon?: string | null
           id?: string
+          is_published?: boolean | null
+          slug?: string | null
           sort_order?: number
           title?: string
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -840,7 +901,10 @@ export type Database = {
           email: string
           full_name: string | null
           id: string
+          preferred_learning_style: string | null
           role: Database["public"]["Enums"]["user_role"] | null
+          skill_level: string | null
+          skip_basics: boolean | null
           updated_at: string | null
         }
         Insert: {
@@ -849,7 +913,10 @@ export type Database = {
           email: string
           full_name?: string | null
           id: string
+          preferred_learning_style?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
+          skill_level?: string | null
+          skip_basics?: boolean | null
           updated_at?: string | null
         }
         Update: {
@@ -858,7 +925,10 @@ export type Database = {
           email?: string
           full_name?: string | null
           id?: string
+          preferred_learning_style?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
+          skill_level?: string | null
+          skip_basics?: boolean | null
           updated_at?: string | null
         }
         Relationships: []
@@ -1129,11 +1199,47 @@ export type Database = {
           },
         ]
       }
+      user_learning_stats: {
+        Row: {
+          last_streak_date: string | null
+          level: number
+          streak_days: number
+          updated_at: string | null
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          last_streak_date?: string | null
+          level?: number
+          streak_days?: number
+          updated_at?: string | null
+          user_id: string
+          xp?: number
+        }
+        Update: {
+          last_streak_date?: string | null
+          level?: number
+          streak_days?: number
+          updated_at?: string | null
+          user_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      apply_learning_xp: {
+        Args: { p_completed_at?: string; p_user_id: string; p_xp: number }
+        Returns: {
+          last_streak_date: string
+          level: number
+          streak_days: number
+          xp: number
+        }[]
+      }
       award_achievement: {
         Args: {
           p_achievement_key: string
@@ -1176,6 +1282,7 @@ export type Database = {
       user_owns_product: { Args: { p_product_id: string }; Returns: boolean }
     }
     Enums: {
+      license_status: "pending" | "claimed" | "rejected" | "claimed_by_other"
       product_image_type:
         | "hero"
         | "knolling"
@@ -1318,11 +1425,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
+      license_status: ["pending", "claimed", "rejected", "claimed_by_other"],
       product_image_type: [
         "hero",
         "knolling",

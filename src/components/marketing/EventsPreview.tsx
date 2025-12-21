@@ -119,16 +119,17 @@ export function EventsPreviewSection({
                 <Calendar className="w-5 h-5 text-cyan-700" />
                 {workshopsTitle}
               </h3>
-              <Link href="/events">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-cyan-700 hover:text-cyan-600 font-mono"
-                >
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="text-cyan-700 hover:text-cyan-600 font-mono"
+              >
+                <Link href="/events">
                   {workshopsViewAll}
                   <ArrowRight className="w-4 h-4 ml-1" />
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
 
             {hasWorkshops ? (
@@ -185,23 +186,24 @@ export function EventsPreviewSection({
                 <p className="text-sm text-slate-500 mb-4">
                   {workshopsEmptyDescription}
                 </p>
-                <Link href="/events">
-                  <Button variant="outline" size="sm" className="font-mono">
-                    {workshopsEmptyCta}
-                  </Button>
-                </Link>
+                <Button asChild variant="outline" size="sm" className="font-mono">
+                  <Link href="/events">{workshopsEmptyCta}</Link>
+                </Button>
               </div>
             )}
 
-            <Link href="/events" className="block mt-auto pt-6">
+            <div className="mt-auto pt-6">
               <Button
+                asChild
                 variant="outline"
                 className="w-full border-slate-200 hover:border-cyan-700 text-slate-600 hover:text-cyan-700 font-mono"
               >
-                {hasWorkshops ? workshopsCta : workshopsCtaEmpty}
-                <ArrowRight className="w-4 h-4 ml-2" />
+                <Link href="/events">
+                  {hasWorkshops ? workshopsCta : workshopsCtaEmpty}
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Link>
               </Button>
-            </Link>
+            </div>
           </motion.div>
 
           {/* Right - The Lab Preview (50%) */}
@@ -216,16 +218,17 @@ export function EventsPreviewSection({
                 <Users className="w-5 h-5 text-cyan-700" />
                 {labTitle}
               </h3>
-              <Link href="/community">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-cyan-700 hover:text-cyan-600 font-mono"
-                >
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="text-cyan-700 hover:text-cyan-600 font-mono"
+              >
+                <Link href="/community">
                   {labJoinNow}
                   <ArrowRight className="w-4 h-4 ml-1" />
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
 
             {/* Stats Bar - Clean and minimal */}
@@ -312,20 +315,20 @@ export function EventsPreviewSection({
                 <p className="text-sm text-slate-500 mb-4">
                   {labEmptyDescription}
                 </p>
-                <Link href="/community/new">
-                  <Button size="sm" className="bg-cyan-700 hover:bg-cyan-600 font-mono">
-                    {labEmptyCta}
-                  </Button>
-                </Link>
+                <Button asChild size="sm" className="bg-cyan-700 hover:bg-cyan-600 font-mono">
+                  <Link href="/community/new">{labEmptyCta}</Link>
+                </Button>
               </div>
             )}
 
-            <Link href="/community" className="block mt-auto pt-6">
-              <Button className="w-full bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
-                {labCta}
-                <ArrowRight className="w-4 h-4 ml-2" />
+            <div className="mt-auto pt-6">
+              <Button asChild className="w-full bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
+                <Link href="/community">
+                  {labCta}
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Link>
               </Button>
-            </Link>
+            </div>
           </motion.div>
         </div>
       </div>

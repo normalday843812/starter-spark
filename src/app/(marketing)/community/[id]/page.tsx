@@ -228,7 +228,7 @@ export default async function QuestionDetailPage({
   const verifiedAnswer = typedComments?.find((c) => c.is_verified_answer)
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="bg-slate-50">
       {/* Breadcrumb */}
       <section className="pt-24 pb-4 px-6 lg:px-20">
         <div className="max-w-4xl mx-auto">
@@ -411,11 +411,9 @@ export default async function QuestionDetailPage({
               <p className="text-slate-600 mb-4">
                 Sign in to post an answer
               </p>
-              <Link href="/login">
-                <Button className="bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
-                  Sign In
-                </Button>
-              </Link>
+              <Button asChild className="bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
+                <Link href="/login">Sign In</Link>
+              </Button>
             </div>
           )}
         </div>

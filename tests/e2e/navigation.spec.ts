@@ -111,8 +111,8 @@ test.describe("Mobile Navigation", () => {
     await mobileMenuButton.click()
 
     // Mobile menu should be visible - verify the nav appears inside the mobile menu wrapper
-    const mobileMenu = page.locator(".md\\:hidden.bg-white")
-    await expect(mobileMenu.locator("nav")).toBeVisible()
+    const mobileMenu = page.locator("#mobile-menu")
+    await expect(mobileMenu.getByRole("navigation")).toBeVisible()
     // Verify key mobile nav elements are visible
     await expect(mobileMenu.getByRole("button", { name: "Documentation", exact: true })).toBeVisible()
     await expect(mobileMenu.getByRole("button", { name: "Community", exact: true })).toBeVisible()
@@ -155,7 +155,7 @@ test.describe("Mobile Navigation", () => {
   test("should show cart button in mobile header", async ({ page }) => {
     await page.goto("/")
 
-    const cartButton = page.getByLabel(/^Shopping cart/i).first()
+    const cartButton = page.locator('header button[aria-label^="Shopping cart"]:visible')
     await expect(cartButton).toBeVisible()
     await cartButton.click()
 
@@ -205,11 +205,11 @@ test.describe("Breadcrumb and Back Navigation", () => {
     await page.goto("/shop")
 
     // Click first product
-    const productLink = page.locator('a[href^="/shop/"]').first()
+    const productLink = page.locator('main a[href^="/shop/"]').first()
     await productLink.click()
 
     // Wait for product page
-    await page.waitForURL(/\/shop\/.+/)
+    await expect(page).toHaveURL(/\/shop\/.+/)
 
     // There should be a way to go back (either breadcrumb or back link)
     // Product pages typically have the product name as heading

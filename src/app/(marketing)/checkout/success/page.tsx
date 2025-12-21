@@ -45,7 +45,7 @@ export default async function CheckoutSuccessPage({
   }))
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="bg-slate-50">
       {/* Clear cart and track purchase on client side */}
       <ClearCart
         orderId={session.id}

@@ -1,8 +1,6 @@
 import type { NextConfig } from "next"
 import { withSentryConfig } from "@sentry/nextjs"
 
-const isProduction = process.env.NODE_ENV === "production"
-
 const nextConfig: NextConfig = {
   // Enable React strict mode for better development experience
   reactStrictMode: true,
@@ -43,22 +41,6 @@ const nextConfig: NextConfig = {
 
   // Headers for caching static assets and security
   headers() {
-    const contentSecurityPolicy = [
-      "default-src 'self'",
-      "base-uri 'self'",
-      "object-src 'none'",
-      "frame-ancestors 'self'",
-      "img-src 'self' https: data: blob:",
-      "font-src 'self' https: data:",
-      "style-src 'self' 'unsafe-inline' https:",
-      `script-src 'self' 'unsafe-inline' https:${isProduction ? "" : " 'unsafe-eval'"}`,
-      "connect-src 'self' https: wss:",
-      "frame-src 'self' https:",
-      "worker-src 'self' blob:",
-      "manifest-src 'self'",
-      ...(isProduction ? ["upgrade-insecure-requests"] : []),
-    ].join("; ")
-
     // Security headers applied to all routes
     const securityHeaders = [
       {
@@ -84,10 +66,6 @@ const nextConfig: NextConfig = {
       {
         key: "Permissions-Policy",
         value: "camera=(), microphone=(), geolocation=()",
-      },
-      {
-        key: "Content-Security-Policy",
-        value: contentSecurityPolicy,
       },
     ]
 

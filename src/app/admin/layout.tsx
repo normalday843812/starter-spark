@@ -38,7 +38,7 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="flex h-screen bg-slate-50">
+    <div className="flex h-screen min-h-0 bg-slate-50">
       <AdminSidebar
         user={{
           email: user.email || "",
@@ -46,7 +46,7 @@ export default async function AdminLayout({
           role: profile.role,
         }}
       />
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 min-h-0 overflow-y-auto">
         <div className="container mx-auto p-6">
           {children}
         </div>

@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { ProductGallery, BuyBox, ProductTabs } from "@/components/commerce"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { headers } from "next/headers"
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { getProductSchema, getBreadcrumbSchema } from "@/lib/structured-data"
@@ -99,6 +100,7 @@ export default async function ProductDetailPage({
 }: {
   params: PageParams
 }) {
+  const nonce = (await headers()).get("x-nonce") ?? undefined
   const { slug } = await params
   const supabase = await createClient()
 
@@ -178,13 +180,17 @@ export default async function ProductDetailPage({
     { name: product.name, url: `/shop/${slug}` },
   ])
 
-	  return (
-	    <div className="min-h-screen bg-slate-50">
-	      {/* JSON-LD Structured Data for SEO */}
-	      <script type="application/ld+json">{JSON.stringify(productSchema)}</script>
-	      <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
-	      {/* Breadcrumb */}
-	      <section className="pt-24 pb-4 px-6 lg:px-20">
+  return (
+    <div className="bg-slate-50">
+      {/* JSON-LD Structured Data for SEO */}
+      <script nonce={nonce} type="application/ld+json">
+        {JSON.stringify(productSchema)}
+      </script>
+      <script nonce={nonce} type="application/ld+json">
+        {JSON.stringify(breadcrumbSchema)}
+      </script>
+      {/* Breadcrumb */}
+      <section className="pt-24 pb-4 px-6 lg:px-20">
         <div className="max-w-7xl mx-auto">
           <Link
             href="/shop"

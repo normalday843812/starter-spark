@@ -28,7 +28,7 @@ export default async function NewQuestionPage() {
     .order("name")
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="bg-slate-50">
       {/* Breadcrumb */}
       <section className="pt-24 pb-4 px-6 lg:px-20">
         <div className="max-w-3xl mx-auto">

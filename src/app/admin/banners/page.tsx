@@ -102,12 +102,12 @@ export default async function BannersPage() {
           <h1 className="font-mono text-2xl font-bold text-slate-900">Banners</h1>
           <p className="text-slate-600">Manage site-wide announcements and promotions</p>
         </div>
-        <Link href="/admin/banners/new">
-          <Button className="bg-cyan-700 hover:bg-cyan-600">
+        <Button asChild className="bg-cyan-700 hover:bg-cyan-600">
+          <Link href="/admin/banners/new">
             <Plus className="mr-2 h-4 w-4" />
             Create Banner
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
 
       {/* Stats */}
@@ -135,11 +135,9 @@ export default async function BannersPage() {
         <div className="rounded-lg border border-slate-200 bg-white p-12 text-center">
           <Megaphone className="mx-auto h-12 w-12 text-slate-300" />
           <p className="mt-4 text-slate-600">No banners yet.</p>
-          <Link href="/admin/banners/new">
-            <Button className="mt-4 bg-cyan-700 hover:bg-cyan-600">
-              Create your first banner
-            </Button>
-          </Link>
+          <Button asChild className="mt-4 bg-cyan-700 hover:bg-cyan-600">
+            <Link href="/admin/banners/new">Create your first banner</Link>
+          </Button>
         </div>
       ) : (
         <div className="rounded-lg border border-slate-200 bg-white">

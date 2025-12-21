@@ -3,8 +3,17 @@ import { formatDuration } from "@/lib/utils"
 import { BookOpen, Clock, Target, ChevronRight, Lock } from "lucide-react"
 import Link from "next/link"
 import { getContents } from "@/lib/content"
+import { AnimatedProgressFill } from "@/components/learn/AnimatedProgressFill"
+import { LearnFilters } from "./LearnFilters"
+import { Leaderboard } from "./Leaderboard"
+import { SkillAssessmentWrapper } from "./SkillAssessmentWrapper"
 
-export default async function LearnPage() {
+export default async function LearnPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ difficulty?: string }>
+}) {
+  const { difficulty: difficultyFilter } = await searchParams
   const supabase = await createClient()
   const {
     data: { user },
@@ -29,6 +38,7 @@ export default async function LearnPage() {
       description,
       difficulty,
       duration_minutes,
+      is_published,
       product:products (
         id,
         slug,
@@ -37,9 +47,11 @@ export default async function LearnPage() {
       modules (
         id,
         title,
-        lessons (id)
+        is_published,
+        lessons (id, is_optional, is_published)
       )
     `)
+    .eq("is_published", true)
     .order("created_at", { ascending: true })
 
   if (error) {
@@ -70,8 +82,68 @@ export default async function LearnPage() {
     }
   }
 
-  return (
-    <div className="min-h-screen bg-slate-50">
+  // Fetch learning stats and skill level for logged in user
+  let learningStats = { xp: 0, level: 1, streakDays: 0 }
+  let hasSkillLevel = false
+  if (user) {
+    const { data: statsData } = await supabase
+      .from("user_learning_stats")
+      .select("xp, level, streak_days")
+      .eq("user_id", user.id)
+      .maybeSingle()
+
+    if (statsData) {
+      learningStats = {
+        xp: statsData.xp,
+        level: statsData.level,
+        streakDays: statsData.streak_days,
+      }
+    }
+
+    // Check if user has set skill level
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("skill_level")
+      .eq("id", user.id)
+      .single()
+
+    hasSkillLevel = !!(profileData?.skill_level)
+  }
+
+  // Filter courses by difficulty if specified
+  const filteredCourses = difficultyFilter && difficultyFilter !== "all"
+    ? (courses ?? []).filter((c) => c.difficulty === difficultyFilter)
+    : (courses ?? [])
+
+  // Fetch leaderboard data (top 10 users by XP)
+  const { data: leaderboardData } = await supabase
+    .from("user_learning_stats")
+    .select("user_id, xp, level")
+    .order("xp", { ascending: false })
+    .limit(10)
+
+  // Get display names for leaderboard (anonymized)
+  const leaderboardEntries = (leaderboardData ?? []).map((entry, index) => ({
+    rank: index + 1,
+    displayName: `Learner ${entry.user_id.slice(0, 4).toUpperCase()}`,
+    xp: entry.xp,
+    level: entry.level,
+    isCurrentUser: user?.id === entry.user_id,
+  }))
+
+  // Get current user's rank if not in top 10
+  let currentUserRank: number | null = null
+  if (user && !leaderboardEntries.some((e) => e.isCurrentUser)) {
+    const { count } = await supabase
+      .from("user_learning_stats")
+      .select("*", { count: "exact", head: true })
+      .gt("xp", learningStats.xp)
+
+    currentUserRank = (count ?? 0) + 1
+  }
+
+  const pageContent = (
+    <div className="bg-slate-50">
       {/* Header */}
       <section className="pt-32 pb-8 px-6 lg:px-20">
         <div className="max-w-7xl mx-auto">
@@ -88,41 +160,52 @@ export default async function LearnPage() {
       {/* Course Grid */}
       <section className="pb-24 px-6 lg:px-20">
         <div className="max-w-7xl mx-auto">
-          {/* Filter Bar */}
-          <div className="flex items-center gap-4 mb-8">
-            <span className="text-sm text-slate-500 font-mono">
-              {courses?.length || 0} {(courses?.length || 0) === 1 ? "course" : "courses"}{" "}
-              available
-            </span>
-          </div>
+          {/* Filter Bar with Stats */}
+          <LearnFilters
+            courseCount={filteredCourses.length}
+            xp={learningStats.xp}
+            level={learningStats.level}
+            streakDays={learningStats.streakDays}
+            isLoggedIn={!!user}
+          />
 
-          {/* Course Cards */}
-          {courses && courses.length > 0 ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {courses.map((course) => {
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Main Content */}
+            <div className="flex-1">
+              {/* Course Cards */}
+              {filteredCourses.length > 0 ? (
+                <div className="grid gap-6 md:grid-cols-2">
+              {filteredCourses.map((course) => {
                 const product = course.product as unknown as { id: string; slug: string; name: string } | null
                 const isOwned = product ? ownedProductIds.includes(product.id) : false
 
                 type CourseModule = {
                   id: string
                   title: string
-                  lessons: { id: string }[] | null
+                  is_published: boolean | null
+                  lessons: { id: string; is_optional: boolean | null; is_published: boolean | null }[] | null
                 }
-                const courseModules = course.modules as unknown as CourseModule[] | null
+                const courseModulesRaw = course.modules as unknown as CourseModule[] | null
+                const courseModules = (courseModulesRaw ?? []).filter(
+                  (m) => m.is_published !== false
+                )
 
-                // Get all lesson IDs for this course
-                const courseLessonIds = courseModules?.flatMap(
-                  (mod) => mod.lessons?.map((l) => l.id) || []
-                ) || []
-                const totalLessons = courseLessonIds.length
+                const courseLessons = courseModules.flatMap((mod) =>
+                  (mod.lessons ?? []).filter((l) => l.is_published !== false)
+                )
+	                const allLessonIds = courseLessons.map((l) => l.id)
+	                const requiredLessonIds = courseLessons
+	                  .filter((l) => !l.is_optional)
+	                  .map((l) => l.id)
+	                const totalLessons = allLessonIds.length
 
-                // Calculate completed lessons for this course
-                const completedInCourse = courseLessonIds.filter(
-                  (id) => completedLessonIds.includes(id)
-                ).length
-                const progressPercent = totalLessons > 0
-                  ? Math.round((completedInCourse / totalLessons) * 100)
-                  : 0
+	                // Calculate completed lessons for this course
+	                const completedInCourse = requiredLessonIds.filter(
+	                  (id) => completedLessonIds.includes(id)
+	                ).length
+	                const progressPercent = requiredLessonIds.length > 0
+	                  ? Math.round((completedInCourse / requiredLessonIds.length) * 100)
+	                  : 0
 
                 return (
                   <div
@@ -171,21 +254,22 @@ export default async function LearnPage() {
                         </div>
                       </div>
 
-                      {/* Progress Bar (if owned) */}
-                      {isOwned && user && (
-                        <div className="mb-4">
-                          <div className="flex items-center justify-between text-xs mb-1">
-                            <span className="text-slate-500">Progress</span>
-                            <span className="font-mono text-slate-700">{progressPercent}%</span>
-                          </div>
-                          <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-cyan-700 rounded-full transition-all"
-                              style={{ width: `${progressPercent}%` }}
-                            />
-                          </div>
-                        </div>
-                      )}
+	                      {/* Progress Bar (if owned) */}
+	                      {isOwned && user && (
+	                        <div className="mb-4">
+	                          <div className="flex items-center justify-between text-xs mb-1">
+	                            <span className="text-slate-500">Progress</span>
+	                            <span className="font-mono text-slate-700">{progressPercent}%</span>
+	                          </div>
+	                          <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+	                            <AnimatedProgressFill
+	                              progress={progressPercent}
+	                              storageKey={`learn:${user.id}:course:${course.id}:progress`}
+	                              className="h-full bg-cyan-700 rounded-full"
+	                            />
+	                          </div>
+	                        </div>
+	                      )}
 
                       {/* Module List */}
                       {courseModules && courseModules.length > 0 && (
@@ -230,9 +314,34 @@ export default async function LearnPage() {
                 {content["learn.empty"]}
               </p>
             </div>
-          )}
+              )}
+            </div>
+
+            {/* Sidebar with Leaderboard */}
+            {leaderboardEntries.length > 0 && (
+              <div className="lg:w-80 flex-shrink-0">
+                <div className="lg:sticky lg:top-24">
+                  <Leaderboard
+                    entries={leaderboardEntries}
+                    currentUserRank={currentUserRank}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </section>
     </div>
   )
+
+  // Show skill assessment for logged-in users who haven't set their skill level
+  if (user && !hasSkillLevel) {
+    return (
+      <SkillAssessmentWrapper userId={user.id} hasSkillLevel={hasSkillLevel}>
+        {pageContent}
+      </SkillAssessmentWrapper>
+    )
+  }
+
+  return pageContent
 }

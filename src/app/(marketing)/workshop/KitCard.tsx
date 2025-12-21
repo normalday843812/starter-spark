@@ -46,16 +46,17 @@ export function KitCard({ name, slug, description, claimedAt, quantity = 1 }: Ki
       </div>
       <div className="flex-shrink-0">
         {slug && (
-          <Link href={`/learn/${slug}`}>
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-slate-200 hover:border-cyan-700 text-slate-600 hover:text-cyan-700 font-mono text-xs"
-            >
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="border-slate-200 hover:border-cyan-700 text-slate-600 hover:text-cyan-700 font-mono text-xs"
+          >
+            <Link href={`/learn/${slug}`}>
               <ExternalLink className="w-3 h-3 mr-1" />
               Learn
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         )}
       </div>
     </div>

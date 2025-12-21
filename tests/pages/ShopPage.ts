@@ -16,7 +16,7 @@ export class ShopPage {
   constructor(page: Page) {
     this.page = page
 
-    this.pageTitle = page.getByRole("heading", { name: /robotics kits/i })
+    this.pageTitle = page.getByRole("heading", { level: 1 }).first()
     this.productGrid = page.locator('[class*="grid"]').first()
     this.productCards = page.locator('[class*="border"][class*="rounded"]').filter({
       has: page.locator('[class*="font-mono"]'),
@@ -41,13 +41,13 @@ export class ShopPage {
 
   async clickProduct(slug: string) {
     await this.page.getByRole("link", { name: new RegExp(slug, "i") }).first().click()
-    await this.page.waitForURL(`**/shop/${slug}`)
+    await expect(this.page).toHaveURL(new RegExp(`/shop/${slug}(\\?.*)?$`))
   }
 
   async clickFirstProduct() {
-    const firstProduct = this.page.locator('a[href^="/shop/"]').first()
+    const firstProduct = this.page.locator('main a[href^="/shop/"]').first()
     await firstProduct.click()
-    await this.page.waitForURL("**/shop/*")
+    await expect(this.page).toHaveURL(/\/shop\/.+/)
   }
 
   async expectProductsDisplayed() {

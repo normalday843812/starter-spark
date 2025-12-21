@@ -62,7 +62,7 @@ export default async function SupportPage() {
   }, {} as Record<string, typeof articles>)
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="bg-slate-50">
       {/* Hero */}
       <section className="pt-32 pb-16 px-6 lg:px-20">
         <div className="max-w-4xl mx-auto text-center">

@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { ProductSpotlightSection } from "./ProductSpotlight"
 import { getProductSchema } from "@/lib/structured-data"
+import { headers } from "next/headers"
 
 /**
  * Server component that fetches the featured product and renders ProductSpotlight
@@ -9,6 +10,7 @@ import { getProductSchema } from "@/lib/structured-data"
  */
 export async function FeaturedProduct() {
   const supabase = await createClient()
+  const nonce = (await headers()).get("x-nonce") ?? undefined
 
   // Get products with "featured" tag, sorted by priority (highest first)
   const { data: featuredTags, error: tagsError } = await supabase
@@ -70,7 +72,7 @@ export async function FeaturedProduct() {
 	  return (
 	    <>
 	      {/* Product Schema JSON-LD for SEO */}
-	      <script type="application/ld+json">{JSON.stringify(productSchema)}</script>
+	      <script nonce={nonce} type="application/ld+json">{JSON.stringify(productSchema)}</script>
 	      <ProductSpotlightSection
 	        product={{
 	          name: product.name,

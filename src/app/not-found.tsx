@@ -10,9 +10,9 @@ export default function NotFound() {
         <p className="text-slate-600 mb-6">
           The page you&apos;re looking for doesn&apos;t exist or has been moved.
         </p>
-        <Link href="/">
-          <Button>Back to Home</Button>
-        </Link>
+        <Button asChild>
+          <Link href="/">Back to Home</Link>
+        </Button>
       </div>
     </div>
   )

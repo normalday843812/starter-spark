@@ -1,11 +1,14 @@
 import { createClient } from "@/lib/supabase/server"
 import { Button } from "@/components/ui/button"
-import { Package, Key, LogIn } from "lucide-react"
+import { Package, Key, LogIn, AlertCircle } from "lucide-react"
 import Link from "next/link"
 import { ClaimCodeForm } from "./ClaimCodeForm"
 import { KitCard } from "./KitCard"
 import { QuickTools } from "./QuickTools"
 import { AchievementsPanel } from "./AchievementsPanel"
+import { LearningStatsPanel } from "./LearningStatsPanel"
+import { PendingLicenseCard } from "./PendingLicenseCard"
+import { ClaimedByOtherCard } from "./ClaimedByOtherCard"
 import { getContents } from "@/lib/content"
 import { getUserAchievements } from "@/lib/achievements"
 
@@ -34,6 +37,8 @@ export default async function WorkshopPage() {
       "workshop.claim.description",
       "workshop.achievements.title",
       "workshop.achievements.hint",
+      "workshop.pending.title",
+      "workshop.pending.description",
     ],
     {
       "workshop.header.title": "Workshop",
@@ -51,10 +56,12 @@ export default async function WorkshopPage() {
       "workshop.claim.description": "Have a kit code? Enter it below to activate your kit.",
       "workshop.achievements.title": "Achievements",
       "workshop.achievements.hint": "Complete lessons to unlock badges",
+      "workshop.pending.title": "Pending Licenses",
+      "workshop.pending.description": "These licenses were purchased with your email. Claim to add to your account or reject if you didn't make this purchase.",
     }
   )
 
-  // If logged in, fetch user's licenses with product info
+  // If logged in, fetch user's claimed licenses and pending licenses
   let groupedKits: Array<{
     slug: string
     name: string
@@ -63,8 +70,24 @@ export default async function WorkshopPage() {
     claimedAt: string | null
   }> = []
 
+  let pendingLicenses: Array<{
+    id: string
+    code: string
+    productName: string
+    productSlug: string
+    productDescription: string | null
+    purchasedAt: string
+  }> = []
+
+  let claimedByOtherLicenses: Array<{
+    code: string
+    productName: string
+    purchasedAt: string
+  }> = []
+
   if (user) {
-    const { data } = await supabase
+    // Fetch claimed licenses (owned by this user)
+    const { data: claimedData } = await supabase
       .from("licenses")
       .select(
         `
@@ -77,7 +100,7 @@ export default async function WorkshopPage() {
       .eq("owner_id", user.id)
       .order("created_at", { ascending: false })
 
-    if (data) {
+    if (claimedData) {
       // Group licenses by product slug
       const kitMap = new Map<string, {
         slug: string
@@ -87,7 +110,7 @@ export default async function WorkshopPage() {
         claimedAt: string | null
       }>()
 
-      for (const license of data) {
+      for (const license of claimedData) {
         const product = license.product as unknown as { slug: string; name: string; description: string | null } | null
         if (!product) continue
 
@@ -111,6 +134,60 @@ export default async function WorkshopPage() {
 
       groupedKits = Array.from(kitMap.values())
     }
+
+    // Fetch pending licenses (purchased with this email, not yet claimed)
+    // RLS policy allows viewing pending licenses where customer_email matches
+    const { data: pendingData } = await supabase
+      .from("licenses")
+      .select(
+        `
+        id,
+        code,
+        created_at,
+        product:products(slug, name, description)
+      `
+      )
+      .eq("status", "pending")
+      .order("created_at", { ascending: false })
+
+    if (pendingData) {
+      pendingLicenses = pendingData.map((license) => {
+        const product = license.product as unknown as { slug: string; name: string; description: string | null } | null
+        return {
+          id: license.id,
+          code: license.code,
+          productName: product?.name || "Unknown Kit",
+          productSlug: product?.slug || "",
+          productDescription: product?.description || null,
+          purchasedAt: license.created_at || new Date().toISOString(),
+        }
+      })
+    }
+
+    // Fetch licenses that were claimed by someone else (shared link)
+    // RLS policy allows viewing claimed_by_other licenses where customer_email matches
+    const { data: claimedByOtherData } = await supabase
+      .from("licenses")
+      .select(
+        `
+        code,
+        created_at,
+        product:products(name)
+      `
+      )
+      .eq("status", "claimed_by_other")
+      .order("created_at", { ascending: false })
+
+    if (claimedByOtherData) {
+      claimedByOtherLicenses = claimedByOtherData.map((license) => {
+        const product = license.product as unknown as { name: string } | null
+        return {
+          code: license.code,
+          productName: product?.name || "Unknown Kit",
+          purchasedAt: license.created_at || new Date().toISOString(),
+        }
+      })
+    }
   }
 
   // Total license count for display
@@ -121,8 +198,37 @@ export default async function WorkshopPage() {
     ? await getUserAchievements(user.id)
     : { achievements: [], userAchievements: [], totalPoints: 0 }
 
+  // Fetch learning stats for logged in user
+  let learningStats = { xp: 0, level: 1, streakDays: 0 }
+  let lessonsCompleted = 0
+
+  if (user) {
+    const { data: statsData } = await supabase
+      .from("user_learning_stats")
+      .select("xp, level, streak_days")
+      .eq("user_id", user.id)
+      .maybeSingle()
+
+    if (statsData) {
+      learningStats = {
+        xp: statsData.xp,
+        level: statsData.level,
+        streakDays: statsData.streak_days,
+      }
+    }
+
+    // Count completed lessons
+    const { count } = await supabase
+      .from("lesson_progress")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .not("completed_at", "is", null)
+
+    lessonsCompleted = count ?? 0
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="bg-slate-50">
       {/* Header */}
       <section className="pt-32 pb-8 px-6 lg:px-20">
         <div className="max-w-7xl mx-auto">
@@ -153,21 +259,22 @@ export default async function WorkshopPage() {
                 {content["workshop.signIn.description"]}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/login">
-                  <Button className="bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
+                <Button asChild className="bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
+                  <Link href="/login">
                     <LogIn className="w-4 h-4 mr-2" />
                     {content["workshop.signIn.button"]}
-                  </Button>
-                </Link>
-                <Link href="/shop">
-                  <Button
-                    variant="outline"
-                    className="border-slate-200 hover:border-cyan-700 text-slate-600 hover:text-cyan-700 font-mono"
-                  >
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="border-slate-200 hover:border-cyan-700 text-slate-600 hover:text-cyan-700 font-mono"
+                >
+                  <Link href="/shop">
                     <Package className="w-4 h-4 mr-2" />
                     {content["workshop.signIn.shopButton"]}
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               </div>
             </div>
           </div>
@@ -177,8 +284,49 @@ export default async function WorkshopPage() {
         <section className="pb-24 px-6 lg:px-20">
           <div className="max-w-7xl mx-auto">
             <div className="flex flex-col lg:flex-row gap-8">
-              {/* Left Column - My Kits (70%) */}
-              <div className="w-full lg:w-[70%]">
+              {/* Left Column - Pending + My Kits (70%) */}
+              <div className="w-full lg:w-[70%] space-y-6">
+                {/* Pending Licenses Section */}
+                {(pendingLicenses.length > 0 || claimedByOtherLicenses.length > 0) && (
+                  <div className="bg-amber-50 rounded border border-amber-200 p-6">
+                    <div className="flex items-center gap-2 mb-2">
+                      <AlertCircle className="w-5 h-5 text-amber-600" />
+                      <h2 className="font-mono text-xl text-slate-900">
+                        {content["workshop.pending.title"]}
+                      </h2>
+                      {pendingLicenses.length > 0 && (
+                        <span className="text-sm font-mono text-amber-700 bg-amber-100 px-2 py-0.5 rounded">
+                          {pendingLicenses.length} pending
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-slate-600 mb-4">
+                      {content["workshop.pending.description"]}
+                    </p>
+                    <div className="space-y-3">
+                      {pendingLicenses.map((license) => (
+                        <PendingLicenseCard
+                          key={license.id}
+                          licenseId={license.id}
+                          code={license.code}
+                          productName={license.productName}
+                          productDescription={license.productDescription}
+                          purchasedAt={license.purchasedAt}
+                        />
+                      ))}
+                      {claimedByOtherLicenses.map((license) => (
+                        <ClaimedByOtherCard
+                          key={license.code}
+                          code={license.code}
+                          productName={license.productName}
+                          purchasedAt={license.purchasedAt}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* My Kits Section */}
                 <div className="bg-white rounded border border-slate-200 p-6">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="font-mono text-xl text-slate-900">
@@ -204,11 +352,9 @@ export default async function WorkshopPage() {
                       <p className="text-sm text-slate-500 mb-6">
                         {content["workshop.kits.empty.subtitle"]}
                       </p>
-                      <Link href="/shop">
-                        <Button className="bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
-                          {content["workshop.kits.empty.cta"]}
-                        </Button>
-                      </Link>
+                      <Button asChild className="bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
+                        <Link href="/shop">{content["workshop.kits.empty.cta"]}</Link>
+                      </Button>
                     </div>
                   ) : (
                     <div className="grid gap-4">
@@ -229,6 +375,14 @@ export default async function WorkshopPage() {
 
               {/* Right Column - Tools & Actions (30%) */}
               <div className="w-full lg:w-[30%] space-y-6">
+                {/* Learning Progress */}
+                <LearningStatsPanel
+                  xp={learningStats.xp}
+                  level={learningStats.level}
+                  streakDays={learningStats.streakDays}
+                  lessonsCompleted={lessonsCompleted}
+                />
+
                 {/* Claim a Kit */}
                 <div className="bg-white rounded border border-slate-200 p-6">
                   <div className="flex items-center gap-2 mb-4">

@@ -9,7 +9,7 @@ export default function MarketingLayout({
   children: React.ReactNode
 }) {
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       {/* Skip link for keyboard navigation - hidden until focused */}
       <a
         href="#main-content"
@@ -19,11 +19,15 @@ export default function MarketingLayout({
       </a>
       <SiteBanner />
       <Header />
-      <main id="main-content" tabIndex={-1} className="outline-none">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="outline-none flex-1 bg-slate-50"
+      >
         {children}
       </main>
       <Footer />
       <CartSheet />
-    </>
+    </div>
   )
 }

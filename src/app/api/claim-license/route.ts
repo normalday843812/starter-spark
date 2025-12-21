@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { supabaseAdmin } from "@/lib/supabase/admin"
-import { NextResponse } from "next/server"
+import { NextResponse, after } from "next/server"
 import { rateLimit } from "@/lib/rate-limit"
 import { checkKitClaimAchievements } from "@/lib/achievements"
 
@@ -42,16 +42,17 @@ export async function POST(request: Request) {
     }
 
     // Use atomic update with RETURNING to prevent race conditions
-    // Only claim if owner_id is NULL (unclaimed)
+    // Only claim if status is 'pending' (license flow uses status column)
     const { data: claimedLicense, error: claimError } = await supabaseAdmin
       .from("licenses")
       .update({
         owner_id: user.id,
         claimed_at: new Date().toISOString(),
         claim_token: null, // Clear the claim token
+        status: "claimed",
       })
       .eq("code", normalizedCode)
-      .is("owner_id", null)
+      .eq("status", "pending")
       .select("id, code, product:products(name)")
       .single()
 
@@ -61,7 +62,7 @@ export async function POST(request: Request) {
         // Check if the code exists at all
         const { data: existingLicense } = await supabaseAdmin
           .from("licenses")
-          .select("owner_id")
+          .select("owner_id, status")
           .eq("code", normalizedCode)
           .single()
 
@@ -72,7 +73,7 @@ export async function POST(request: Request) {
           )
         }
 
-        // Code exists but is already claimed
+        // Code exists but is already claimed or has different status
         if (existingLicense.owner_id === user.id) {
           return NextResponse.json(
             { error: "You have already claimed this kit." },
@@ -80,8 +81,22 @@ export async function POST(request: Request) {
           )
         }
 
+        if (existingLicense.status === "claimed" || existingLicense.status === "claimed_by_other") {
+          return NextResponse.json(
+            { error: "This kit code has already been claimed." },
+            { status: 400 }
+          )
+        }
+
+        if (existingLicense.status === "rejected") {
+          return NextResponse.json(
+            { error: "This kit code has been rejected and cannot be claimed." },
+            { status: 400 }
+          )
+        }
+
         return NextResponse.json(
-          { error: "This kit code has already been claimed." },
+          { error: "This kit code is not available for claiming." },
           { status: 400 }
         )
       }
@@ -96,10 +111,14 @@ export async function POST(request: Request) {
     const productName =
       (claimedLicense.product as unknown as { name: string } | null)?.name || "Kit"
 
-    // Check and award kit-related achievements (non-blocking)
-    checkKitClaimAchievements(user.id).catch((err) =>
-      console.error("Error checking kit achievements:", err)
-    )
+    // Check and award kit-related achievements (after response)
+    after(async () => {
+      try {
+        await checkKitClaimAchievements(user.id)
+      } catch (err) {
+        console.error("Error checking kit achievements:", err)
+      }
+    })
 
     return NextResponse.json({
       message: `${productName} claimed successfully!`,

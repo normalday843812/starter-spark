@@ -90,12 +90,12 @@ export default async function LicensesPage({
           <h1 className="font-mono text-2xl font-bold text-slate-900">Licenses</h1>
           <p className="text-slate-600">Manage license codes and assignments</p>
         </div>
-        <Link href="/admin/licenses/generate">
-          <Button className="bg-cyan-700 hover:bg-cyan-600">
+        <Button asChild className="bg-cyan-700 hover:bg-cyan-600">
+          <Link href="/admin/licenses/generate">
             <Plus className="mr-2 h-4 w-4" />
             Generate Licenses
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
 
       {/* Filters */}
@@ -109,19 +109,19 @@ export default async function LicensesPage({
                 ? `/admin/licenses?product=${params.product}`
                 : "/admin/licenses"
             return (
-              <Link key={filter.label} href={href}>
-                <Button
-                  variant={params.filter === filter.value ? "default" : "outline"}
-                  size="sm"
-                  className={
-                    params.filter === filter.value
-                      ? "bg-cyan-700 hover:bg-cyan-600"
-                      : ""
-                  }
-                >
-                  {filter.label}
-                </Button>
-              </Link>
+              <Button
+                key={filter.label}
+                asChild
+                variant={params.filter === filter.value ? "default" : "outline"}
+                size="sm"
+                className={
+                  params.filter === filter.value
+                    ? "bg-cyan-700 hover:bg-cyan-600"
+                    : ""
+                }
+              >
+                <Link href={href}>{filter.label}</Link>
+              </Button>
             )
           })}
         </div>
@@ -138,11 +138,9 @@ export default async function LicensesPage({
       {licenses.length === 0 ? (
         <div className="rounded-lg border border-slate-200 bg-white p-12 text-center">
           <p className="text-slate-600">No licenses found.</p>
-          <Link href="/admin/licenses/generate">
-            <Button className="mt-4 bg-cyan-700 hover:bg-cyan-600">
-              Generate licenses
-            </Button>
-          </Link>
+          <Button asChild className="mt-4 bg-cyan-700 hover:bg-cyan-600">
+            <Link href="/admin/licenses/generate">Generate licenses</Link>
+          </Button>
         </div>
       ) : (
         <div className="rounded-lg border border-slate-200 bg-white">

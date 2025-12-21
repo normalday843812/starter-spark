@@ -25,19 +25,38 @@ export async function voteOnPost(postId: string, voteType: 1 | -1) {
   if (existingVote) {
     if (existingVote.vote_type === voteType) {
       // Same vote - remove it (toggle off)
-      await supabase.from("post_votes").delete().eq("id", existingVote.id)
+      const { error: deleteError } = await supabase
+        .from("post_votes")
+        .delete()
+        .eq("id", existingVote.id)
+
+      if (deleteError) {
+        console.error("Error removing vote:", deleteError)
+        return { error: "Failed to remove vote. Please try again." }
+      }
 
       // Update post upvotes count
-      await supabase.rpc("update_post_upvotes", { p_post_id: postId })
+      const { error: rpcError } = await supabase.rpc("update_post_upvotes", { p_post_id: postId })
+      if (rpcError) {
+        console.error("Error updating vote count:", rpcError)
+      }
     } else {
       // Different vote - update it
-      await supabase
+      const { error: updateError } = await supabase
         .from("post_votes")
         .update({ vote_type: voteType })
         .eq("id", existingVote.id)
 
+      if (updateError) {
+        console.error("Error updating vote:", updateError)
+        return { error: "Failed to change vote. Please try again." }
+      }
+
       // Update post upvotes count
-      await supabase.rpc("update_post_upvotes", { p_post_id: postId })
+      const { error: rpcError } = await supabase.rpc("update_post_upvotes", { p_post_id: postId })
+      if (rpcError) {
+        console.error("Error updating vote count:", rpcError)
+      }
     }
   } else {
     // No existing vote - create new
@@ -53,7 +72,10 @@ export async function voteOnPost(postId: string, voteType: 1 | -1) {
     }
 
     // Update post upvotes count
-    await supabase.rpc("update_post_upvotes", { p_post_id: postId })
+    const { error: rpcError } = await supabase.rpc("update_post_upvotes", { p_post_id: postId })
+    if (rpcError) {
+      console.error("Error updating vote count:", rpcError)
+    }
   }
 
   revalidatePath(`/community/${postId}`)
@@ -82,15 +104,36 @@ export async function voteOnComment(commentId: string, voteType: 1 | -1) {
   if (existingVote) {
     if (existingVote.vote_type === voteType) {
       // Same vote - remove it
-      await supabase.from("comment_votes").delete().eq("id", existingVote.id)
-      await supabase.rpc("update_comment_upvotes", { p_comment_id: commentId })
+      const { error: deleteError } = await supabase
+        .from("comment_votes")
+        .delete()
+        .eq("id", existingVote.id)
+
+      if (deleteError) {
+        console.error("Error removing vote:", deleteError)
+        return { error: "Failed to remove vote. Please try again." }
+      }
+
+      const { error: rpcError } = await supabase.rpc("update_comment_upvotes", { p_comment_id: commentId })
+      if (rpcError) {
+        console.error("Error updating vote count:", rpcError)
+      }
     } else {
       // Different vote - update it
-      await supabase
+      const { error: updateError } = await supabase
         .from("comment_votes")
         .update({ vote_type: voteType })
         .eq("id", existingVote.id)
-      await supabase.rpc("update_comment_upvotes", { p_comment_id: commentId })
+
+      if (updateError) {
+        console.error("Error updating vote:", updateError)
+        return { error: "Failed to change vote. Please try again." }
+      }
+
+      const { error: rpcError } = await supabase.rpc("update_comment_upvotes", { p_comment_id: commentId })
+      if (rpcError) {
+        console.error("Error updating vote count:", rpcError)
+      }
     }
   } else {
     const { error } = await supabase.from("comment_votes").insert({
@@ -104,7 +147,10 @@ export async function voteOnComment(commentId: string, voteType: 1 | -1) {
       return { error: "Failed to vote. Please try again." }
     }
 
-    await supabase.rpc("update_comment_upvotes", { p_comment_id: commentId })
+    const { error: rpcError } = await supabase.rpc("update_comment_upvotes", { p_comment_id: commentId })
+    if (rpcError) {
+      console.error("Error updating vote count:", rpcError)
+    }
   }
 
   revalidatePath(`/community`)

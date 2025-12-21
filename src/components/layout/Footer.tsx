@@ -24,20 +24,20 @@ interface FooterProduct {
 export async function Footer() {
   const supabase = await createClient()
 
-  // Fetch dynamic content
+  // Fetch dynamic content (using unified global charity keys)
   const content = await getContents(
     [
       "footer.copyright",
-      "footer.charity.percentage",
-      "footer.charity.text",
+      "global.charity.percentage",
+      "global.charity.short",
       "footer.brand.tagline",
       "footer.newsletter.title",
       "footer.newsletter.description",
     ],
     {
       "footer.copyright": "© 2025 StarterSpark Robotics. All rights reserved.",
-      "footer.charity.percentage": "70%",
-      "footer.charity.text": "of every purchase goes directly to Hawaii STEM charities",
+      "global.charity.percentage": "70%",
+      "global.charity.short": "of every purchase goes to Hawaii STEM education",
       "footer.brand.tagline": "Open-source robotics education designed by students, for students. Building the next generation of Hawaii's engineers.",
       "footer.newsletter.title": "Stay Updated",
       "footer.newsletter.description": "Get notified about new kits and workshops.",
@@ -64,7 +64,7 @@ export async function Footer() {
         <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 text-sm">
           <Heart className="w-4 h-4 text-amber-600" />
           <span className="text-slate-600">
-            <span className="font-mono text-amber-700 font-semibold">{content["footer.charity.percentage"]}</span> {content["footer.charity.text"]}
+            <span className="font-mono text-amber-700 font-semibold">{content["global.charity.percentage"]}</span> {content["global.charity.short"]}
           </span>
         </div>
       </div>
@@ -80,16 +80,28 @@ export async function Footer() {
               {content["footer.brand.tagline"]}
             </p>
             <div className="flex gap-3">
-              <Link href="https://github.com/normalday843812" target="_blank" rel="noopener noreferrer">
-                <Button variant="ghost" size="icon" aria-label="GitHub" className="text-slate-500 hover:text-cyan-700 hover:bg-slate-100">
+              <Button
+                asChild
+                variant="ghost"
+                size="icon"
+                aria-label="GitHub"
+                className="text-slate-500 hover:text-cyan-700 hover:bg-slate-100"
+              >
+                <a href="https://github.com/normalday843812" target="_blank" rel="noopener noreferrer">
                   <GithubIcon className="w-4 h-4" />
-                </Button>
-              </Link>
-              <Link href="https://x.com/AlQaholic00" target="_blank" rel="noopener noreferrer">
-                <Button variant="ghost" size="icon" aria-label="X" className="text-slate-500 hover:text-cyan-700 hover:bg-slate-100">
+                </a>
+              </Button>
+              <Button
+                asChild
+                variant="ghost"
+                size="icon"
+                aria-label="X"
+                className="text-slate-500 hover:text-cyan-700 hover:bg-slate-100"
+              >
+                <a href="https://x.com/AlQaholic00" target="_blank" rel="noopener noreferrer">
                   <XIcon className="w-4 h-4" />
-                </Button>
-              </Link>
+                </a>
+              </Button>
               <div className="relative group">
                 <Button variant="ghost" size="icon" aria-label="Instagram" className="text-slate-500 cursor-not-allowed" disabled>
                   <InstagramIcon className="w-4 h-4" />
@@ -98,11 +110,17 @@ export async function Footer() {
                   Coming Soon
                 </span>
               </div>
-              <Link href="https://www.youtube.com/@CrustySofa" target="_blank" rel="noopener noreferrer">
-                <Button variant="ghost" size="icon" aria-label="YouTube" className="text-slate-500 hover:text-cyan-700 hover:bg-slate-100">
+              <Button
+                asChild
+                variant="ghost"
+                size="icon"
+                aria-label="YouTube"
+                className="text-slate-500 hover:text-cyan-700 hover:bg-slate-100"
+              >
+                <a href="https://www.youtube.com/@CrustySofa" target="_blank" rel="noopener noreferrer">
                   <YoutubeIcon className="w-4 h-4" />
-                </Button>
-              </Link>
+                </a>
+              </Button>
             </div>
           </div>
 

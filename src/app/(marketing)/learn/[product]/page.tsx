@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { formatDuration } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
+  Award,
   BookOpen,
   Clock,
   Target,
@@ -14,12 +15,15 @@ import {
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { getCourseSchema, getBreadcrumbSchema } from "@/lib/structured-data"
+import { AnimatedProgressFill } from "@/components/learn/AnimatedProgressFill"
+import { headers } from "next/headers"
 
 export default async function CoursePage({
   params,
 }: {
   params: Promise<{ product: string }>
 }) {
+  const nonce = (await headers()).get("x-nonce") ?? undefined
   const { product: productSlug } = await params
   const supabase = await createClient()
 
@@ -32,6 +36,7 @@ export default async function CoursePage({
       description,
       difficulty,
       duration_minutes,
+      is_published,
       product:products (
         id,
         slug,
@@ -41,18 +46,22 @@ export default async function CoursePage({
         id,
         title,
         description,
+        is_published,
         sort_order,
-        lessons (
-          id,
-          slug,
-          title,
-          description,
-          duration_minutes,
-          sort_order
-        )
-      )
+	        lessons (
+	          id,
+	          slug,
+	          title,
+	          description,
+	          is_published,
+	          is_optional,
+	          duration_minutes,
+	          sort_order
+	        )
+	      )
     `)
     .eq("products.slug", productSlug)
+    .eq("is_published", true)
     .single()
 
   if (error || !course) {
@@ -65,19 +74,24 @@ export default async function CoursePage({
   }
 
   // Sort modules and lessons by sort_order
-  type ModuleWithLessons = {
-    id: string
-    title: string
-    description: string | null
-    sort_order: number
-    lessons: { id: string; slug: string; title: string; description: string | null; duration_minutes: number; sort_order: number }[] | null
-  }
+	  type ModuleWithLessons = {
+	    id: string
+	    title: string
+	    description: string | null
+	    sort_order: number
+      is_published: boolean | null
+	    lessons: { id: string; slug: string; title: string; description: string | null; is_published: boolean | null; is_optional: boolean; duration_minutes: number; sort_order: number }[] | null
+	  }
   const modules = course.modules as unknown as ModuleWithLessons[] | null
   const sortedModules = modules
+    ?.filter((m) => m.is_published !== false)
     ?.sort((a, b) => a.sort_order - b.sort_order)
     .map((mod) => ({
       ...mod,
-      lessons: mod.lessons?.sort((a, b) => a.sort_order - b.sort_order) || [],
+      lessons:
+        mod.lessons
+          ?.filter((l) => l.is_published !== false)
+          .sort((a, b) => a.sort_order - b.sort_order) || [],
     })) || []
 
   const {
@@ -88,14 +102,15 @@ export default async function CoursePage({
   let isOwned = false
   let completedLessonIds: string[] = []
   if (user) {
-    const { data: license } = await supabase
+    // Use limit(1) instead of single() - user may have multiple licenses for same product
+    const { data: licenses } = await supabase
       .from("licenses")
       .select("id")
       .eq("owner_id", user.id)
       .eq("product_id", product.id)
-      .single()
+      .limit(1)
 
-    if (license) {
+    if (licenses && licenses.length > 0) {
       isOwned = true
 
       // Fetch completed lessons for this user
@@ -110,23 +125,30 @@ export default async function CoursePage({
     }
   }
 
-  // Calculate total lessons and progress
-  const allLessonIds = sortedModules.flatMap((mod) =>
-    mod.lessons.map((l) => l.id)
-  )
-  const totalLessons = allLessonIds.length
-  const completedCount = allLessonIds.filter((id) =>
-    completedLessonIds.includes(id)
+  // Calculate progress based on required (non-optional) lessons
+  const allLessons = sortedModules.flatMap((mod) => mod.lessons)
+  const requiredLessons = allLessons.filter((l) => !l.is_optional)
+  const totalLessons = allLessons.length
+  const totalRequiredLessons = requiredLessons.length
+  const completedRequiredCount = requiredLessons.filter((l) =>
+    completedLessonIds.includes(l.id)
   ).length
-  const progressPercent = totalLessons > 0
-    ? Math.round((completedCount / totalLessons) * 100)
+  const progressPercent = totalRequiredLessons > 0
+    ? Math.round((completedRequiredCount / totalRequiredLessons) * 100)
     : 0
 
-  // Get first incomplete lesson or first lesson for "Continue/Start Course" button
-  const firstIncompleteLesson = sortedModules
-    .flatMap((mod) => mod.lessons)
-    .find((lesson) => !completedLessonIds.includes(lesson.id))
-  const firstLesson = firstIncompleteLesson || sortedModules[0]?.lessons[0]
+  const courseCtaLabel =
+    progressPercent >= 100
+      ? "Review Course"
+      : progressPercent > 0
+        ? "Continue Course"
+        : "Start Course"
+
+  // Get first incomplete required lesson (optional lessons don't block completion)
+  const firstIncompleteLesson = requiredLessons.find(
+    (lesson) => !completedLessonIds.includes(lesson.id)
+  )
+  const firstLesson = firstIncompleteLesson || requiredLessons[0] || allLessons[0]
 
   // Generate structured data for SEO
   const courseSchema = getCourseSchema({
@@ -148,10 +170,14 @@ export default async function CoursePage({
   ])
 
 	  return (
-	    <div className="min-h-screen bg-slate-50">
+	    <div className="bg-slate-50">
 	      {/* JSON-LD Structured Data for SEO */}
-	      <script type="application/ld+json">{JSON.stringify(courseSchema)}</script>
-	      <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
+	      <script nonce={nonce} type="application/ld+json">
+	        {JSON.stringify(courseSchema)}
+	      </script>
+	      <script nonce={nonce} type="application/ld+json">
+	        {JSON.stringify(breadcrumbSchema)}
+	      </script>
 	      {/* Header */}
 	      <section className="pt-32 pb-8 px-6 lg:px-20 bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto">
@@ -208,19 +234,34 @@ export default async function CoursePage({
                     </div>
                     <p className="text-sm text-slate-500">completed</p>
                   </div>
-                  <div className="h-2 bg-slate-200 rounded-full overflow-hidden mb-6">
-                    <div
-                      className="h-full bg-cyan-700 rounded-full transition-all"
-                      style={{ width: `${progressPercent}%` }}
-                    />
-                  </div>
+	                  <div className="h-2 bg-slate-200 rounded-full overflow-hidden mb-6">
+	                    {user && (
+	                      <AnimatedProgressFill
+	                        progress={progressPercent}
+	                        storageKey={`learn:${user.id}:course:${course.id}:progress`}
+	                        className="h-full bg-cyan-700 rounded-full"
+	                      />
+	                    )}
+	                  </div>
                   {firstLesson && (
-                    <Link href={`/learn/${product.slug}/${firstLesson.slug}`}>
-                      <Button className="w-full bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
-                        {progressPercent > 0 ? "Continue Course" : "Start Course"}
+                    <Button asChild className="w-full bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
+                      <Link href={`/learn/${product.slug}/${firstLesson.slug}`}>
+                        {courseCtaLabel}
                         <ChevronRight className="w-4 h-4 ml-2" />
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
+                  )}
+                  {progressPercent >= 100 && (
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="w-full mt-3 border-cyan-700 text-cyan-700 hover:bg-cyan-50 font-mono"
+                    >
+                      <a href={`/api/certificate?courseId=${course.id}`} download>
+                        <Award className="w-4 h-4 mr-2" />
+                        Download Certificate
+                      </a>
+                    </Button>
                   )}
                 </>
               ) : (
@@ -231,12 +272,12 @@ export default async function CoursePage({
                       Kit required to access lessons
                     </span>
                   </div>
-                  <Link href={`/shop/${product.slug}`}>
-                    <Button className="w-full bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
+                  <Button asChild className="w-full bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
+                    <Link href={`/shop/${product.slug}`}>
                       Get the Kit
                       <ChevronRight className="w-4 h-4 ml-2" />
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                   <p className="text-xs text-slate-500 text-center mt-3">
                     Already have a kit?{" "}
                     <Link href="/workshop" className="text-cyan-700 hover:underline">

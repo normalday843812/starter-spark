@@ -130,8 +130,8 @@ test.describe("About Page", () => {
   test("should display mission/story section", async ({ page }) => {
     await page.goto("/about")
 
-    // Look for the "The Story" heading which is always present on About page
-    const storyHeading = page.getByRole("heading", { name: /the story/i }).first()
+    // Look for the story section heading
+    const storyHeading = page.getByRole("heading", { name: /our story/i }).first()
     await expect(storyHeading).toBeVisible()
   })
 

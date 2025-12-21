@@ -96,16 +96,21 @@ export function HeroSection({
           transition={{ duration: 0.8, delay: 0.4 }}
           className="flex gap-4 pointer-events-auto"
         >
-          <Link href="/shop">
-            <Button size="lg" className="h-14 px-8 bg-cyan-700 hover:bg-cyan-600 text-white font-mono tracking-wider rounded-none shadow-sm cursor-pointer">
-              {ctaPrimary}
-            </Button>
-          </Link>
-          <Link href="/learn">
-            <Button variant="outline" size="lg" className="h-14 px-8 border-slate-200 hover:border-cyan-700 text-slate-600 hover:text-cyan-700 font-mono tracking-wider rounded-none cursor-pointer">
-              {ctaSecondary}
-            </Button>
-          </Link>
+          <Button
+            asChild
+            size="lg"
+            className="h-14 px-8 bg-cyan-700 hover:bg-cyan-600 text-white font-mono tracking-wider rounded-none shadow-sm cursor-pointer"
+          >
+            <Link href="/shop">{ctaPrimary}</Link>
+          </Button>
+          <Button
+            asChild
+            variant="outline"
+            size="lg"
+            className="h-14 px-8 border-slate-200 hover:border-cyan-700 text-slate-600 hover:text-cyan-700 font-mono tracking-wider rounded-none cursor-pointer"
+          >
+            <Link href="/learn">{ctaSecondary}</Link>
+          </Button>
         </motion.div>
       </motion.div>
 

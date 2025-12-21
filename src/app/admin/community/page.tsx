@@ -104,37 +104,32 @@ export default async function CommunityPage({
 
       {/* Filters */}
       <div className="flex gap-2">
-        {filters.map((filter) => (
-          <Link
-            key={filter.value}
-            href={
-              filter.value === "all"
-                ? "/admin/community"
-                : `/admin/community?status=${filter.value}`
-            }
-          >
+        {filters.map((filter) => {
+          const href =
+            filter.value === "all"
+              ? "/admin/community"
+              : `/admin/community?status=${filter.value}`
+          const selected =
+            params.status === filter.value || (!params.status && filter.value === "all")
+          return (
             <Button
-              variant={
-                params.status === filter.value || (!params.status && filter.value === "all")
-                  ? "default"
-                  : "outline"
-              }
+              key={filter.value}
+              asChild
+              variant={selected ? "default" : "outline"}
               size="sm"
-              className={
-                params.status === filter.value || (!params.status && filter.value === "all")
-                  ? "bg-cyan-700 hover:bg-cyan-600"
-                  : ""
-              }
+              className={selected ? "bg-cyan-700 hover:bg-cyan-600" : ""}
             >
-              {filter.label}
-              {filter.value === "flagged" && stats.flagged > 0 && (
-                <span className="ml-1 rounded-full bg-red-500 px-1.5 text-xs text-white">
-                  {stats.flagged}
-                </span>
-              )}
+              <Link href={href}>
+                {filter.label}
+                {filter.value === "flagged" && stats.flagged > 0 && (
+                  <span className="ml-1 rounded-full bg-red-500 px-1.5 text-xs text-white">
+                    {stats.flagged}
+                  </span>
+                )}
+              </Link>
             </Button>
-          </Link>
-        ))}
+          )
+        })}
       </div>
 
       {/* Posts Table */}

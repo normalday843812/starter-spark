@@ -32,6 +32,13 @@ export function ShopFilters({ products }: ShopFiltersProps) {
   const [search, setSearch] = useState("")
   const [filter, setFilter] = useState<FilterOption>("all")
 
+  const filterOptions: Array<{ value: FilterOption; label: string }> = [
+    { value: "all", label: "All" },
+    { value: "kit", label: "Kits" },
+    { value: "bundle", label: "Bundles" },
+    { value: "parts", label: "Parts" },
+  ]
+
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
       const matchesSearch = product.name
@@ -63,25 +70,21 @@ export function ShopFilters({ products }: ShopFiltersProps) {
             {/* Filter Buttons */}
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-slate-500" />
-              {(["all", "kit", "bundle", "parts"] as FilterOption[]).map(
-                (option) => (
-                  <Button
-                    key={option}
-                    variant={filter === option ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setFilter(option)}
-                    className={
-                      filter === option
-                        ? "bg-cyan-700 hover:bg-cyan-600 text-white font-mono"
-                        : "border-slate-200 hover:border-cyan-700 text-slate-600 hover:text-cyan-700 font-mono"
-                    }
-                  >
-                    {option === "all"
-                      ? "All"
-                      : option.charAt(0).toUpperCase() + option.slice(1) + "s"}
-                  </Button>
-                )
-              )}
+              {filterOptions.map(({ value, label }) => (
+                <Button
+                  key={value}
+                  variant={filter === value ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setFilter(value)}
+                  className={
+                    filter === value
+                      ? "bg-cyan-700 hover:bg-cyan-600 text-white font-mono"
+                      : "border-slate-200 hover:border-cyan-700 text-slate-600 hover:text-cyan-700 font-mono"
+                  }
+                >
+                  {label}
+                </Button>
+              ))}
             </div>
           </div>
         </div>

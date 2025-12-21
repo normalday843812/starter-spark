@@ -67,11 +67,11 @@ test.describe("Cart - Add Items", () => {
   test("should add item to cart from product page", async ({ page }) => {
     // Go to shop and find a product
     await page.goto("/shop")
-    const productLink = page.locator('a[href^="/shop/"]').first()
+    const productLink = page.locator('main a[href^="/shop/"]').first()
     await productLink.click()
 
     // Wait for product page to load
-    await page.waitForURL(/\/shop\/.+/)
+    await expect(page).toHaveURL(/\/shop\/.+/)
     await page.getByRole("heading", { level: 1 }).waitFor()
 
     // Add to cart
@@ -90,8 +90,8 @@ test.describe("Cart - Add Items", () => {
   test("should open cart sheet when adding item", async ({ page }) => {
     // Navigate to a product
     await page.goto("/shop")
-    await page.locator('a[href^="/shop/"]').first().click()
-    await page.waitForURL(/\/shop\/.+/)
+    await page.locator('main a[href^="/shop/"]').first().click()
+    await expect(page).toHaveURL(/\/shop\/.+/)
     await page.getByRole("heading", { level: 1 }).waitFor()
 
     // Add to cart
@@ -106,8 +106,8 @@ test.describe("Cart - Add Items", () => {
   }) => {
     // Navigate to a product
     await page.goto("/shop")
-    await page.locator('a[href^="/shop/"]').first().click()
-    await page.waitForURL(/\/shop\/.+/)
+    await page.locator('main a[href^="/shop/"]').first().click()
+    await expect(page).toHaveURL(/\/shop\/.+/)
     await page.getByRole("heading", { level: 1 }).waitFor()
 
     // Add to cart twice
@@ -137,8 +137,8 @@ test.describe("Cart - Add Items", () => {
   test("should add multiple items with specified quantity", async ({ page }) => {
     // Navigate to a product
     await page.goto("/shop")
-    await page.locator('a[href^="/shop/"]').first().click()
-    await page.waitForURL(/\/shop\/.+/)
+    await page.locator('main a[href^="/shop/"]').first().click()
+    await expect(page).toHaveURL(/\/shop\/.+/)
     await page.getByRole("heading", { level: 1 }).waitFor()
 
     // Increase quantity to 3 (use the BuyBox quantity controls, not cart sheet)

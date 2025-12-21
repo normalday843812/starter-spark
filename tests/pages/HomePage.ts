@@ -33,8 +33,8 @@ export class HomePage {
     this.header = page.locator("header")
     this.logo = page.getByRole("link", { name: /starterspark/i })
     this.mobileMenuButton = page.getByLabel("Toggle menu")
-    // Cart is always available in the header (desktop + mobile)
-    this.cartButton = page.getByLabel(/^Shopping cart/i).first()
+    // Cart exists in both desktop+mobile header; select the visible one to avoid timeouts
+    this.cartButton = page.locator('header button[aria-label^="Shopping cart"]:visible')
     this.footer = page.locator("footer")
 
     // Hero
@@ -91,9 +91,9 @@ export class HomePage {
   /**
    * Open a desktop dropdown and click a menu item (Radix DropdownMenu).
    */
-  private async clickDesktopMenuItem(
+  private async clickDesktopMenuLink(
     menu: "Documentation" | "Community",
-    itemName: string
+    href: string
   ): Promise<void> {
     const trigger = this.page
       .locator("nav.hidden.md\\:flex")
@@ -101,8 +101,15 @@ export class HomePage {
       .first()
 
     await trigger.click()
-    const escaped = itemName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-    await this.page.getByRole("menuitem", { name: new RegExp(escaped, "i") }).click()
+
+    // Scope to the open menu to avoid matching hero/other links.
+    const menuContent = this.page
+      .getByRole("menu")
+      .filter({ has: this.page.locator(`a[href="${href}"]`) })
+      .first()
+    const link = menuContent.locator(`a[href="${href}"]`).first()
+    await expect(link).toBeVisible()
+    await link.click()
   }
 
   // Desktop-only locators (for visibility assertions)
@@ -128,6 +135,7 @@ export class HomePage {
 
   async goto() {
     await this.page.goto("/")
+    await expect(this.header).toBeVisible()
   }
 
   async expectPageLoaded() {
@@ -142,7 +150,7 @@ export class HomePage {
     } else {
       await this.page.locator("header").getByRole("link", { name: "Shop Kits", exact: true }).click()
     }
-    await this.page.waitForURL("**/shop")
+    await expect(this.page).toHaveURL("/shop")
   }
 
   async navigateToLearn() {
@@ -151,9 +159,9 @@ export class HomePage {
       await this.mobileMenu.getByRole("button", { name: "Documentation", exact: true }).click()
       await this.mobileMenu.getByRole("link", { name: "Getting Started", exact: true }).click()
     } else {
-      await this.clickDesktopMenuItem("Documentation", "Getting Started")
+      await this.clickDesktopMenuLink("Documentation", "/learn")
     }
-    await this.page.waitForURL("**/learn")
+    await expect(this.page).toHaveURL("/learn")
   }
 
   async navigateToAbout() {
@@ -162,9 +170,9 @@ export class HomePage {
       await this.mobileMenu.getByRole("button", { name: "Community", exact: true }).click()
       await this.mobileMenu.getByRole("link", { name: "About Us", exact: true }).click()
     } else {
-      await this.clickDesktopMenuItem("Community", "About Us")
+      await this.clickDesktopMenuLink("Community", "/about")
     }
-    await this.page.waitForURL("**/about")
+    await expect(this.page).toHaveURL("/about")
   }
 
   async navigateToEvents() {
@@ -173,9 +181,9 @@ export class HomePage {
       await this.mobileMenu.getByRole("button", { name: "Community", exact: true }).click()
       await this.mobileMenu.getByRole("link", { name: "Events", exact: true }).click()
     } else {
-      await this.clickDesktopMenuItem("Community", "Events")
+      await this.clickDesktopMenuLink("Community", "/events")
     }
-    await this.page.waitForURL("**/events")
+    await expect(this.page).toHaveURL("/events")
   }
 
   async navigateToCommunity() {
@@ -184,9 +192,9 @@ export class HomePage {
       await this.mobileMenu.getByRole("button", { name: "Community", exact: true }).click()
       await this.mobileMenu.getByRole("link", { name: "The Lab", exact: true }).click()
     } else {
-      await this.clickDesktopMenuItem("Community", "The Lab")
+      await this.clickDesktopMenuLink("Community", "/community")
     }
-    await this.page.waitForURL("**/community")
+    await expect(this.page).toHaveURL("/community")
   }
 
   async navigateToWorkshop() {
@@ -201,7 +209,7 @@ export class HomePage {
       // On desktop, Workshop is in the header nav
       await this.page.locator("header").getByRole("link", { name: "Workshop", exact: true }).click()
     }
-    await this.page.waitForURL("**/workshop")
+    await expect(this.page).toHaveURL("/workshop")
   }
 
   async openCart() {
@@ -213,8 +221,8 @@ export class HomePage {
   }
 
   async getCartCount(): Promise<number> {
-    const badge = this.page.locator('[aria-label^="Shopping cart"] span')
-    if (await badge.isVisible()) {
+    const badge = this.cartButton.locator("span")
+    if (await badge.isVisible().catch(() => false)) {
       const text = await badge.textContent()
       return text === "9+" ? 10 : parseInt(text || "0", 10)
     }

@@ -9,8 +9,8 @@ test.describe("Claim Page - Invalid Token", () => {
   test("should handle non-existent claim token", async ({ page }) => {
     await page.goto("/claim/invalid-token-that-does-not-exist")
 
-    // Wait for loading to complete
-    await page.waitForLoadState("networkidle")
+    // Wait for initial render to complete
+    await page.waitForLoadState("domcontentloaded")
 
     // Wait for either Invalid heading, Claim heading, or redirect to login
     // Page may show Loading... initially, then render the actual content
@@ -21,7 +21,7 @@ test.describe("Claim Page - Invalid Token", () => {
     await Promise.race([
       invalidHeading.waitFor({ timeout: 10000 }),
       claimHeading.waitFor({ timeout: 10000 }),
-      page.waitForURL(/\/login/, { timeout: 10000 })
+      expect(page).toHaveURL(/\/login/, { timeout: 10000 })
     ]).catch(() => {})
 
     // Should show "Invalid Claim Link" heading or redirect to login
@@ -63,8 +63,8 @@ test.describe("Claim Page - Layout", () => {
 
     await page.goto("/claim/some-claim-token")
 
-    // Wait for loading to complete
-    await page.waitForLoadState("networkidle")
+    // Wait for initial render to complete
+    await page.waitForLoadState("domcontentloaded")
 
     // Wait for content to load (page may show Loading... initially)
     const invalidHeading = page.getByRole("heading", { name: /invalid/i })
@@ -75,7 +75,7 @@ test.describe("Claim Page - Layout", () => {
       invalidHeading.waitFor({ timeout: 10000 }),
       claimHeading.waitFor({ timeout: 10000 }),
       signInLink.waitFor({ timeout: 10000 }),
-      page.waitForURL(/\/login/, { timeout: 10000 })
+      expect(page).toHaveURL(/\/login/, { timeout: 10000 })
     ]).catch(() => {})
 
     // With invalid token, shows "Invalid Claim Link" page with shop buttons

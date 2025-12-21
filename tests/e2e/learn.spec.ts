@@ -58,7 +58,7 @@ test.describe("Course Overview Page", () => {
 
     if (count > 0) {
       await courseLinks.first().click()
-      await page.waitForURL(/\/learn\/.+/)
+      await expect(page).toHaveURL(/\/learn\/.+/)
 
       // Should have course heading
       const heading = page.getByRole("heading", { level: 1 })
@@ -73,7 +73,7 @@ test.describe("Course Overview Page", () => {
 
     if (count > 0) {
       await courseLinks.first().click()
-      await page.waitForURL(/\/learn\/.+/)
+      await expect(page).toHaveURL(/\/learn\/.+/)
 
       // Wait for content
       await page.waitForLoadState("networkidle")
@@ -91,7 +91,7 @@ test.describe("Course Overview Page", () => {
 
     if (count > 0) {
       await courseLinks.first().click()
-      await page.waitForURL(/\/learn\/.+/)
+      await expect(page).toHaveURL(/\/learn\/.+/)
 
       // Page should load without error
       await expect(page.locator("body")).toBeVisible()
@@ -105,7 +105,7 @@ test.describe("Course Overview Page", () => {
 
     if (count > 0) {
       await courseLinks.first().click()
-      await page.waitForURL(/\/learn\/.+/)
+      await expect(page).toHaveURL(/\/learn\/.+/)
 
       // Wait for page to load
       await page.waitForLoadState("networkidle")
@@ -121,7 +121,7 @@ test.describe("Course Overview Page", () => {
         if (href && href.split("/").length > 3) {
           await firstLesson.click()
           // Should navigate to lesson page
-          await page.waitForURL(/\/learn\/.+\/.+/)
+          await expect(page).toHaveURL(/\/learn\/.+\/.+/)
         }
       }
     }
@@ -137,7 +137,7 @@ test.describe("Lesson Page", () => {
 
     if (count > 0) {
       await courseLinks.first().click()
-      await page.waitForURL(/\/learn\/.+/)
+      await expect(page).toHaveURL(/\/learn\/.+/)
       await page.waitForLoadState("networkidle")
 
       // Find and click a lesson

@@ -56,10 +56,14 @@ export async function awardAchievement(
       return { success: false, error: error.message }
     }
 
+    if (typeof data !== "boolean") {
+      return { success: false, error: "Unexpected response from award_achievement" }
+    }
+
     // data is boolean - true if newly awarded, false if already earned
     return {
       success: true,
-      alreadyEarned: !data,
+      alreadyEarned: data === false,
     }
   } catch (err) {
     console.error("Error awarding achievement:", err)
@@ -74,48 +78,87 @@ export async function awardAchievement(
 export async function checkLessonAchievements(
   userId: string,
   lessonId: string,
-  moduleId: string,
-  productSlug: string
 ): Promise<AwardResult[]> {
   const results: AwardResult[] = []
 
-  // Get user's lesson completion stats
-  const { data: stats } = await supabaseAdmin
-    .from("lesson_progress")
-    .select("id, completed_at")
-    .eq("user_id", userId)
-    .eq("completed", true)
+  // Load lesson -> module -> course context (for module/course completion)
+  const { data: lessonContext, error: contextError } = await supabaseAdmin
+    .from("lessons")
+    .select(
+      `
+      id,
+      module_id,
+      module:modules (
+        id,
+        course_id,
+        course:courses (
+          id,
+          product:products (slug)
+        )
+      )
+    `
+    )
+    .eq("id", lessonId)
+    .single()
 
-  const completedCount = stats?.length || 0
+  if (contextError || !lessonContext) {
+    console.error("Error fetching lesson context:", contextError)
+    return results
+  }
+
+  const moduleId = lessonContext.module_id
+  const moduleRow = lessonContext.module as unknown as {
+    id: string
+    course_id: string
+    course: { id: string; product: { slug: string } | null } | null
+  } | null
+
+  const courseId = moduleRow?.course_id
+  const courseProductSlug = moduleRow?.course?.product?.slug
+
+  // Total completed lessons (across all courses)
+  const { count: totalCompletedCount, error: totalCountError } = await supabaseAdmin
+    .from("lesson_progress")
+    .select("lesson_id", { count: "exact", head: true })
+    .eq("user_id", userId)
+
+  if (totalCountError) {
+    console.error("Error fetching lesson progress count:", totalCountError)
+    return results
+  }
+
+  const completedCount = totalCompletedCount ?? 0
 
   // First lesson achievement
-  if (completedCount === 1) {
-    results.push(await awardAchievement(userId, "first_lesson", { lesson_id: lessonId }))
+  if (completedCount >= 1) {
+    results.push(
+      await awardAchievement(userId, "first_lesson", { lesson_id: lessonId })
+    )
   }
 
   // Five lessons achievement
-  if (completedCount === 5) {
+  if (completedCount >= 5) {
     results.push(await awardAchievement(userId, "five_lessons"))
   }
 
   // Ten lessons achievement
-  if (completedCount === 10) {
+  if (completedCount >= 10) {
     results.push(await awardAchievement(userId, "ten_lessons"))
   }
 
   // Check for speed learner (3 lessons in one day)
-  if (stats && stats.length >= 3) {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const todayStr = today.toISOString()
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const { count: todayCount, error: todayError } = await supabaseAdmin
+    .from("lesson_progress")
+    .select("lesson_id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .gte("completed_at", today.toISOString())
 
-    const lessonsToday = stats.filter(
-      (s) => s.completed_at && s.completed_at >= todayStr
-    ).length
-
-    if (lessonsToday >= 3) {
-      results.push(await awardAchievement(userId, "speed_learner"))
-    }
+  if (todayError) {
+    console.error("Error fetching today's lesson progress:", todayError)
+  } else if ((todayCount ?? 0) >= 3) {
+    results.push(await awardAchievement(userId, "speed_learner"))
   }
 
   // Check for night owl (completed after midnight, before 5am)
@@ -126,39 +169,88 @@ export async function checkLessonAchievements(
   }
 
   // Check if module is complete
-  const { data: moduleData } = await supabaseAdmin
+  const { data: moduleLessons, error: moduleLessonsError } = await supabaseAdmin
     .from("lessons")
-    .select("id")
+    .select("id, is_optional")
     .eq("module_id", moduleId)
+    .eq("is_published", true)
 
-  if (moduleData) {
-    const moduleCompletedLessons = stats?.filter((s) =>
-      moduleData.some((l) => l.id === s.id)
-    )
+  if (moduleLessonsError) {
+    console.error("Error fetching module lessons:", moduleLessonsError)
+  } else if (moduleLessons && moduleLessons.length > 0) {
+    const moduleLessonIds = moduleLessons
+      .filter((l) => l.is_optional !== true)
+      .map((l) => l.id)
+    if (moduleLessonIds.length > 0) {
+      const { count: completedInModule, error: moduleCountError } = await supabaseAdmin
+        .from("lesson_progress")
+        .select("lesson_id", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .in("lesson_id", moduleLessonIds)
 
-    if (moduleCompletedLessons?.length === moduleData.length) {
-      results.push(await awardAchievement(userId, "module_complete", { module_id: moduleId }))
+      if (moduleCountError) {
+        console.error("Error fetching module progress:", moduleCountError)
+      } else if ((completedInModule ?? 0) === moduleLessonIds.length) {
+        results.push(
+          await awardAchievement(userId, "module_complete", { module_id: moduleId })
+        )
+      }
     }
   }
 
   // Check if entire course is complete
-  const { data: allModules } = await supabaseAdmin
-    .from("modules")
-    .select("id, lessons(id)")
-    .eq("product_slug", productSlug)
+  if (courseId) {
+    const { data: courseModules, error: courseModulesError } = await supabaseAdmin
+      .from("modules")
+      .select("id")
+      .eq("course_id", courseId)
+      .eq("is_published", true)
 
-  if (allModules) {
-    const allLessonIds = allModules.flatMap((m) =>
-      (m.lessons as { id: string }[])?.map((l) => l.id) || []
-    )
+    if (courseModulesError) {
+      console.error("Error fetching course modules:", courseModulesError)
+    } else if (courseModules) {
+      const moduleIds = courseModules.map((m) => m.id)
+      if (moduleIds.length === 0) {
+        return results
+      }
 
-    const completedLessonIds = stats?.map((s) => s.id) || []
-    const courseComplete = allLessonIds.every((id) =>
-      completedLessonIds.includes(id)
-    )
+      const { data: courseLessons, error: courseLessonsError } = await supabaseAdmin
+        .from("lessons")
+        .select("id, is_optional")
+        .in("module_id", moduleIds)
+        .eq("is_published", true)
 
-    if (courseComplete && allLessonIds.length > 0) {
-      results.push(await awardAchievement(userId, "course_complete", { product_slug: productSlug }))
+      if (courseLessonsError) {
+        console.error("Error fetching course lessons:", courseLessonsError)
+        return results
+      }
+
+      const allLessonIds =
+        courseLessons
+          ?.filter((l) => l.is_optional !== true)
+          .map((l) => l.id) ?? []
+
+      if (allLessonIds.length > 0) {
+        const { count: completedInCourse, error: courseCountError } = await supabaseAdmin
+          .from("lesson_progress")
+          .select("lesson_id", { count: "exact", head: true })
+          .eq("user_id", userId)
+          .in("lesson_id", allLessonIds)
+
+        if (courseCountError) {
+          console.error("Error fetching course progress:", courseCountError)
+          return results
+        }
+
+        if ((completedInCourse ?? 0) === allLessonIds.length) {
+        results.push(
+          await awardAchievement(userId, "course_complete", {
+            course_id: courseId,
+            product_slug: courseProductSlug ?? null,
+          })
+        )
+        }
+      }
     }
   }
 

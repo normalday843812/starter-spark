@@ -225,12 +225,12 @@ export function ProductSpotlightSection({ product }: ProductSpotlightProps) {
                 <p className="text-sm text-slate-500">Starting at</p>
                 <p className="text-3xl font-mono text-amber-600">${priceDisplay}</p>
               </div>
-              <Link href={`/shop/${product.slug}`}>
-                <Button className="bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
+              <Button asChild className="bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
+                <Link href={`/shop/${product.slug}`}>
                   View Details
                   <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           </motion.div>
         </div>

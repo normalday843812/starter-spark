@@ -102,32 +102,25 @@ export default async function UsersPage({
 
       {/* Filters */}
       <div className="flex gap-2">
-        {filters.map((filter) => (
-          <Link
-            key={filter.value}
-            href={
-              filter.value === "all"
-                ? "/admin/users"
-                : `/admin/users?role=${filter.value}`
-            }
-          >
+        {filters.map((filter) => {
+          const href =
+            filter.value === "all"
+              ? "/admin/users"
+              : `/admin/users?role=${filter.value}`
+          const selected =
+            params.role === filter.value || (!params.role && filter.value === "all")
+          return (
             <Button
-              variant={
-                params.role === filter.value || (!params.role && filter.value === "all")
-                  ? "default"
-                  : "outline"
-              }
+              key={filter.value}
+              asChild
+              variant={selected ? "default" : "outline"}
               size="sm"
-              className={
-                params.role === filter.value || (!params.role && filter.value === "all")
-                  ? "bg-cyan-700 hover:bg-cyan-600"
-                  : ""
-              }
+              className={selected ? "bg-cyan-700 hover:bg-cyan-600" : ""}
             >
-              {filter.label}
+              <Link href={href}>{filter.label}</Link>
             </Button>
-          </Link>
-        ))}
+          )
+        })}
       </div>
 
       {/* Users Table */}

@@ -99,18 +99,25 @@ export class CartPage {
   }
 
   async removeItem(index: number = 0) {
-    const removeButtons = this.page.getByLabel("Remove item")
-    await removeButtons.nth(index).click()
+    const item = this.cartItems.nth(index)
+    await item.getByLabel(/remove item/i).first().click()
   }
 
   async increaseItemQuantity(index: number = 0) {
-    const increaseButtons = this.page.getByLabel("Increase quantity")
-    await increaseButtons.nth(index).click()
+    const item = this.cartItems.nth(index)
+    await item.getByLabel("Increase quantity").click()
   }
 
   async decreaseItemQuantity(index: number = 0) {
-    const decreaseButtons = this.page.getByLabel("Decrease quantity")
-    await decreaseButtons.nth(index).click()
+    const item = this.cartItems.nth(index)
+    const decreaseButton = item.getByLabel("Decrease quantity")
+    if (await decreaseButton.count()) {
+      await decreaseButton.click()
+      return
+    }
+
+    // When quantity is 1, the decrement control becomes a remove button.
+    await item.getByLabel(/remove item/i).first().click()
   }
 
   async getSubtotal(): Promise<number> {
@@ -138,7 +145,7 @@ export class CartPage {
 
   async clickContinueShopping() {
     await this.continueShoppingLink.click()
-    await this.page.waitForURL("**/shop")
+    await expect(this.page).toHaveURL("/shop")
   }
 
   /**

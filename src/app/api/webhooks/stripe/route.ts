@@ -101,24 +101,18 @@ export async function POST(request: Request) {
       // Create a map of slug -> product
       const productMap = new Map(products.map(p => [p.slug, p]))
 
-      // Check if customer already has an account
-      const { data: existingProfile } = await supabaseAdmin
-        .from("profiles")
-        .select("id")
-        .eq("email", customerEmail)
-        .single()
-
-      const ownerId = existingProfile?.id || null
-
       // Create licenses for each item
+      // NOTE: Licenses are NEVER auto-claimed. All licenses start as 'pending'
+      // and must be explicitly claimed by the user in their workshop.
       const licensesToCreate: {
         code: string
         product_id: string
-        owner_id: string | null
+        owner_id: null
         source: string
         stripe_session_id: string
         customer_email: string
-        claim_token: string | null
+        claim_token: string
+        status: "pending"
       }[] = []
 
       for (const item of productItems) {
@@ -131,17 +125,18 @@ export async function POST(request: Request) {
         // Create one license per quantity
         for (let i = 0; i < item.quantity; i++) {
           const code = generateLicenseCode()
-          // Only generate claim token if not already claimed (no owner)
-          const claimToken = ownerId ? null : generateClaimToken()
+          // Always generate claim token - user must explicitly claim
+          const claimToken = generateClaimToken()
 
           licensesToCreate.push({
             code,
             product_id: product.id,
-            owner_id: ownerId,
+            owner_id: null, // Never auto-claim
             source: "online_purchase",
             stripe_session_id: session.id,
             customer_email: customerEmail,
             claim_token: claimToken,
+            status: "pending",
           })
         }
       }
@@ -196,7 +191,7 @@ export async function POST(request: Request) {
       }
 
       // Send purchase confirmation email
-      const isGuestPurchase = !ownerId
+      // Always show claim links since licenses are never auto-claimed
       const orderTotal = formatPrice(session.amount_total || 0)
 
       // Build license info for email
@@ -215,17 +210,13 @@ export async function POST(request: Request) {
           customerName: session.customer_details?.name || undefined,
           orderTotal,
           licenses: licenseInfoForEmail,
-          isGuestPurchase,
+          // Always true - user must explicitly claim in workshop
+          isGuestPurchase: true,
         })
         console.log(`Purchase confirmation email sent to ${customerEmail}`)
       } catch (emailError) {
         // Log email error but don't fail the webhook
         console.error("Failed to send purchase confirmation email:", emailError)
-      }
-
-      // If customer already has account, licenses are auto-claimed
-      if (ownerId) {
-        console.log(`Licenses auto-claimed for existing user ${ownerId}`)
       }
 
       return NextResponse.json({

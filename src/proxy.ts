@@ -1,14 +1,166 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function proxy(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  })
+function base64Encode(bytes: Uint8Array): string {
+  // Edge runtime: btoa; Node fallback: Buffer.
+  if (typeof Buffer !== 'undefined') {
+    return Buffer.from(bytes).toString('base64')
+  }
+  let binary = ''
+  for (const byte of bytes) binary += String.fromCharCode(byte)
+  return btoa(binary)
+}
 
+function createCspNonce(): string {
+  const bytes = new Uint8Array(16)
+  crypto.getRandomValues(bytes)
+  return base64Encode(bytes)
+}
+
+function safeOrigin(value: string | undefined | null): string | null {
+  if (!value) return null
+  try {
+    return new URL(value).origin
+  } catch {
+    return null
+  }
+}
+
+function websocketOriginFor(origin: string | null): string | null {
+  if (!origin) return null
+  try {
+    const url = new URL(origin)
+    const nextProtocol = url.protocol === 'https:' ? 'wss:' : url.protocol === 'http:' ? 'ws:' : null
+    if (!nextProtocol) return null
+    return `${nextProtocol}//${url.host}`
+  } catch {
+    return null
+  }
+}
+
+function buildContentSecurityPolicy({
+  nonce,
+  requestOrigin,
+  supabaseUrl,
+}: {
+  nonce: string
+  requestOrigin: string
+  supabaseUrl: string
+}): string {
+  const isProduction = process.env.NODE_ENV === 'production'
+  const scriptSrc = [
+    "'self'",
+    `'nonce-${nonce}'`,
+    ...(isProduction
+      ? ["'wasm-unsafe-eval'"]
+      : ["'unsafe-eval'", "'wasm-unsafe-eval'"]),
+  ].join(' ')
+
+  // CSS is trickier than scripts: React + animation/diagram libs rely on
+  // `style=""` attributes. We keep scripts strict (nonce-based) and allow only
+  // style *attributes* to be inline, while requiring a nonce for `<style>`
+  // elements and same-origin stylesheets.
+  const styleSrc = ["'self'", `'nonce-${nonce}'`].join(' ')
+  const styleSrcElem = styleSrc
+  const styleSrcAttr = ["'unsafe-inline'"].join(' ')
+
+  const posthogOrigin = safeOrigin(process.env.NEXT_PUBLIC_POSTHOG_HOST)
+  const sentryOrigin = safeOrigin(process.env.NEXT_PUBLIC_SENTRY_DSN)
+  const supabaseOrigin = safeOrigin(supabaseUrl)
+
+  const connectOrigins = new Set<string>()
+  for (const origin of [supabaseOrigin, posthogOrigin, sentryOrigin]) {
+    if (origin) connectOrigins.add(origin)
+  }
+  // Vercel Analytics and Speed Insights
+  connectOrigins.add('https://vitals.vercel-insights.com')
+  connectOrigins.add('https://va.vercel-scripts.com')
+
+  const connectWsOrigins = new Set<string>()
+  for (const origin of [requestOrigin, supabaseOrigin, posthogOrigin]) {
+    const wsOrigin = websocketOriginFor(origin)
+    if (wsOrigin) connectWsOrigins.add(wsOrigin)
+  }
+
+  const connectSrc = [
+    "'self'",
+    ...Array.from(connectOrigins),
+    ...Array.from(connectWsOrigins),
+  ].join(' ')
+
+  const frameSrc = [
+    "'self'",
+    // Video embeds supported by the learning platform.
+    'https://www.youtube.com',
+    'https://www.youtube-nocookie.com',
+    'https://player.vimeo.com',
+  ].join(' ')
+
+  return [
+    "default-src 'self'",
+    "base-uri 'self'",
+    "object-src 'none'",
+    "frame-ancestors 'self'",
+    "form-action 'self'",
+    "img-src 'self' https: data: blob:",
+    "font-src 'self' https: data:",
+    `style-src ${styleSrc}`,
+    `style-src-elem ${styleSrcElem}`,
+    `style-src-attr ${styleSrcAttr}`,
+    `script-src ${scriptSrc}`,
+    // Explicitly disallow inline event handlers.
+    "script-src-attr 'none'",
+    `connect-src ${connectSrc}`,
+    `frame-src ${frameSrc}`,
+    "worker-src 'self' blob:",
+    "manifest-src 'self'",
+    ...(isProduction ? ['upgrade-insecure-requests'] : []),
+  ].join('; ')
+}
+
+export async function proxy(request: NextRequest) {
   const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
   if (!supabaseUrl) {
     throw new Error('Missing SUPABASE_URL')
+  }
+
+  const nonce = createCspNonce()
+  const csp = buildContentSecurityPolicy({
+    nonce,
+    requestOrigin: request.nextUrl.origin,
+    supabaseUrl,
+  })
+
+  const buildRequestHeaders = () => {
+    const headers = new Headers(request.headers)
+    // Next.js App Router reads CSP from request headers to derive the nonce for
+    // its own inline/required scripts.
+    headers.set('Content-Security-Policy', csp)
+    // Convenience header for userland components (e.g. JSON-LD scripts).
+    headers.set('x-nonce', nonce)
+    return headers
+  }
+
+  let supabaseResponse = NextResponse.next({
+    request: {
+      headers: buildRequestHeaders(),
+    },
+  })
+  supabaseResponse.headers.set('Content-Security-Policy', csp)
+
+  // Helper to create redirects that preserve Supabase auth cookies.
+  // When supabase.auth.getUser() refreshes an expired session, setAll() updates
+  // supabaseResponse with new cookies. We must copy these to any redirect response,
+  // otherwise the refreshed tokens are lost.
+  // See: https://supabase.com/docs/guides/auth/server-side/nextjs
+  const createRedirect = (url: URL) => {
+    const res = NextResponse.redirect(url)
+    // Copy all cookies from supabaseResponse (may include refreshed auth tokens)
+    for (const cookie of supabaseResponse.cookies.getAll()) {
+      res.cookies.set(cookie.name, cookie.value)
+    }
+    res.headers.set('Content-Security-Policy', csp)
+    return res
   }
 
   const supabase = createServerClient(
@@ -25,8 +177,11 @@ export async function proxy(request: NextRequest) {
             request.cookies.set(name, value) // nosemgrep: cookies-default-koa
           )
           supabaseResponse = NextResponse.next({
-            request,
+            request: {
+              headers: buildRequestHeaders(),
+            },
           })
+          supabaseResponse.headers.set('Content-Security-Policy', csp)
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           )
@@ -54,7 +209,7 @@ export async function proxy(request: NextRequest) {
       const url = request.nextUrl.clone()
       url.pathname = '/login'
       url.searchParams.set('redirectTo', pathname)
-      return NextResponse.redirect(url)
+      return createRedirect(url)
     }
 
     // Check user role
@@ -68,7 +223,7 @@ export async function proxy(request: NextRequest) {
       const url = request.nextUrl.clone()
       url.pathname = '/'
       url.searchParams.set('error', 'unauthorized')
-      return NextResponse.redirect(url)
+      return createRedirect(url)
     }
   }
 
@@ -77,14 +232,14 @@ export async function proxy(request: NextRequest) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     url.searchParams.set('redirectTo', pathname)
-    return NextResponse.redirect(url)
+    return createRedirect(url)
   }
 
   // Redirect authenticated users away from auth pages
   if (isAuthRoute && user) {
     const url = request.nextUrl.clone()
     url.pathname = '/workshop'
-    return NextResponse.redirect(url)
+    return createRedirect(url)
   }
 
   return supabaseResponse
@@ -98,8 +253,9 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public folder
-     * - api routes (handled separately)
+     * - api routes (no CSP nonce needed)
+     * - sentry tunnel (monitoring)
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|glb|gltf)$).*)',
+    '/((?!api|monitoring|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|glb|gltf)$).*)',
   ],
 }

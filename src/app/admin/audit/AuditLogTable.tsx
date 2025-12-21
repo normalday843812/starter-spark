@@ -20,11 +20,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
-import {
   User,
   Package,
   FileText,
@@ -372,131 +367,156 @@ export function AuditLogTable({
 	                  color: "bg-slate-100 text-slate-700 border-slate-200",
 	                }
 	                const isExpanded = expandedRows.has(log.id)
-	                const hasDetails = log.details && typeof log.details === "object" && !Array.isArray(log.details) && Object.keys(log.details).length > 0
+	                const hasDetails =
+	                  log.details &&
+	                  typeof log.details === "object" &&
+	                  !Array.isArray(log.details) &&
+	                  Object.keys(log.details).length > 0
+	                const canExpand = hasDetails || Boolean(log.ip_address || log.user_agent)
 	                const resourceLinkBuilder = resourceLinks.get(log.resource_type)
 	                const resourceLink = log.resource_id && resourceLinkBuilder ? resourceLinkBuilder(log.resource_id) : null
 
-	                return (
-                  <Collapsible key={log.id} open={isExpanded} onOpenChange={() => toggleRow(log.id)} asChild>
-                    <>
-                      <TableRow className="hover:bg-slate-50">
-                        <TableCell>
-                          {(hasDetails || log.ip_address) && (
-                            <CollapsibleTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                <ChevronDown
-                                  className={`h-4 w-4 text-slate-400 transition-transform ${
-                                    isExpanded ? "rotate-180" : ""
-                                  }`}
-                                />
-                              </Button>
-                            </CollapsibleTrigger>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className={actionInfo.color}>
-                            {actionInfo.label}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <div className="flex h-8 w-8 items-center justify-center rounded bg-slate-100">
-                              <Icon className="h-4 w-4 text-slate-600" />
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-sm font-medium text-slate-900 capitalize">
-                                  {log.resource_type.replace(/_/g, " ")}
-                                </span>
-                                {resourceLink && (
-                                  <Link href={resourceLink} className="text-cyan-600 hover:text-cyan-700">
-                                    <ExternalLink className="h-3 w-3" />
-                                  </Link>
-                                )}
-                              </div>
-                              {log.resource_id && (
-                                <div className="flex items-center gap-1">
-                                  <code className="text-xs text-slate-500 font-mono">
-                                    {log.resource_id}
-                                  </code>
-                                  <CopyButton text={log.resource_id} />
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="text-sm text-slate-900">
-                              {log.user_id ? userEmails[log.user_id] || "Unknown User" : "System"}
-                            </p>
-                            {log.user_id && (
-                              <div className="flex items-center gap-1">
-                                <code className="text-xs text-slate-400 font-mono">
-                                  {log.user_id.slice(0, 8)}...
-                                </code>
-                                <CopyButton text={log.user_id} />
-                              </div>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="text-sm text-slate-900">{formatDate(log.created_at)}</p>
-                            <p className="text-xs text-slate-500">{formatRelativeTime(log.created_at)}</p>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                      <CollapsibleContent asChild>
-                        <TableRow className="bg-slate-50 hover:bg-slate-50">
-                          <TableCell colSpan={5} className="py-4">
-                            <div className="pl-12 space-y-4">
-                              {/* Human readable description */}
-                              <p className="text-sm text-slate-700">
-                                <span className="font-medium">
-                                  {log.user_id ? userEmails[log.user_id] || "Unknown" : "System"}
-                                </span>{" "}
-                                {actionInfo.verb}{" "}
-                                <code className="px-1.5 py-0.5 bg-slate-200 rounded text-xs font-mono">
-                                  {log.resource_id || log.resource_type}
-                                </code>
-                              </p>
+	                const detailsRowId = `audit-log-details-${log.id}`
 
-                              {/* Details */}
-                              {hasDetails && (
-                                <div className="bg-white rounded border border-slate-200 p-4">
-                                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
-                                    Change Details
-                                  </p>
-                                  <DetailsSection details={log.details} />
-                                </div>
-                              )}
+	                return [
+	                  <TableRow key={log.id} className="hover:bg-slate-50">
+	                    <TableCell>
+	                      {canExpand && (
+	                        <Button
+	                          type="button"
+	                          variant="ghost"
+	                          size="sm"
+	                          className="h-8 w-8 p-0"
+	                          aria-expanded={isExpanded}
+	                          aria-controls={detailsRowId}
+	                          onClick={() => toggleRow(log.id)}
+	                        >
+	                          <ChevronDown
+	                            className={`h-4 w-4 text-slate-400 transition-transform ${
+	                              isExpanded ? "rotate-180" : ""
+	                            }`}
+	                          />
+	                        </Button>
+	                      )}
+	                    </TableCell>
+	                    <TableCell>
+	                      <Badge variant="outline" className={actionInfo.color}>
+	                        {actionInfo.label}
+	                      </Badge>
+	                    </TableCell>
+	                    <TableCell>
+	                      <div className="flex items-center gap-2">
+	                        <div className="flex h-8 w-8 items-center justify-center rounded bg-slate-100">
+	                          <Icon className="h-4 w-4 text-slate-600" />
+	                        </div>
+	                        <div>
+	                          <div className="flex items-center gap-1.5">
+	                            <span className="text-sm font-medium text-slate-900 capitalize">
+	                              {log.resource_type.replace(/_/g, " ")}
+	                            </span>
+	                            {resourceLink && (
+	                              <Link
+	                                href={resourceLink}
+	                                className="text-cyan-600 hover:text-cyan-700"
+	                              >
+	                                <ExternalLink className="h-3 w-3" />
+	                              </Link>
+	                            )}
+	                          </div>
+	                          {log.resource_id && (
+	                            <div className="flex items-center gap-1">
+	                              <code className="text-xs text-slate-500 font-mono">
+	                                {log.resource_id}
+	                              </code>
+	                              <CopyButton text={log.resource_id} />
+	                            </div>
+	                          )}
+	                        </div>
+	                      </div>
+	                    </TableCell>
+	                    <TableCell>
+	                      <div>
+	                        <p className="text-sm text-slate-900">
+	                          {log.user_id
+	                            ? userEmails[log.user_id] || "Unknown User"
+	                            : "System"}
+	                        </p>
+	                        {log.user_id && (
+	                          <div className="flex items-center gap-1">
+	                            <code className="text-xs text-slate-400 font-mono">
+	                              {log.user_id.slice(0, 8)}...
+	                            </code>
+	                            <CopyButton text={log.user_id} />
+	                          </div>
+	                        )}
+	                      </div>
+	                    </TableCell>
+	                    <TableCell>
+	                      <div>
+	                        <p className="text-sm text-slate-900">
+	                          {formatDate(log.created_at)}
+	                        </p>
+	                        <p className="text-xs text-slate-500">
+	                          {formatRelativeTime(log.created_at)}
+	                        </p>
+	                      </div>
+	                    </TableCell>
+	                  </TableRow>,
+	                  isExpanded && canExpand ? (
+	                    <TableRow
+	                      key={`${log.id}-details`}
+	                      id={detailsRowId}
+	                      className="bg-slate-50 hover:bg-slate-50"
+	                    >
+	                      <TableCell colSpan={5} className="py-4">
+	                        <div className="pl-12 space-y-4">
+	                          <p className="text-sm text-slate-700">
+	                            <span className="font-medium">
+	                              {log.user_id
+	                                ? userEmails[log.user_id] || "Unknown"
+	                                : "System"}
+	                            </span>{" "}
+	                            {actionInfo.verb}{" "}
+	                            <code className="px-1.5 py-0.5 bg-slate-200 rounded text-xs font-mono">
+	                              {log.resource_id || log.resource_type}
+	                            </code>
+	                          </p>
 
-                              {/* Metadata */}
-                              {(log.ip_address || log.user_agent) && (
-                                <div className="flex gap-6 text-xs text-slate-500">
-                                  {log.ip_address && (
-                                    <div className="flex items-center gap-1">
-                                      <span>IP:</span>
-                                      <code className="font-mono">{log.ip_address}</code>
-                                    </div>
-                                  )}
-                                  {log.user_agent && (
-                                    <div className="flex items-center gap-1 max-w-md truncate">
-                                      <span>UA:</span>
-                                      <code className="font-mono truncate">{log.user_agent}</code>
-                                    </div>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      </CollapsibleContent>
-                    </>
-                  </Collapsible>
-                )
-              })
+	                          {hasDetails && (
+	                            <div className="bg-white rounded border border-slate-200 p-4">
+	                              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
+	                                Change Details
+	                              </p>
+	                              <DetailsSection details={log.details} />
+	                            </div>
+	                          )}
+
+	                          {(log.ip_address || log.user_agent) && (
+	                            <div className="flex gap-6 text-xs text-slate-500">
+	                              {log.ip_address && (
+	                                <div className="flex items-center gap-1">
+	                                  <span>IP:</span>
+	                                  <code className="font-mono">
+	                                    {log.ip_address}
+	                                  </code>
+	                                </div>
+	                              )}
+	                              {log.user_agent && (
+	                                <div className="flex items-center gap-1 max-w-md truncate">
+	                                  <span>UA:</span>
+	                                  <code className="font-mono truncate">
+	                                    {log.user_agent}
+	                                  </code>
+	                                </div>
+	                              )}
+	                            </div>
+	                          )}
+	                        </div>
+	                      </TableCell>
+	                    </TableRow>
+	                  ) : null,
+	                ]
+	              })
             )}
           </TableBody>
         </Table>
