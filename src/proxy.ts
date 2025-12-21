@@ -51,15 +51,17 @@ function buildContentSecurityPolicy({
   requestOrigin: string
   supabaseUrl: string
 }): string {
-  const isProduction = process.env.NODE_ENV === 'production'
+  const vercelEnv = process.env.VERCEL_ENV
+  const isVercelPreview = vercelEnv === 'preview'
+  const isStrictProduction = process.env.NODE_ENV === 'production' && !isVercelPreview
   const scriptSrc = [
     "'self'",
     `'nonce-${nonce}'`,
-    ...(isProduction
+    ...(isStrictProduction
       ? ["'wasm-unsafe-eval'"]
       : ["'unsafe-eval'", "'wasm-unsafe-eval'"]),
-    // Vercel preview feedback widget (only in non-production)
-    ...(isProduction ? [] : ['https://vercel.live']),
+    // Vercel preview feedback widget
+    ...(isVercelPreview ? ['https://vercel.live'] : []),
     // PostHog analytics
     'https://us-assets.i.posthog.com',
   ].join(' ')
@@ -70,7 +72,7 @@ function buildContentSecurityPolicy({
   // production (CodeMirror supports this via `EditorView.cspNonce`), while
   // allowing inline stylesheets in development to keep HMR/dev tooling working.
   const styleSrc = ["'self'"].join(' ')
-  const styleSrcElem = isProduction
+  const styleSrcElem = isStrictProduction
     ? ["'self'", `'nonce-${nonce}'`].join(' ')
     : ["'self'", "'unsafe-inline'"].join(' ')
   const styleSrcAttr = ["'unsafe-inline'"].join(' ')
@@ -88,11 +90,17 @@ function buildContentSecurityPolicy({
   connectOrigins.add('https://va.vercel-scripts.com')
   // PostHog assets CDN
   connectOrigins.add('https://us-assets.i.posthog.com')
+  if (isVercelPreview) {
+    connectOrigins.add('https://vercel.live')
+  }
 
   const connectWsOrigins = new Set<string>()
   for (const origin of [requestOrigin, supabaseOrigin, posthogOrigin]) {
     const wsOrigin = websocketOriginFor(origin)
     if (wsOrigin) connectWsOrigins.add(wsOrigin)
+  }
+  if (isVercelPreview) {
+    connectWsOrigins.add('wss://vercel.live')
   }
 
   const connectSrc = [
@@ -128,7 +136,7 @@ function buildContentSecurityPolicy({
     "media-src 'self' https: blob:",
     "worker-src 'self' blob:",
     "manifest-src 'self'",
-    ...(isProduction ? ['upgrade-insecure-requests'] : []),
+    ...(isStrictProduction ? ['upgrade-insecure-requests'] : []),
   ].join('; ')
 }
 

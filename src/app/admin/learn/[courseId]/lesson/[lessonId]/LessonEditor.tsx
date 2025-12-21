@@ -335,15 +335,19 @@ export function LessonEditor({ lesson, courseId, availableLessons }: LessonEdito
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   // Track initial state for unsaved changes detection
-  const initialBlocksRef = useRef<string>(JSON.stringify(normalizeBlocks(lesson.content_blocks, lesson)))
-  const initialPrereqsRef = useRef<string>(JSON.stringify(lesson.prerequisites || []))
+  const [initialBlocksSnapshot, setInitialBlocksSnapshot] = useState(() =>
+    JSON.stringify(normalizeBlocks(lesson.content_blocks, lesson))
+  )
+  const [initialPrereqsSnapshot, setInitialPrereqsSnapshot] = useState(() =>
+    JSON.stringify(lesson.prerequisites || [])
+  )
 
   // Compute if there are unsaved changes
   const hasUnsavedChanges = useMemo(() => {
-    const blocksChanged = JSON.stringify(blocks) !== initialBlocksRef.current
-    const prereqsChanged = JSON.stringify(prerequisites) !== initialPrereqsRef.current
+    const blocksChanged = JSON.stringify(blocks) !== initialBlocksSnapshot
+    const prereqsChanged = JSON.stringify(prerequisites) !== initialPrereqsSnapshot
     return blocksChanged || prereqsChanged
-  }, [blocks, prerequisites])
+  }, [blocks, initialBlocksSnapshot, initialPrereqsSnapshot, prerequisites])
 
   // Warn before leaving page with unsaved changes
   useEffect(() => {
@@ -376,8 +380,8 @@ export function LessonEditor({ lesson, courseId, availableLessons }: LessonEdito
 
   // Reset dirty state after successful save
   const markAsSaved = useCallback(() => {
-    initialBlocksRef.current = JSON.stringify(blocks)
-    initialPrereqsRef.current = JSON.stringify(prerequisites)
+    setInitialBlocksSnapshot(JSON.stringify(blocks))
+    setInitialPrereqsSnapshot(JSON.stringify(prerequisites))
   }, [blocks, prerequisites])
 
   const derived = useMemo(() => blocksToLegacyFields(blocks), [blocks])
@@ -389,7 +393,7 @@ export function LessonEditor({ lesson, courseId, availableLessons }: LessonEdito
     return list.filter((l) => l.title.toLowerCase().includes(q))
   }, [availableLessons, lesson.id, prereqQuery])
 
-  const handleSave = async (formData: FormData) => {
+  const handleSave = (formData: FormData) => {
     startTransition(async () => {
       const result = await updateLesson(lesson.id, courseId, formData)
       if (result.error) {

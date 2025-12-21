@@ -83,16 +83,23 @@ DROP POLICY IF EXISTS "Authenticated users can comment" ON public.comments;
 DROP TRIGGER IF EXISTS trigger_set_primary_product_media ON public.product_media;
 DROP TRIGGER IF EXISTS trigger_update_product_on_media_change ON public.product_media;
 
--- Recreate them once each with proper event specifications
-CREATE TRIGGER trigger_set_primary_product_media
-  AFTER INSERT OR UPDATE OF is_primary ON public.product_media
-  FOR EACH ROW
-  EXECUTE FUNCTION set_primary_product_media();
+-- Recreate trigger only if the function exists
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'set_primary_product_media') THEN
+    CREATE TRIGGER trigger_set_primary_product_media
+      AFTER INSERT OR UPDATE OF is_primary ON public.product_media
+      FOR EACH ROW
+      EXECUTE FUNCTION set_primary_product_media();
+  END IF;
 
-CREATE TRIGGER trigger_update_product_on_media_change
-  AFTER INSERT OR UPDATE OR DELETE ON public.product_media
-  FOR EACH ROW
-  EXECUTE FUNCTION update_product_on_media_change();
+  IF EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'update_product_on_media_change') THEN
+    CREATE TRIGGER trigger_update_product_on_media_change
+      AFTER INSERT OR UPDATE OR DELETE ON public.product_media
+      FOR EACH ROW
+      EXECUTE FUNCTION update_product_on_media_change();
+  END IF;
+END $$;
 
 -------------------------------------------------
 -- 5. Remove redundant indexes

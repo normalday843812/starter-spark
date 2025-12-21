@@ -50,14 +50,6 @@ async function generateUniqueSlug(
   return `${baseSlug}-${crypto.randomUUID().slice(0, 8)}`
 }
 
-function assertNonEmptySlug(title: string, entityLabel: string): string {
-  const slug = generateSlug(title)
-  if (!slug) {
-    throw new Error(`${entityLabel} title must contain letters or numbers`)
-  }
-  return slug
-}
-
 function safeJsonArray(value: string, label: string): { ok: true; value: Json[] } | { ok: false; error: string } {
   try {
     const parsed: unknown = JSON.parse(value)

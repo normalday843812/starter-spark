@@ -106,6 +106,13 @@ function storageFolderFor(type: MediaItem["type"]): string {
   return "documents"
 }
 
+function maxFileSizeFor(type: MediaItem["type"]): number {
+  if (type === "image") return MAX_FILE_SIZE_BYTES.image
+  if (type === "video") return MAX_FILE_SIZE_BYTES.video
+  if (type === "3d_model") return MAX_FILE_SIZE_BYTES["3d_model"]
+  return MAX_FILE_SIZE_BYTES.document
+}
+
 
 function formatFileSize(bytes: number | undefined | null): string {
   if (!bytes || bytes <= 0) return "Size unknown"
@@ -145,7 +152,7 @@ export function MediaUploader({ productId, media, onChange, bucket = "products" 
       return null
     }
 
-    const maxSize = MAX_FILE_SIZE_BYTES[mediaType]
+    const maxSize = maxFileSizeFor(mediaType)
     if (file.size > maxSize) {
       setErrorMessage(
         `File "${file.name}" exceeds ${(maxSize / (1024 * 1024)).toFixed(0)}MB limit.`

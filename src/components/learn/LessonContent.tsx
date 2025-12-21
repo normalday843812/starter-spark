@@ -345,12 +345,10 @@ function QuizBlock({
   question,
   options,
   correctAnswer,
-  blockId,
 }: {
   question: string
   options: string[]
   correctAnswer: number | null
-  blockId: string
 }) {
   const [selected, setSelected] = useState<number | null>(null)
   const [submitted, setSubmitted] = useState(false)
@@ -777,7 +775,6 @@ export function LessonContent({
                 question={question}
                 options={options}
                 correctAnswer={correctAnswer}
-                blockId={blockId}
               />
             )
           }

@@ -25,6 +25,10 @@ const ALLOWED_ATTACHMENT_TYPES = new Set([
 const MAX_TOTAL_ATTACHMENT_BYTES = 100 * 1024 * 1024
 const MAX_IMAGE_ATTACHMENT_BYTES = 10 * 1024 * 1024
 const MAX_VIDEO_ATTACHMENT_BYTES = 50 * 1024 * 1024
+const LEGACY_ATTACHMENT_PATH_RE =
+  /^\d{4}\/\d{2}\/\d{2}\/[a-f0-9]{32}_\d+\.(?:jpg|png|gif|webp|mp4|webm|mov)$/i
+const SESSION_ATTACHMENT_PATH_RE =
+  /^contact\/[a-f0-9]{32}\/\d{4}\/\d{2}\/\d{2}\/[a-f0-9]{32}_\d+\.(?:jpg|png|gif|webp|mp4|webm|mov)$/i
 
 function getUploadSessionFromPath(path: string): string | null {
   const match = /^contact\/([a-f0-9]{32})\//i.exec(path)
@@ -35,17 +39,7 @@ function isValidAttachmentPath(path: string): boolean {
   if (!path || path.length > 500) return false
   if (path.startsWith("/") || path.includes("..") || path.includes("\\")) return false
 
-  const allowedExt = "(?:jpg|png|gif|webp|mp4|webm|mov)"
-  const legacyPattern = new RegExp(
-    String.raw`^\d{4}\/\d{2}\/\d{2}\/[a-f0-9]{32}_\d+\.${allowedExt}$`,
-    "i"
-  )
-  const sessionPattern = new RegExp(
-    String.raw`^contact\/[a-f0-9]{32}\/\d{4}\/\d{2}\/\d{2}\/[a-f0-9]{32}_\d+\.${allowedExt}$`,
-    "i"
-  )
-
-  return legacyPattern.test(path) || sessionPattern.test(path)
+  return LEGACY_ATTACHMENT_PATH_RE.test(path) || SESSION_ATTACHMENT_PATH_RE.test(path)
 }
 
 export interface ContactFormData {

@@ -100,8 +100,10 @@ export async function duplicateBanner(bannerId: string) {
   }
 
   // Create a copy with modified title and inactive status
-  const { id: _id, created_at: _created_at, updated_at: _updated_at, ...bannerData } =
-    original
+  const { id, created_at, updated_at, ...bannerData } = original
+  void id
+  void created_at
+  void updated_at
   const { data: newBanner, error: insertError } = await supabase
     .from("site_banners")
     .insert({

@@ -188,7 +188,6 @@ export function FlowEditor({ mode, value, onChange, className, height = 420 }: F
     lastSentSigRef.current = parsedSig
     suppressNextEmitRef.current = true
 
-    setSelectedId(null)
     setNodes(parsedFlow.nodes)
     setEdges(parsedFlow.edges)
   }, [parsedFlow, parsedSig, setEdges, setNodes])

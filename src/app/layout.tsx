@@ -5,6 +5,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Toaster } from "@/components/ui/sonner"
 import { Providers } from "./providers"
 import { siteConfig } from "@/config/site"
+import { headers } from "next/headers"
 import "./globals.css"
 import "photoswipe/style.css"
 
@@ -49,14 +50,20 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const nonce = (await headers()).get("x-nonce") ?? undefined
+
   return (
     <html lang="en">
+      <head>
+        {nonce ? <meta name="csp-nonce" content={nonce} /> : null}
+      </head>
       <body
+        data-csp-nonce={nonce}
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>{children}</Providers>
