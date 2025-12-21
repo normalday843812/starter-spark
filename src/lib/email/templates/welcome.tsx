@@ -32,7 +32,7 @@ export function WelcomeEmail({ userName, siteUrl }: WelcomeEmailProps) {
 
       <Section style={missionSection}>
         <Text style={missionText}>
-          &ldquo;70% of our profits support local STEM education in Hawaii.
+          &ldquo;67% of our profits support local STEM education in Hawaii.
           Every kit you build helps inspire the next generation of engineers
           and makers.&rdquo;
         </Text>

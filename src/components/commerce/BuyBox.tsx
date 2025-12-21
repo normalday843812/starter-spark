@@ -28,6 +28,8 @@ interface BuyBoxProps {
   // Inventory fields (Phase 14.4)
   stockQuantity?: number | null
   isLimitedStock?: boolean
+  // Charity percentage from site content
+  charityPercentage?: string
 }
 
 export function BuyBox({
@@ -42,6 +44,7 @@ export function BuyBox({
   discountExpiresAt,
   stockQuantity,
   isLimitedStock,
+  charityPercentage = "67%",
 }: BuyBoxProps) {
   const [quantity, setQuantity] = useState(1)
   const addItem = useCartStore((state) => state.addItem)
@@ -193,7 +196,7 @@ export function BuyBox({
 
       {/* Charity Notice */}
       <div className="p-3 bg-amber-50 rounded border border-amber-200 text-sm text-slate-600">
-        <span className="font-mono text-amber-700 font-semibold">70%</span> of
+        <span className="font-mono text-amber-700 font-semibold">{charityPercentage}</span> of
         your purchase supports Hawaii STEM education.
       </div>
     </div>

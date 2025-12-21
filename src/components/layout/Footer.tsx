@@ -36,7 +36,7 @@ export async function Footer() {
     ],
     {
       "footer.copyright": "© 2025 StarterSpark Robotics. All rights reserved.",
-      "global.charity.percentage": "70%",
+      "global.charity.percentage": "67%",
       "global.charity.short": "of every purchase goes to Hawaii STEM education",
       "footer.brand.tagline": "Open-source robotics education designed by students, for students. Building the next generation of Hawaii's engineers.",
       "footer.newsletter.title": "Stay Updated",

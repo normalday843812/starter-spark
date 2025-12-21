@@ -27,7 +27,7 @@ export const missionItems: MissionItem[] = [
     title: "Community First",
     icon: Heart,
     description:
-      "We donate 70% of our profits to local STEM charities and schools. Your purchase fuels the next generation.",
+      "We donate 67% of our profits to local STEM charities and schools. Your purchase fuels the next generation.",
     colSpan: "md:col-span-2",
   },
   {

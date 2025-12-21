@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
+import { getContent } from "@/lib/content"
 import { AboutHero } from "./AboutHero"
 
 interface AboutHeroContent {
@@ -13,11 +14,14 @@ interface AboutHeroContent {
 export async function AboutHeroWrapper() {
   const supabase = await createClient()
 
-  // Default content to use if fetch fails
+  // Fetch charity percentage for dynamic content
+  const charityPercentage = await getContent("global.charity.percentage", "67%")
+
+  // Default content to use if fetch fails (with placeholder for charity percentage)
   const defaultContent = {
     headline: "Making Robotics Education Accessible to Everyone",
     description:
-      "We believe every student deserves the chance to build, code, and create—regardless of their background or resources. That's why we donate 70% of every dollar to local STEM programs.",
+      `We believe every student deserves the chance to build, code, and create—regardless of their background or resources. That's why we donate ${charityPercentage} of every dollar to local STEM programs.`,
   }
 
   // Try to fetch content from database
@@ -45,10 +49,16 @@ export async function AboutHeroWrapper() {
     return <AboutHero {...defaultContent} />
   }
 
+  // If description contains {charityPercentage} placeholder, replace it
+  const description = (parsedContent.description || defaultContent.description).replace(
+    "{charityPercentage}",
+    charityPercentage
+  )
+
   return (
     <AboutHero
       headline={parsedContent.headline || defaultContent.headline}
-      description={parsedContent.description || defaultContent.description}
+      description={description}
     />
   )
 }

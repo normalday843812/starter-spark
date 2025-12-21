@@ -65,7 +65,7 @@ export function MissionImpactSection({
   story1 = "StarterSpark started as a classroom project: students teaching students how to build robots with whatever parts we could find. We saw how hands-on learning sparked curiosity in ways textbooks never could.",
   story2 = "Now we're taking that experience and packaging it for anyone to access. Each kit represents hundreds of hours of curriculum development, testing with real students, and refinement based on their feedback.",
   commitmentTitle = "Our Commitment",
-  commitmentText = "70% of every dollar goes directly to local STEM charities and school robotics programs. 30% funds new kit development and operations.",
+  commitmentText = "67% of every dollar goes directly to local STEM charities and school robotics programs. The rest funds new kit development and operations.",
   commitmentSubtext = "Your purchase directly impacts Hawaii's next generation of engineers.",
 }: MissionImpactSectionProps) {
   return (

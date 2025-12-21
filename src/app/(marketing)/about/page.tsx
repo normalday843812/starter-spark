@@ -10,7 +10,7 @@ import type { Metadata } from "next"
 export const metadata: Metadata = {
   title: "About Us",
   description:
-    "Learn about StarterSpark's mission to make robotics education accessible to every student in Hawaii. 70% of every purchase supports local STEM programs.",
+    "Learn about StarterSpark's mission to make robotics education accessible to every student in Hawaii. 67% of every purchase supports local STEM programs.",
 }
 
 // Loading skeleton for hero section

@@ -202,7 +202,7 @@ export async function GET(request: NextRequest) {
   // Footer - use dynamic charity content
   const charityMessage = await getContent(
     "global.charity.full",
-    "70% of every purchase supports Hawaii youth robotics education"
+    "67% of every purchase supports Hawaii youth robotics education"
   )
   doc.setFontSize(9)
   doc.setTextColor(148, 163, 184) // slate-400

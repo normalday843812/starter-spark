@@ -312,7 +312,7 @@ export async function GET(request: NextRequest) {
               fontFamily: "Geist Sans",
             }}
           >
-            70% of profits donated to local STEM charities in Hawaii
+            67% of profits donated to local STEM charities in Hawaii
           </span>
         </div>
       </div>

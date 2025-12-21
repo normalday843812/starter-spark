@@ -19,7 +19,7 @@ const DEFAULT_CONTENT = {
   "cart.trust.secureCheckout": "Secure checkout with Stripe",
   // Use unified global charity content
   "global.charity.short": "of your purchase supports Hawaii STEM education",
-  "global.charity.percentage": "70%",
+  "global.charity.percentage": "67%",
 }
 
 export default async function CartPage() {

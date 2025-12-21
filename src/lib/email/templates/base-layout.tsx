@@ -51,7 +51,7 @@ export function BaseLayout({ preview, children }: BaseLayoutProps) {
               StarterSpark Robotics · Honolulu, HI
             </Text>
             <Text style={footerText}>
-              70% of profits support local STEM education
+              67% of profits support local STEM education
             </Text>
             <Text style={footerLinks}>
               <Link href={`${baseUrl}/privacy`} style={footerLink}>

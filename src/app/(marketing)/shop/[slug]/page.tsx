@@ -7,6 +7,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { getProductSchema, getBreadcrumbSchema } from "@/lib/structured-data"
 import { siteConfig } from "@/config/site"
+import { getContent } from "@/lib/content"
 
 // Type for product specs JSONB
 interface ProductSpecs {
@@ -175,6 +176,9 @@ export default async function ProductDetailPage({
   const modelPathFromSpecs = specs?.modelPath
   const finalModelPath = modelPathFromMedia || modelPathFromSpecs
 
+  // Fetch charity percentage from site content
+  const charityPercentage = await getContent("global.charity.percentage", "67%")
+
   // Get datasheet URL if available (document with "datasheet" in filename)
   const datasheetMedia = allMedia.find(
     (m) => m.type === 'document' && m.filename?.toLowerCase().includes('datasheet')
@@ -245,6 +249,7 @@ export default async function ProductDetailPage({
                 discountExpiresAt={discountExpiresAt}
                 stockQuantity={product.track_inventory ? product.stock_quantity : null}
                 isLimitedStock={hasLimitedTag}
+                charityPercentage={charityPercentage}
               />
             </div>
           </div>

@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
-import { getContents } from "@/lib/content"
+import { getContents, getContent } from "@/lib/content"
 import { MissionImpactSection, type Stat } from "./MissionImpact"
 
 const DEFAULT_CONTENT = {
@@ -8,7 +8,7 @@ const DEFAULT_CONTENT = {
   "home.mission.story1": "StarterSpark started as a classroom project: students teaching students how to build robots with whatever parts we could find. We saw how hands-on learning sparked curiosity in ways textbooks never could.",
   "home.mission.story2": "Now we're taking that experience and packaging it for anyone to access. Each kit represents hundreds of hours of curriculum development, testing with real students, and refinement based on their feedback.",
   "home.mission.commitment.title": "Our Commitment",
-  "home.mission.commitment.text": "70% of every dollar goes directly to local STEM charities and school robotics programs. 30% funds new kit development and operations.",
+  "home.mission.commitment.text": "{charityPercentage} of every dollar goes directly to local STEM charities and school robotics programs. The rest funds new kit development and operations.",
   "home.mission.commitment.subtext": "Your purchase directly impacts Hawaii's next generation of engineers.",
 }
 
@@ -25,11 +25,18 @@ const FALLBACK_STATS: Stat[] = [
 export async function MissionImpact() {
   const supabase = await createClient()
 
-  // Fetch content and stats in parallel
-  const [content, statsResult] = await Promise.all([
+  // Fetch content, stats, and charity percentage in parallel
+  const [content, statsResult, charityPercentage] = await Promise.all([
     getContents(Object.keys(DEFAULT_CONTENT), DEFAULT_CONTENT),
     supabase.rpc("get_site_stats"),
+    getContent("global.charity.percentage", "67%"),
   ])
+
+  // Interpolate charity percentage into commitment text
+  const commitmentText = content["home.mission.commitment.text"].replace(
+    "{charityPercentage}",
+    charityPercentage
+  )
 
   const { data: stats, error } = statsResult
 
@@ -54,7 +61,7 @@ export async function MissionImpact() {
       story1={content["home.mission.story1"]}
       story2={content["home.mission.story2"]}
       commitmentTitle={content["home.mission.commitment.title"]}
-      commitmentText={content["home.mission.commitment.text"]}
+      commitmentText={commitmentText}
       commitmentSubtext={content["home.mission.commitment.subtext"]}
     />
   )

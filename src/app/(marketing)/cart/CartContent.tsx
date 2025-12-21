@@ -58,7 +58,7 @@ export function CartContent({
   trustFreeShipping = "Free shipping on orders $75+",
   trustSecureCheckout = "Secure checkout with Stripe",
   charityNotice = "of your purchase supports Hawaii STEM education.",
-  charityPercentage = "70%",
+  charityPercentage = "67%",
 }: CartContentProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isMounted, setIsMounted] = useState(false)

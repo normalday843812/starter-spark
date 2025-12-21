@@ -49,7 +49,7 @@ const defaultStats: AboutStat[] = [
   { value: "0", label: "Workshops Hosted" },
   { value: "0", label: "Students Reached" },
   { value: "0", label: "Partner Schools" },
-  { value: "70%", label: "Donated to STEM" },
+  { value: "67%", label: "Donated to STEM" },
 ]
 
 export function AboutGallery({ stats = defaultStats }: AboutGalleryProps) {

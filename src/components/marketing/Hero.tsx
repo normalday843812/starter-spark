@@ -30,7 +30,7 @@ export function HeroSection({
   taglineTop = "Robotics Education from Hawaii",
   headline = "Early Access to Real Tech Skills",
   subheadline = "With components like Arduino and more advanced boards, servos, and code, students get exposure to real tools engineers use every day, all in a way that's beginner-friendly and rewarding.",
-  taglineBottom = "v1.0 • Open Source Hardware • 70% to STEM Charities",
+  taglineBottom = "v1.0 • Open Source Hardware • 67% to STEM Charities",
   ctaPrimary = "Shop Kits",
   ctaSecondary = "View Documentation",
 }: HeroSectionProps) {

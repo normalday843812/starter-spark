@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
+import { getContent } from "@/lib/content"
 import { AboutGallery, type AboutStat } from "./AboutGallery"
 
 /**
@@ -8,15 +9,18 @@ import { AboutGallery, type AboutStat } from "./AboutGallery"
 export async function AboutGalleryWrapper() {
   const supabase = await createClient()
 
-  // Try to fetch stats from database
-  const { data: dbStats, error } = await supabase.rpc("get_site_stats")
+  // Fetch charity percentage and stats in parallel
+  const [charityPercentage, { data: dbStats, error }] = await Promise.all([
+    getContent("global.charity.percentage", "67%"),
+    supabase.rpc("get_site_stats"),
+  ])
 
   // Default stats to use if fetch fails or returns empty
   const defaultStats: AboutStat[] = [
     { value: "0", label: "Workshops Hosted" },
     { value: "0", label: "Students Reached" },
     { value: "1", label: "Partner Schools" },
-    { value: "70%", label: "Donated to STEM" },
+    { value: charityPercentage, label: "Donated to STEM" },
   ]
 
   if (error || !dbStats || dbStats.length === 0) {
@@ -69,7 +73,7 @@ export async function AboutGalleryWrapper() {
     statsMap["Workshops Hosted"] || { value: "0", label: "Workshops Hosted" },
     statsMap["Students Reached"] || { value: "0", label: "Students Reached" },
     statsMap["Partner Schools"] || { value: "1", label: "Partner Schools" },
-    { value: "70%", label: "Donated to STEM" }, // Always hardcoded
+    { value: charityPercentage, label: "Donated to STEM" }, // From global.charity.percentage
   ]
 
   return <AboutGallery stats={stats} />
