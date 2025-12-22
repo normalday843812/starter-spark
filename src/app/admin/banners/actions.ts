@@ -5,6 +5,34 @@ import { revalidatePath } from "next/cache"
 import { logAuditEvent } from "@/lib/audit"
 import { requireAdmin } from "@/lib/auth"
 
+function normalizeBannerLink(value: FormDataEntryValue | null): string | null {
+  if (typeof value !== "string") return null
+  const trimmed = value.trim()
+  if (!trimmed) return null
+  if (trimmed.startsWith("/")) {
+    return trimmed.startsWith("//") ? null : trimmed
+  }
+  try {
+    const parsed = new URL(trimmed)
+    if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+      return trimmed
+    }
+  } catch {
+    return null
+  }
+  return null
+}
+
+function normalizeBannerLinkText(
+  value: FormDataEntryValue | null,
+  hasLink: boolean
+): string | null {
+  if (!hasLink) return null
+  if (typeof value !== "string") return null
+  const trimmed = value.trim()
+  return trimmed ? trimmed : null
+}
+
 export async function deleteBanner(bannerId: string) {
   const supabase = await createClient()
 
@@ -169,13 +197,16 @@ export async function createBanner(formData: FormData) {
   const is_active = formData.get("is_active") === "true"
   const sort_order = Number.parseInt(formData.get("sort_order") as string, 10) || 0
 
+  const normalizedLinkUrl = normalizeBannerLink(link_url)
+  const normalizedLinkText = normalizeBannerLinkText(link_text, !!normalizedLinkUrl)
+
   const { data, error } = await supabase
     .from("site_banners")
     .insert({
       title,
       message,
-      link_url: typeof link_url === "string" && link_url.trim() ? link_url.trim() : null,
-      link_text: typeof link_text === "string" && link_text.trim() ? link_text.trim() : null,
+      link_url: normalizedLinkUrl,
+      link_text: normalizedLinkText,
       icon: typeof icon === "string" && icon.trim() ? icon.trim() : null,
       color_scheme: typeof color_scheme === "string" && color_scheme ? color_scheme : "info",
       pages: pages.length > 0 ? pages : [],
@@ -245,13 +276,16 @@ export async function updateBanner(bannerId: string, formData: FormData) {
   const is_active = formData.get("is_active") === "true"
   const sort_order = Number.parseInt(formData.get("sort_order") as string, 10) || 0
 
+  const normalizedLinkUrl = normalizeBannerLink(link_url)
+  const normalizedLinkText = normalizeBannerLinkText(link_text, !!normalizedLinkUrl)
+
   const { data: updatedBanner, error: updateError } = await supabase
     .from("site_banners")
     .update({
       title,
       message,
-      link_url: typeof link_url === "string" && link_url.trim() ? link_url.trim() : null,
-      link_text: typeof link_text === "string" && link_text.trim() ? link_text.trim() : null,
+      link_url: normalizedLinkUrl,
+      link_text: normalizedLinkText,
       icon: typeof icon === "string" && icon.trim() ? icon.trim() : null,
       color_scheme: typeof color_scheme === "string" && color_scheme ? color_scheme : "info",
       pages: pages.length > 0 ? pages : [],

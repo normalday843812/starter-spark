@@ -33,6 +33,7 @@ export const rateLimitConfigs = {
   supportFeedback: { requests: 20 * multiplier, window: "1 m" as const },
   newsletter: { requests: 10 * multiplier, window: "1 m" as const },
   ogImage: { requests: 60 * multiplier, window: "1 m" as const },
+  siteBanners: { requests: 60 * multiplier, window: "1 m" as const },
   // Community actions
   communityVote: { requests: 30 * multiplier, window: "1 m" as const },
   communityReport: { requests: 5 * multiplier, window: "10 m" as const },
@@ -68,6 +69,8 @@ function getRateLimitConfig(configKey: RateLimitConfig) {
       return rateLimitConfigs.newsletter
     case "ogImage":
       return rateLimitConfigs.ogImage
+    case "siteBanners":
+      return rateLimitConfigs.siteBanners
     case "communityVote":
       return rateLimitConfigs.communityVote
     case "communityReport":

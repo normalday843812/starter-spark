@@ -3,7 +3,7 @@
 import { useSearchParams, usePathname } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { BookOpen, Wrench, Trophy } from "lucide-react"
-import { useCallback, useState, useEffect } from "react"
+import { useCallback, useState } from "react"
 
 interface WorkshopTabsProps {
   coursesContent: React.ReactNode
@@ -21,32 +21,26 @@ export function WorkshopTabs({
   const search = searchParams.toString()
 
   // Use local state for instant tab switching
-  const [activeTab, setActiveTab] = useState(() => searchParams.get("tab") || "courses")
+  const [activeTab, setActiveTab] = useState(
+    () => new URLSearchParams(search).get("tab") || "courses"
+  )
 
-  useEffect(() => {
-    const urlTab = new URLSearchParams(search).get("tab") || "courses"
-    if (urlTab !== activeTab) {
-      setActiveTab(urlTab)
-    }
-  }, [activeTab, search])
+  const handleTabChange = useCallback(
+    (value: string) => {
+      setActiveTab(value)
+      const params = new URLSearchParams(search)
+      params.set("tab", value)
+      if (value !== "courses") {
+        params.delete("difficulty")
+      }
+      const nextSearch = params.toString()
+      if (nextSearch === search) return
 
-  // Update URL without triggering navigation (for bookmarkability)
-  useEffect(() => {
-    const params = new URLSearchParams(search)
-    params.set("tab", activeTab)
-    if (activeTab !== "courses") {
-      params.delete("difficulty")
-    }
-    const nextSearch = params.toString()
-    if (nextSearch === search) return
-
-    const newUrl = nextSearch ? `${pathname}?${nextSearch}` : pathname
-    window.history.replaceState(null, "", newUrl)
-  }, [activeTab, pathname, search])
-
-  const handleTabChange = useCallback((value: string) => {
-    setActiveTab(value)
-  }, [])
+      const newUrl = nextSearch ? `${pathname}?${nextSearch}` : pathname
+      window.history.replaceState(null, "", newUrl)
+    },
+    [pathname, search]
+  )
 
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">

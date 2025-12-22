@@ -135,6 +135,23 @@ function shouldShowOnPage(pages: string[], currentPath: string): boolean {
   })
 }
 
+function getSafeLinkUrl(linkUrl: string): string | null {
+  const trimmed = linkUrl.trim()
+  if (!trimmed) return null
+  if (trimmed.startsWith("/")) {
+    return trimmed.startsWith("//") ? null : trimmed
+  }
+  try {
+    const parsed = new URL(trimmed)
+    if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+      return trimmed
+    }
+  } catch {
+    return null
+  }
+  return null
+}
+
 export function SiteBanner() {
   const [banners, setBanners] = useState<Banner[]>([])
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set())
@@ -232,6 +249,7 @@ export function SiteBanner() {
       {visibleBanners.map((banner) => {
         const scheme = COLOR_SCHEMES[banner.color_scheme] || COLOR_SCHEMES.info
         const IconComponent = scheme.icon
+        const safeLinkUrl = banner.link_url ? getSafeLinkUrl(banner.link_url) : null
 
         return (
           <motion.div
@@ -251,9 +269,9 @@ export function SiteBanner() {
                   </p>
                 </div>
 
-                {banner.link_url && banner.link_text && (
+                {safeLinkUrl && banner.link_text && (
                   <Link
-                    href={banner.link_url}
+                    href={safeLinkUrl}
                     className={`text-sm font-semibold underline underline-offset-2 hover:no-underline transition-colors ${scheme.linkStyle}`}
                   >
                     {banner.link_text}

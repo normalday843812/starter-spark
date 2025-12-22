@@ -369,10 +369,17 @@ async function resolveMediaUrl(media: { url?: string; storage_path?: string | nu
 
   const parsed = parseStorageUrl(media.url)
   const bucket = parsed?.bucket || "products"
+  const allowedBuckets = new Set(["products"])
+  if (!allowedBuckets.has(bucket)) {
+    return media.url
+  }
   let storagePath = media.storage_path || parsed?.path || null
 
   if (!storagePath) return media.url
   storagePath = storagePath.replace(/^\/+/, "")
+  if (storagePath.includes("..") || storagePath.includes("\\")) {
+    return media.url
+  }
   if (storagePath.startsWith(`${bucket}/`)) {
     storagePath = storagePath.slice(bucket.length + 1)
   }

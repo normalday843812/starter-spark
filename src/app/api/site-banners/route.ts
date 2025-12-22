@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
-import { supabaseAdmin } from "@/lib/supabase/admin"
+import { createPublicClient } from "@/lib/supabase/public"
+import { rateLimit, rateLimitHeaders } from "@/lib/rate-limit"
 
 export const runtime = "nodejs"
 
@@ -19,8 +20,12 @@ type BannerRow = {
   is_active: boolean | null
 }
 
-export async function GET() {
-  const { data, error } = await supabaseAdmin
+export async function GET(request: Request) {
+  const rateLimitResponse = await rateLimit(request, "siteBanners")
+  if (rateLimitResponse) return rateLimitResponse
+
+  const supabase = createPublicClient()
+  const { data, error } = await supabase
     .from("site_banners")
     .select(
       "id, title, message, link_url, link_text, icon, color_scheme, pages, is_dismissible, dismiss_duration_hours, starts_at, ends_at, is_active"
@@ -55,6 +60,7 @@ export async function GET() {
   return NextResponse.json(visible, {
     headers: {
       "Cache-Control": "no-store",
+      ...rateLimitHeaders("siteBanners"),
     },
   })
 }
