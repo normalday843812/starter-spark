@@ -39,24 +39,24 @@ export function WorkshopTabs({
 
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-      <TabsList className="w-full justify-start border-b border-slate-200 bg-transparent h-auto p-0 rounded-none mb-6">
+      <TabsList className="w-full justify-start border-b border-slate-200 bg-transparent h-auto p-0 rounded-none mb-6 flex-wrap gap-2">
         <TabsTrigger
           value="courses"
-          className="cursor-pointer font-mono text-sm data-[state=active]:text-cyan-700 data-[state=active]:border-b-2 data-[state=active]:border-cyan-700 rounded-none px-4 py-3 data-[state=active]:shadow-none flex items-center gap-2"
+          className="cursor-pointer font-mono text-sm data-[state=active]:text-cyan-700 data-[state=active]:border-b-2 data-[state=active]:border-cyan-700 rounded-none px-4 py-3 data-[state=active]:shadow-none flex items-center gap-2 flex-none sm:flex-1 whitespace-normal sm:whitespace-nowrap text-center"
         >
           <BookOpen className="w-4 h-4" />
           Courses
         </TabsTrigger>
         <TabsTrigger
           value="tools"
-          className="cursor-pointer font-mono text-sm data-[state=active]:text-cyan-700 data-[state=active]:border-b-2 data-[state=active]:border-cyan-700 rounded-none px-4 py-3 data-[state=active]:shadow-none flex items-center gap-2"
+          className="cursor-pointer font-mono text-sm data-[state=active]:text-cyan-700 data-[state=active]:border-b-2 data-[state=active]:border-cyan-700 rounded-none px-4 py-3 data-[state=active]:shadow-none flex items-center gap-2 flex-none sm:flex-1 whitespace-normal sm:whitespace-nowrap text-center"
         >
           <Wrench className="w-4 h-4" />
           Tools
         </TabsTrigger>
         <TabsTrigger
           value="progress"
-          className="cursor-pointer font-mono text-sm data-[state=active]:text-cyan-700 data-[state=active]:border-b-2 data-[state=active]:border-cyan-700 rounded-none px-4 py-3 data-[state=active]:shadow-none flex items-center gap-2"
+          className="cursor-pointer font-mono text-sm data-[state=active]:text-cyan-700 data-[state=active]:border-b-2 data-[state=active]:border-cyan-700 rounded-none px-4 py-3 data-[state=active]:shadow-none flex items-center gap-2 flex-none sm:flex-1 whitespace-normal sm:whitespace-nowrap text-center"
         >
           <Trophy className="w-4 h-4" />
           Progress

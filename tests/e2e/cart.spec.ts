@@ -1,10 +1,20 @@
 import { test, expect } from "@chromatic-com/playwright"
+import type { Page } from "@playwright/test"
 import { CartPage, ProductPage, HomePage } from "../pages"
 
 /**
  * E2E Tests for Shopping Cart
  * Tests cart functionality including add, remove, update quantity, and checkout
  */
+
+const waitForHeader = async (page: Page) => {
+  await page.waitForLoadState("domcontentloaded")
+  await page.locator("header").waitFor()
+  await page
+    .locator('header[data-hydrated="true"]')
+    .waitFor({ timeout: 2000 })
+    .catch(() => {})
+}
 
 test.describe("Cart - Empty State", () => {
   test.beforeEach(async ({ page }) => {
@@ -39,6 +49,7 @@ test.describe("Cart - Empty State", () => {
 
   test("should show zero count in header cart badge", async ({ page }) => {
     await page.goto("/")
+    await waitForHeader(page)
 
     // Cart badge should not be visible when empty (desktop only - on mobile, cart is in menu)
     const viewportSize = page.viewportSize()
@@ -49,8 +60,8 @@ test.describe("Cart - Empty State", () => {
       await expect(page.getByLabel("Toggle menu")).toBeVisible()
     } else {
       // On desktop, cart badge should not be visible when empty
-      const badge = page.locator('[aria-label^="Shopping cart"] span')
-      await expect(badge).toBeHidden()
+      const badge = page.locator('header button[aria-label^="Shopping cart"]:visible span')
+      await expect(badge).toHaveCount(0)
     }
   })
 })
@@ -540,6 +551,7 @@ test.describe("Cart - Header Badge", () => {
       localStorage.removeItem("starterspark-cart")
     })
     await page.reload()
+    await waitForHeader(page)
 
     // Check viewport - badge tests only apply to desktop
     const viewportSize = page.viewportSize()
@@ -567,8 +579,8 @@ test.describe("Cart - Header Badge", () => {
       await expect(page.getByText("3 items")).toBeVisible()
     } else {
       // Badge should not be visible initially (aria-label starts with "Shopping cart")
-      let badge = page.locator('[aria-label^="Shopping cart"] span')
-      await expect(badge).toBeHidden()
+      let badge = page.locator('header button[aria-label^="Shopping cart"]:visible span')
+      await expect(badge).toHaveCount(0)
 
       // Add item via localStorage
       await page.evaluate(() => {
@@ -590,9 +602,10 @@ test.describe("Cart - Header Badge", () => {
 
       // Reload to trigger state update
       await page.reload()
+      await waitForHeader(page)
 
       // Badge should show count (aria-label starts with "Shopping cart")
-      badge = page.locator('[aria-label^="Shopping cart"] span')
+      badge = page.locator('header button[aria-label^="Shopping cart"]:visible span')
       await expect(badge).toBeVisible()
       await expect(badge).toHaveText("3")
     }
@@ -618,6 +631,7 @@ test.describe("Cart - Header Badge", () => {
     })
 
     await page.reload()
+    await waitForHeader(page)
 
     // Check viewport - badge tests only apply to desktop
     const viewportSize = page.viewportSize()
@@ -628,7 +642,7 @@ test.describe("Cart - Header Badge", () => {
       await page.goto("/cart")
       await expect(page.getByText("15 items")).toBeVisible()
     } else {
-      const badge = page.locator('[aria-label^="Shopping cart"] span')
+      const badge = page.locator('header button[aria-label^="Shopping cart"]:visible span')
       await expect(badge).toHaveText("9+")
     }
   })

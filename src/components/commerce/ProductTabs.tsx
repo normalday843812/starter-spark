@@ -36,22 +36,22 @@ export function ProductTabs({
 }: ProductTabsProps) {
   return (
     <Tabs defaultValue="overview" className="w-full">
-      <TabsList className="w-full justify-start border-b border-slate-200 bg-transparent h-auto p-0 rounded-none">
+      <TabsList className="w-full justify-start border-b border-slate-200 bg-transparent h-auto p-0 rounded-none flex-wrap gap-2">
         <TabsTrigger
           value="overview"
-          className="cursor-pointer font-mono text-sm data-[state=active]:text-cyan-700 data-[state=active]:border-b-2 data-[state=active]:border-cyan-700 rounded-none px-6 py-3 data-[state=active]:shadow-none"
+          className="cursor-pointer font-mono text-sm data-[state=active]:text-cyan-700 data-[state=active]:border-b-2 data-[state=active]:border-cyan-700 rounded-none px-6 py-3 data-[state=active]:shadow-none flex-none sm:flex-1 whitespace-normal sm:whitespace-nowrap text-center"
         >
           Overview
         </TabsTrigger>
         <TabsTrigger
           value="included"
-          className="cursor-pointer font-mono text-sm data-[state=active]:text-cyan-700 data-[state=active]:border-b-2 data-[state=active]:border-cyan-700 rounded-none px-6 py-3 data-[state=active]:shadow-none"
+          className="cursor-pointer font-mono text-sm data-[state=active]:text-cyan-700 data-[state=active]:border-b-2 data-[state=active]:border-cyan-700 rounded-none px-6 py-3 data-[state=active]:shadow-none flex-none sm:flex-1 whitespace-normal sm:whitespace-nowrap text-center"
         >
           What&apos;s Included
         </TabsTrigger>
         <TabsTrigger
           value="specs"
-          className="cursor-pointer font-mono text-sm data-[state=active]:text-cyan-700 data-[state=active]:border-b-2 data-[state=active]:border-cyan-700 rounded-none px-6 py-3 data-[state=active]:shadow-none"
+          className="cursor-pointer font-mono text-sm data-[state=active]:text-cyan-700 data-[state=active]:border-b-2 data-[state=active]:border-cyan-700 rounded-none px-6 py-3 data-[state=active]:shadow-none flex-none sm:flex-1 whitespace-normal sm:whitespace-nowrap text-center"
         >
           Technical Specs
         </TabsTrigger>
@@ -187,7 +187,7 @@ export function ProductTabs({
           {datasheetUrl && (
             <Button
               variant="outline"
-              className="mt-6 border-slate-200 text-slate-600 hover:text-cyan-700 hover:border-cyan-700 font-mono"
+              className="mt-6 border-slate-200 text-slate-600 hover:text-cyan-700 hover:border-cyan-700 font-mono w-full sm:w-auto whitespace-normal break-words text-center leading-snug h-auto py-3 flex-wrap"
               asChild
             >
               <a href={datasheetUrl} target="_blank" rel="noopener noreferrer" download>

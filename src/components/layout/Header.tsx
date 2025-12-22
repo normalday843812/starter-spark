@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import {
@@ -112,8 +112,13 @@ function MobileNavSection({
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [openSection, setOpenSection] = useState<string | null>(null)
+  const [isHydrated, setIsHydrated] = useState(false)
   const cartCount = useCartStore(selectCartCount)
   const openCart = useCartStore((state) => state.openCart)
+
+  useEffect(() => {
+    setIsHydrated(true)
+  }, [])
 
   const closeMobileMenu = () => {
     setMobileMenuOpen(false)
@@ -125,7 +130,10 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200">
+    <header
+      data-hydrated={isHydrated ? "true" : "false"}
+      className="sticky top-0 z-50 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200"
+    >
       <div className="max-w-7xl mx-auto px-6 lg:px-20">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}

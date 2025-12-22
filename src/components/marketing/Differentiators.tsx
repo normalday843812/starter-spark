@@ -52,10 +52,10 @@ export function DifferentiatorsSection({
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="font-mono text-3xl lg:text-4xl text-slate-900 mb-4">
+          <h2 className="font-mono text-3xl lg:text-4xl text-slate-900 mb-4 break-words">
             {title}
           </h2>
-          <p className="text-slate-600 max-w-2xl mx-auto">
+          <p className="text-slate-600 max-w-2xl mx-auto break-words">
             {description}
           </p>
         </motion.div>
@@ -70,14 +70,14 @@ export function DifferentiatorsSection({
               transition={{ delay: idx * 0.1 }}
             >
               <Card className="h-full bg-white border-slate-200 shadow-sm hover:shadow-md hover:border-cyan-200 transition-all duration-200">
-                <CardContent className="p-6">
+                <CardContent className="p-6 min-w-0">
                   <div className="w-12 h-12 rounded bg-cyan-50 flex items-center justify-center mb-4">
                     <item.icon className="w-6 h-6 text-cyan-700" />
                   </div>
-                  <h3 className="font-mono text-lg text-slate-900 mb-2">
+                  <h3 className="font-mono text-lg text-slate-900 mb-2 break-words">
                     {item.title}
                   </h3>
-                  <p className="text-slate-600 text-sm leading-relaxed">
+                  <p className="text-slate-600 text-sm leading-relaxed break-words">
                     {item.description}
                   </p>
                 </CardContent>

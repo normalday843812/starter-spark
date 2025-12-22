@@ -16,12 +16,18 @@ export function LoginForm({ redirectTo, claimToken }: LoginFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isSent, setIsSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const errorId = "login-email-error"
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!email.trim()) {
+    const trimmedEmail = email.trim()
+    if (!trimmedEmail) {
       setError("Please enter your email address.")
+      return
+    }
+    if (!/^\S+@\S+\.\S+$/.test(trimmedEmail)) {
+      setError("Please enter a valid email address.")
       return
     }
 
@@ -49,7 +55,7 @@ export function LoginForm({ redirectTo, claimToken }: LoginFormProps) {
       }
 
       const { error: signInError } = await supabase.auth.signInWithOtp({
-        email: email.trim(),
+        email: trimmedEmail,
         options: {
           emailRedirectTo: callbackUrl,
         },
@@ -84,7 +90,7 @@ export function LoginForm({ redirectTo, claimToken }: LoginFormProps) {
     return (
       <div className="text-center py-6">
         <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center">
-          <CheckCircle className="w-8 h-8 text-green-600" />
+          <CheckCircle className="w-8 h-8 text-green-600" aria-hidden="true" />
         </div>
         <h2 className="font-mono text-xl text-slate-900 mb-2">Check your email</h2>
         <p className="text-slate-600 mb-4">
@@ -107,13 +113,13 @@ export function LoginForm({ redirectTo, claimToken }: LoginFormProps) {
   }
 
   return (
-    <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
+    <form noValidate onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
       <div>
         <label htmlFor="email" className="block text-sm font-mono text-slate-700 mb-2">
           Email address
         </label>
         <div className="relative">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" aria-hidden="true" />
           <Input
             id="email"
             type="email"
@@ -123,12 +129,18 @@ export function LoginForm({ redirectTo, claimToken }: LoginFormProps) {
             className="pl-10 bg-slate-50 border-slate-200 focus:border-cyan-700"
             disabled={isLoading}
             required
+            aria-invalid={!!error}
+            aria-describedby={error ? errorId : undefined}
           />
         </div>
       </div>
 
       {error && (
-        <div className="text-sm text-red-600 bg-red-50 p-3 rounded border border-red-200">
+        <div
+          id={errorId}
+          role="alert"
+          className="text-sm text-red-600 bg-red-50 p-3 rounded border border-red-200"
+        >
           {error}
         </div>
       )}
@@ -140,7 +152,7 @@ export function LoginForm({ redirectTo, claimToken }: LoginFormProps) {
       >
         {isLoading ? (
           <>
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
             Sending...
           </>
         ) : (

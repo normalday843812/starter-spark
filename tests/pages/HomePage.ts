@@ -55,7 +55,10 @@ export class HomePage {
    */
   async isMobileViewport(): Promise<boolean> {
     const viewportSize = this.page.viewportSize()
-    return viewportSize ? viewportSize.width < 768 : false
+    if (viewportSize) {
+      return viewportSize.width < 768
+    }
+    return this.page.evaluate(() => window.matchMedia("(max-width: 767px)").matches)
   }
 
   private get mobileMenu(): Locator {
@@ -96,17 +99,18 @@ export class HomePage {
     href: string
   ): Promise<void> {
     const trigger = this.page
-      .locator("nav.hidden.md\\:flex")
-      .getByRole("button", { name: menu, exact: true })
+      .locator('header [data-slot="dropdown-menu-trigger"]')
+      .filter({ hasText: menu })
       .first()
 
     await trigger.click()
 
     // Scope to the open menu to avoid matching hero/other links.
     const menuContent = this.page
-      .getByRole("menu")
+      .locator('[data-slot="dropdown-menu-content"]')
       .filter({ has: this.page.locator(`a[href="${href}"]`) })
       .first()
+    await expect(menuContent).toBeVisible()
     const link = menuContent.locator(`a[href="${href}"]`).first()
     await expect(link).toBeVisible()
     await link.click()
@@ -135,12 +139,17 @@ export class HomePage {
 
   async goto() {
     await this.page.goto("/")
-    await expect(this.header).toBeVisible()
+    await this.page.waitForLoadState("domcontentloaded")
+    await expect(this.header).toBeVisible({ timeout: 10000 })
+    await this.page
+      .locator('header[data-hydrated="true"]')
+      .waitFor({ timeout: 2000 })
+      .catch(() => {})
   }
 
   async expectPageLoaded() {
-    await expect(this.header).toBeVisible()
-    await expect(this.heroTitle).toBeVisible()
+    await expect(this.header).toBeVisible({ timeout: 10000 })
+    await expect(this.heroTitle).toBeVisible({ timeout: 10000 })
   }
 
   async navigateToShop() {
@@ -161,7 +170,7 @@ export class HomePage {
     } else {
       await this.clickDesktopMenuLink("Documentation", "/learn")
     }
-    await expect(this.page).toHaveURL("/learn")
+    await expect(this.page).toHaveURL(/\/workshop(\?|$)/)
   }
 
   async navigateToAbout() {

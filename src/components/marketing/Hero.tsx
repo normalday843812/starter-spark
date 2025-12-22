@@ -60,11 +60,11 @@ export function HeroSection({
           {/* Decorative Line */}
           <div className="absolute -left-6 top-0 w-1 h-full bg-gradient-to-b from-cyan-700 to-transparent opacity-30 hidden lg:block" />
           
-          <p className="text-sm font-mono text-cyan-700 mb-4 tracking-wide">
+          <p className="text-sm font-mono text-cyan-700 mb-4 tracking-wide break-words">
             {taglineTop}
           </p>
 
-          <h1 className="font-mono text-5xl lg:text-7xl font-bold tracking-tighter text-slate-900 mb-6 leading-[1.1]">
+          <h1 className="font-mono text-5xl lg:text-7xl font-bold tracking-tighter text-slate-900 mb-6 leading-[1.1] break-words">
             {headline.includes("\n") ? (
               headline.split("\n").map((line, i) => (
                 <span key={i}>
@@ -81,11 +81,11 @@ export function HeroSection({
             )}
           </h1>
 
-          <p className="text-lg text-slate-600 max-w-lg leading-relaxed font-sans mb-4">
+          <p className="text-lg text-slate-600 max-w-lg leading-relaxed font-sans mb-4 break-words">
             {subheadline}
           </p>
 
-          <p className="text-sm text-slate-500 font-mono">
+          <p className="text-sm text-slate-500 font-mono break-words">
             {taglineBottom}
           </p>
         </motion.div>
@@ -94,12 +94,12 @@ export function HeroSection({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="flex gap-4 pointer-events-auto"
+          className="flex w-full flex-col gap-4 pointer-events-auto sm:w-auto sm:flex-row"
         >
           <Button
             asChild
             size="lg"
-            className="h-14 px-8 bg-cyan-700 hover:bg-cyan-600 text-white font-mono tracking-wider rounded-none shadow-sm cursor-pointer"
+            className="h-auto min-h-[3.5rem] w-full px-6 py-3 bg-cyan-700 hover:bg-cyan-600 text-white font-mono tracking-wider rounded-none shadow-sm cursor-pointer text-center whitespace-normal break-words leading-snug sm:w-auto sm:px-8"
           >
             <Link href="/shop">{ctaPrimary}</Link>
           </Button>
@@ -107,7 +107,7 @@ export function HeroSection({
             asChild
             variant="outline"
             size="lg"
-            className="h-14 px-8 border-slate-200 hover:border-cyan-700 text-slate-600 hover:text-cyan-700 font-mono tracking-wider rounded-none cursor-pointer"
+            className="h-auto min-h-[3.5rem] w-full px-6 py-3 border-slate-200 hover:border-cyan-700 text-slate-600 hover:text-cyan-700 font-mono tracking-wider rounded-none cursor-pointer text-center whitespace-normal break-words leading-snug sm:w-auto sm:px-8"
           >
             <Link href="/learn">{ctaSecondary}</Link>
           </Button>

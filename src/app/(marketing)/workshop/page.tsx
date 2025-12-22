@@ -13,6 +13,7 @@ import { CoursesTab } from "./CoursesTab"
 import { ToolsTab } from "./ToolsTab"
 import { ProgressTab } from "./ProgressTab"
 import { SkillAssessmentWrapper } from "../learn/SkillAssessmentWrapper"
+import { isE2E } from "@/lib/e2e"
 
 interface CourseModule {
   id: string
@@ -42,11 +43,20 @@ export default async function WorkshopPage({
   searchParams: Promise<{ tab?: string; difficulty?: string }>
 }) {
   const { difficulty: difficultyFilter } = await searchParams
-  const supabase = await createClient()
+  const supabase = isE2E ? null : await createClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  let user: { id: string } | null = null
+  if (supabase) {
+    try {
+      const {
+        data: { user: fetchedUser },
+      } = await supabase.auth.getUser()
+      user = fetchedUser ?? null
+    } catch (error) {
+      console.error("Failed to fetch user:", error)
+      user = null
+    }
+  }
 
   // Fetch dynamic content
   const content = await getContents(
@@ -115,7 +125,7 @@ export default async function WorkshopPage({
   const ownedProductIds: string[] = []
   let completedLessonIds: string[] = []
 
-  if (user) {
+  if (user && supabase) {
     // Fetch claimed licenses
     const { data: claimedData } = await supabase
       .from("licenses")
@@ -223,41 +233,48 @@ export default async function WorkshopPage({
   }
 
   // === DATA FETCHING FOR COURSES ===
-  const { data: coursesData } = await supabase
-    .from("courses")
-    .select(`
-      id,
-      title,
-      description,
-      difficulty,
-      duration_minutes,
-      is_published,
-      product:products (
-        id,
-        slug,
-        name
-      ),
-      modules (
-        id,
-        title,
-        is_published,
-        lessons (id, is_optional, is_published)
-      )
-    `)
-    .eq("is_published", true)
-    .order("created_at", { ascending: true })
+  let courses: Course[] = []
+  if (supabase && user) {
+    try {
+      const { data: coursesData } = await supabase
+        .from("courses")
+        .select(`
+          id,
+          title,
+          description,
+          difficulty,
+          duration_minutes,
+          is_published,
+          product:products (
+            id,
+            slug,
+            name
+          ),
+          modules (
+            id,
+            title,
+            is_published,
+            lessons (id, is_optional, is_published)
+          )
+        `)
+        .eq("is_published", true)
+        .order("created_at", { ascending: true })
 
-  // Filter courses by difficulty if specified
-  const courses: Course[] = difficultyFilter && difficultyFilter !== "all"
-    ? ((coursesData ?? []) as unknown as Course[]).filter((c) => c.difficulty === difficultyFilter)
-    : ((coursesData ?? []) as unknown as Course[])
+      // Filter courses by difficulty if specified
+      courses = difficultyFilter && difficultyFilter !== "all"
+        ? ((coursesData ?? []) as unknown as Course[]).filter((c) => c.difficulty === difficultyFilter)
+        : ((coursesData ?? []) as unknown as Course[])
+    } catch (error) {
+      console.error("Failed to fetch courses:", error)
+    }
+  }
 
   // === DATA FETCHING FOR STATS ===
   let learningStats = { xp: 0, level: 1, streakDays: 0 }
   let lessonsCompleted = 0
   let hasSkillLevel = false
 
-  if (user) {
+  if (user && supabase) {
     const { data: statsData } = await supabase
       .from("user_learning_stats")
       .select("xp, level, streak_days")
@@ -297,28 +314,42 @@ export default async function WorkshopPage({
     : { achievements: [], userAchievements: [], totalPoints: 0 }
 
   // === DATA FETCHING FOR LEADERBOARD ===
-  const { data: leaderboardData } = await supabase
-    .from("user_learning_stats")
-    .select("user_id, xp, level")
-    .order("xp", { ascending: false })
-    .limit(10)
-
-  const leaderboardEntries = (leaderboardData ?? []).map((entry, index) => ({
-    rank: index + 1,
-    displayName: `Learner ${entry.user_id.slice(0, 4).toUpperCase()}`,
-    xp: entry.xp,
-    level: entry.level,
-    isCurrentUser: user?.id === entry.user_id,
-  }))
-
+  let leaderboardEntries: {
+    rank: number
+    displayName: string
+    xp: number
+    level: number
+    isCurrentUser: boolean
+  }[] = []
   let currentUserRank: number | null = null
-  if (user && !leaderboardEntries.some((e) => e.isCurrentUser)) {
-    const { count } = await supabase
-      .from("user_learning_stats")
-      .select("*", { count: "exact", head: true })
-      .gt("xp", learningStats.xp)
 
-    currentUserRank = (count ?? 0) + 1
+  if (supabase && user) {
+    try {
+      const { data: leaderboardData } = await supabase
+        .from("user_learning_stats")
+        .select("user_id, xp, level")
+        .order("xp", { ascending: false })
+        .limit(10)
+
+      leaderboardEntries = (leaderboardData ?? []).map((entry, index) => ({
+        rank: index + 1,
+        displayName: `Learner ${entry.user_id.slice(0, 4).toUpperCase()}`,
+        xp: entry.xp,
+        level: entry.level,
+        isCurrentUser: user?.id === entry.user_id,
+      }))
+
+      if (!leaderboardEntries.some((e) => e.isCurrentUser)) {
+        const { count } = await supabase
+          .from("user_learning_stats")
+          .select("*", { count: "exact", head: true })
+          .gt("xp", learningStats.xp)
+
+        currentUserRank = (count ?? 0) + 1
+      }
+    } catch (error) {
+      console.error("Failed to fetch leaderboard:", error)
+    }
   }
 
   // Total license count for display
@@ -331,10 +362,10 @@ export default async function WorkshopPage({
       <section className="pt-32 pb-8 px-6 lg:px-20">
         <div className="max-w-7xl mx-auto">
           <p className="text-sm font-mono text-cyan-700 mb-2">Dashboard</p>
-          <h1 className="font-mono text-4xl lg:text-5xl font-bold text-slate-900 mb-4">
+          <h1 className="font-mono text-4xl lg:text-5xl font-bold text-slate-900 mb-4 break-words">
             {content["workshop.header.title"]}
           </h1>
-          <p className="text-lg text-slate-600 max-w-2xl">
+          <p className="text-lg text-slate-600 max-w-2xl break-words">
             {user
               ? content["workshop.header.description"]
               : content["workshop.header.description_signed_out"]}

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { getContents, getContent } from "@/lib/content"
+import { isE2E } from "@/lib/e2e"
 import { MissionImpactSection, type Stat } from "./MissionImpact"
 
 const DEFAULT_CONTENT = {
@@ -23,14 +24,8 @@ const FALLBACK_STATS: Stat[] = [
  * Uses the get_site_stats() function for auto-calculated values
  */
 export async function MissionImpact() {
-  const supabase = await createClient()
-
-  // Fetch content, stats, and charity percentage in parallel
-  const [content, statsResult, charityPercentage] = await Promise.all([
-    getContents(Object.keys(DEFAULT_CONTENT), DEFAULT_CONTENT),
-    supabase.rpc("get_site_stats"),
-    getContent("global.charity.percentage", "67%"),
-  ])
+  const content = await getContents(Object.keys(DEFAULT_CONTENT), DEFAULT_CONTENT)
+  const charityPercentage = await getContent("global.charity.percentage", "67%")
 
   // Interpolate charity percentage into commitment text
   const commitmentText = content["home.mission.commitment.text"].replace(
@@ -38,19 +33,37 @@ export async function MissionImpact() {
     charityPercentage
   )
 
-  const { data: stats, error } = statsResult
+  if (isE2E) {
+    return (
+      <MissionImpactSection
+        stats={FALLBACK_STATS}
+        title={content["home.mission.title"]}
+        subtitle={content["home.mission.subtitle"]}
+        story1={content["home.mission.story1"]}
+        story2={content["home.mission.story2"]}
+        commitmentTitle={content["home.mission.commitment.title"]}
+        commitmentText={commitmentText}
+        commitmentSubtext={content["home.mission.commitment.subtext"]}
+      />
+    )
+  }
 
   let transformedStats: Stat[] = FALLBACK_STATS
-
-  if (!error && stats && stats.length > 0) {
-    transformedStats = stats.map((stat) => ({
-      key: stat.key,
-      value: stat.value,
-      label: stat.label,
-      suffix: stat.suffix || "",
-    }))
-  } else if (error) {
-    console.error("Failed to fetch site stats:", error.message)
+  try {
+    const supabase = await createClient()
+    const { data: stats, error } = await supabase.rpc("get_site_stats")
+    if (!error && stats && stats.length > 0) {
+      transformedStats = stats.map((stat) => ({
+        key: stat.key,
+        value: stat.value,
+        label: stat.label,
+        suffix: stat.suffix || "",
+      }))
+    } else if (error) {
+      console.error("Failed to fetch site stats:", error.message)
+    }
+  } catch (error) {
+    console.error("Failed to fetch site stats:", error)
   }
 
   return (

@@ -57,8 +57,15 @@ export function ShopFilters({ products }: ShopFiltersProps) {
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
             {/* Search */}
             <div className="relative w-full sm:w-80">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <label htmlFor="product-search" className="sr-only">
+                Search products
+              </label>
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"
+                aria-hidden="true"
+              />
               <Input
+                id="product-search"
                 type="text"
                 placeholder="Search products..."
                 value={search}
@@ -69,7 +76,7 @@ export function ShopFilters({ products }: ShopFiltersProps) {
 
             {/* Filter Buttons */}
             <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-slate-500" />
+              <Filter className="w-4 h-4 text-slate-500" aria-hidden="true" />
               {filterOptions.map(({ value, label }) => (
                 <Button
                   key={value}

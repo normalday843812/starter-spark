@@ -8,6 +8,8 @@ import { notFound } from "next/navigation"
 import { getProductSchema, getBreadcrumbSchema } from "@/lib/structured-data"
 import { siteConfig } from "@/config/site"
 import { getContent } from "@/lib/content"
+import { getE2EProduct, isE2E } from "@/lib/e2e"
+import type { Json } from "@/lib/supabase/database.types"
 
 // Type for product specs JSONB
 interface ProductSpecs {
@@ -32,17 +34,65 @@ export async function generateMetadata({
   params: PageParams
 }): Promise<Metadata> {
   const { slug } = await params
-  const supabase = await createClient()
-
-  const { data: product, error: productError } = await supabase
-    .from("products")
-    .select(`
-      name,
+  if (isE2E) {
+    const product = getE2EProduct(slug)
+    if (!product) return { title: "Product Not Found" }
+    const title = product.name
+    const description = product.description?.slice(0, 160) || ""
+    const ogImageUrl = `/api/og?${new URLSearchParams({
+      title,
+      subtitle: description,
+      type: "product",
+    }).toString()}`
+    return {
+      title,
       description,
-      product_media (url, is_primary, type)
-    `)
-    .eq("slug", slug)
-    .maybeSingle()
+      openGraph: {
+        title,
+        description,
+        url: `${siteConfig.url}/shop/${slug}`,
+        siteName: siteConfig.name,
+        images: [
+          {
+            url: ogImageUrl,
+            width: 1200,
+            height: 630,
+            alt: title,
+          },
+        ],
+        type: "website",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [ogImageUrl],
+      },
+    }
+  }
+
+  const supabase = await createClient()
+  let product: {
+    name: string
+    description: string | null
+    product_media: { url: string; is_primary?: boolean | null; type?: string }[]
+  } | null = null
+  let productError: { message?: string } | null = null
+  try {
+    const { data, error } = await supabase
+      .from("products")
+      .select(`
+        name,
+        description,
+        product_media (url, is_primary, type)
+      `)
+      .eq("slug", slug)
+      .maybeSingle()
+    product = data
+    if (error) productError = error
+  } catch (error) {
+    productError = error instanceof Error ? { message: error.message } : { message: "Unknown error" }
+  }
 
   if (productError) {
     console.error("Error generating product metadata:", productError)
@@ -108,30 +158,61 @@ export default async function ProductDetailPage({
 }) {
   const nonce = (await headers()).get("x-nonce") ?? undefined
   const { slug } = await params
-  const supabase = await createClient()
+  let product: {
+    id: string
+    name: string
+    slug: string
+    description: string | null
+    price_cents: number
+    original_price_cents: number | null
+    discount_percent: number | null
+    discount_expires_at: string | null
+    track_inventory: boolean | null
+    stock_quantity: number | null
+    specs: Json | null
+    product_media: {
+      id?: string
+      type?: string
+      url: string
+      filename?: string
+      alt_text?: string | null
+      is_primary?: boolean | null
+      sort_order?: number | null
+    }[]
+    product_tags: { tag: string }[]
+  } | null = null
 
-  // Fetch product from database with tags and media
-  const { data: product, error } = await supabase
-    .from("products")
-    .select(`
-      *,
-      product_tags (tag),
-      product_media (
-        id,
-        type,
-        url,
-        filename,
-        alt_text,
-        is_primary,
-        sort_order
-      )
-    `)
-    .eq("slug", slug)
-    .maybeSingle()
+  if (isE2E) {
+    product = getE2EProduct(slug) as typeof product | null
+  } else {
+    try {
+      const supabase = await createClient()
+      const { data, error } = await supabase
+        .from("products")
+        .select(`
+          *,
+          product_tags (tag),
+          product_media (
+            id,
+            type,
+            url,
+            filename,
+            alt_text,
+            is_primary,
+            sort_order
+          )
+        `)
+        .eq("slug", slug)
+        .maybeSingle()
 
-  if (error) {
-    console.error("Error fetching product:", error)
-    throw new Error("Failed to load product")
+      if (error) {
+        console.error("Error fetching product:", error)
+      }
+      product = data
+    } catch (error) {
+      console.error("Error fetching product:", error)
+      throw new Error("Failed to load product")
+    }
   }
 
   if (!product) {

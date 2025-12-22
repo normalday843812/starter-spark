@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { AboutTeam } from "./AboutTeam"
+import { isE2E } from "@/lib/e2e"
 
 interface TeamMember {
   id: string
@@ -15,20 +16,29 @@ interface TeamMember {
 }
 
 export async function AboutTeamWrapper() {
-  const supabase = await createClient()
+  if (isE2E) {
+    return <AboutTeam team={[]} />
+  }
 
-  const { data: members, error } = await supabase
-    .from("team_members")
-    .select("id, name, role, bio, image_url, social_links")
-    .eq("is_active", true)
-    .order("sort_order", { ascending: true })
+  let members: TeamMember[] = []
+  try {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+      .from("team_members")
+      .select("id, name, role, bio, image_url, social_links")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true })
 
-  if (error) {
+    if (error) {
+      console.error("Error fetching team members:", error)
+    }
+    members = (data as TeamMember[]) || []
+  } catch (error) {
     console.error("Error fetching team members:", error)
   }
 
   // Transform to match the expected format
-  const team = (members || []).map((m) => {
+  const team = members.map((m) => {
     const socialLinks = m.social_links as TeamMember["social_links"]
     return {
       name: m.name,

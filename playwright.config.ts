@@ -47,6 +47,12 @@ export default defineConfig({
     command: 'npm run start',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
+    env: {
+      ...process.env,
+      E2E_TESTS: '1',
+      NEXT_PUBLIC_E2E: '1',
+      NEXT_PUBLIC_SENTRY_DISABLED: '1',
+    },
     stdout: 'pipe',
     stderr: 'pipe',
   },

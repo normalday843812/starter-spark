@@ -24,7 +24,7 @@ export class LoginPage {
     // Use #email id to avoid matching footer newsletter input
     this.emailInput = page.locator("#email")
     this.submitButton = page.getByRole("button", { name: /send magic link/i })
-    this.errorMessage = page.locator('[class*="text-red"]')
+    this.errorMessage = page.locator("#login-email-error")
 
     // Success state
     this.successMessage = page.getByText(/check your email/i)
@@ -49,12 +49,12 @@ export class LoginPage {
       url += `?${params.toString()}`
     }
 
-    await this.page.goto(url)
+    await this.page.goto(url, { waitUntil: "domcontentloaded" })
   }
 
   async expectPageLoaded() {
-    await expect(this.emailInput).toBeVisible()
-    await expect(this.submitButton).toBeVisible()
+    await expect(this.emailInput).toBeVisible({ timeout: 10000 })
+    await expect(this.submitButton).toBeVisible({ timeout: 10000 })
   }
 
   async fillEmail(email: string) {

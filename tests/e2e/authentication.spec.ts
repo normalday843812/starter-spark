@@ -18,7 +18,7 @@ test.describe("Login Page", () => {
     const loginPage = new LoginPage(page)
     await loginPage.goto()
 
-    await expect(loginPage.emailInput).toBeVisible()
+    await loginPage.expectPageLoaded()
     await expect(loginPage.emailInput).toBeEnabled()
   })
 
@@ -46,13 +46,8 @@ test.describe("Login Page", () => {
     // Try to submit without email
     await loginPage.submitForm()
 
-    // Browser validation should prevent submission or show error
-    // The HTML5 validation will trigger for empty required field
-    const emailInput = loginPage.emailInput
-    const validity = await emailInput.evaluate(
-      (el: HTMLInputElement) => el.validity.valid
-    )
-    expect(validity).toBe(false)
+    await expect(loginPage.errorMessage).toBeVisible()
+    await expect(loginPage.errorMessage).toHaveText(/enter your email address/i)
   })
 
   test("should show error for invalid email format", async ({ page }) => {
@@ -62,12 +57,8 @@ test.describe("Login Page", () => {
     await loginPage.fillEmail("invalid-email")
     await loginPage.submitForm()
 
-    // Browser validation should trigger
-    const emailInput = loginPage.emailInput
-    const validity = await emailInput.evaluate(
-      (el: HTMLInputElement) => el.validity.valid
-    )
-    expect(validity).toBe(false)
+    await expect(loginPage.errorMessage).toBeVisible()
+    await expect(loginPage.errorMessage).toHaveText(/valid email address/i)
   })
 
   test("should show loading state when submitting", async ({ page }) => {

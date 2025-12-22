@@ -1,4 +1,5 @@
 import { test, expect } from "@chromatic-com/playwright"
+import type { Page } from "@playwright/test"
 import { HomePage } from "../pages"
 
 /**
@@ -20,7 +21,7 @@ test.describe("Header Navigation", () => {
     await homePage.goto()
 
     await homePage.navigateToLearn()
-    await expect(page).toHaveURL("/learn")
+    await expect(page).toHaveURL(/\/workshop(\?|$)/)
   })
 
   test("should navigate to Community from header", async ({ page }) => {
@@ -62,11 +63,21 @@ test.describe("Header Navigation", () => {
   })
 })
 
+const waitForHeader = async (page: Page) => {
+  await page.waitForLoadState("domcontentloaded")
+  await page.locator("header").waitFor()
+  await page
+    .locator('header[data-hydrated="true"]')
+    .waitFor({ timeout: 2000 })
+    .catch(() => {})
+}
+
 test.describe("Mobile Navigation", () => {
   test.use({ viewport: { width: 375, height: 667 } })
 
   test("should show mobile menu button on small screens", async ({ page }) => {
     await page.goto("/")
+    await waitForHeader(page)
 
     const mobileMenuButton = page.getByLabel("Toggle menu")
     await expect(mobileMenuButton).toBeVisible()
@@ -74,6 +85,7 @@ test.describe("Mobile Navigation", () => {
 
   test("should hide desktop nav on mobile", async ({ page }) => {
     await page.goto("/")
+    await waitForHeader(page)
 
     // Wait for CSS to load
     await page.waitForLoadState("domcontentloaded")
@@ -106,6 +118,7 @@ test.describe("Mobile Navigation", () => {
 
   test("should open mobile menu when clicking hamburger", async ({ page }) => {
     await page.goto("/")
+    await waitForHeader(page)
 
     const mobileMenuButton = page.getByLabel("Toggle menu")
     await mobileMenuButton.click()
@@ -122,6 +135,7 @@ test.describe("Mobile Navigation", () => {
 
   test("should close mobile menu after navigation", async ({ page }) => {
     await page.goto("/")
+    await waitForHeader(page)
 
     const mobileMenuButton = page.getByLabel("Toggle menu")
     await mobileMenuButton.click()
@@ -135,6 +149,7 @@ test.describe("Mobile Navigation", () => {
 
   test("should toggle mobile menu open and close", async ({ page }) => {
     await page.goto("/")
+    await waitForHeader(page)
 
     const mobileMenuButton = page.getByLabel("Toggle menu")
 
@@ -154,6 +169,7 @@ test.describe("Mobile Navigation", () => {
 
   test("should show cart button in mobile header", async ({ page }) => {
     await page.goto("/")
+    await waitForHeader(page)
 
     const cartButton = page.locator('header button[aria-label^="Shopping cart"]:visible')
     await expect(cartButton).toBeVisible()

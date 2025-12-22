@@ -5,6 +5,7 @@ import Link from "next/link"
 import { NewsletterForm } from "./NewsletterForm"
 import { createClient } from "@/lib/supabase/server"
 import { getContents } from "@/lib/content"
+import { isE2E } from "@/lib/e2e"
 
 // Custom X (Twitter) icon since simple-icons doesn't have it as "X"
 function XIcon({ className }: { className?: string }) {
@@ -22,8 +23,6 @@ interface FooterProduct {
 }
 
 export async function Footer() {
-  const supabase = await createClient()
-
   // Fetch dynamic content (using unified global charity keys)
   const content = await getContents(
     [
@@ -44,26 +43,32 @@ export async function Footer() {
     }
   )
 
-  // Fetch active products for the footer links
-  const { data: products, error } = await supabase
-    .from("products")
-    .select("slug, name, status")
-    .in("status", ["active", "coming_soon"])
-    .order("created_at", { ascending: true })
-    .limit(5)
+  let footerProducts: FooterProduct[] = []
+  if (!isE2E) {
+    try {
+      const supabase = await createClient()
+      const { data: products, error } = await supabase
+        .from("products")
+        .select("slug, name, status")
+        .in("status", ["active", "coming_soon"])
+        .order("created_at", { ascending: true })
+        .limit(5)
 
-  if (error) {
-    console.error("Failed to fetch products for footer:", error.message)
+      if (error) {
+        console.error("Failed to fetch products for footer:", error.message)
+      }
+      footerProducts = products || []
+    } catch (error) {
+      console.error("Failed to fetch products for footer:", error)
+    }
   }
-
-  const footerProducts: FooterProduct[] = products || []
   return (
     <footer className="bg-white border-t border-slate-200">
       {/* Charity Banner */}
       <div className="bg-amber-50 border-b border-amber-200 py-4 px-6 lg:px-20">
         <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 text-sm">
           <Heart className="w-4 h-4 text-amber-600" />
-          <span className="text-slate-600">
+          <span className="text-slate-600 break-words">
             <span className="font-mono text-amber-700 font-semibold">{content["global.charity.percentage"]}</span> {content["global.charity.short"]}
           </span>
         </div>
@@ -76,7 +81,7 @@ export async function Footer() {
             <p className="text-2xl font-bold text-slate-900 mb-4 tracking-tighter font-mono">
               STARTER<span className="text-cyan-700">SPARK</span>
             </p>
-            <p className="text-slate-600 max-w-sm mb-6 leading-relaxed text-sm">
+            <p className="text-slate-600 max-w-sm mb-6 leading-relaxed text-sm break-words">
               {content["footer.brand.tagline"]}
             </p>
             <div className="flex gap-3">
@@ -206,8 +211,8 @@ export async function Footer() {
 
           {/* Newsletter Column */}
           <div>
-            <p className="font-mono text-sm text-cyan-700 mb-4 uppercase tracking-wider">{content["footer.newsletter.title"]}</p>
-            <p className="text-sm text-slate-600 mb-4">
+            <p className="font-mono text-sm text-cyan-700 mb-4 uppercase tracking-wider break-words">{content["footer.newsletter.title"]}</p>
+            <p className="text-sm text-slate-600 mb-4 break-words">
               {content["footer.newsletter.description"]}
             </p>
             <NewsletterForm />
@@ -218,7 +223,7 @@ export async function Footer() {
       {/* Bottom Bar */}
       <div className="border-t border-slate-200 py-6 px-6 lg:px-20">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
-          <p className="font-mono">{content["footer.copyright"]}</p>
+          <p className="font-mono break-words">{content["footer.copyright"]}</p>
           <nav aria-label="Legal">
             <div className="flex gap-6">
               <Link href="/privacy" className="hover:text-slate-900 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2">

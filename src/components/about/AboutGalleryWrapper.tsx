@@ -1,19 +1,15 @@
 import { createClient } from "@/lib/supabase/server"
 import { getContent } from "@/lib/content"
 import { AboutGallery, type AboutStat } from "./AboutGallery"
+import { isE2E } from "@/lib/e2e"
 
 /**
  * Server component that fetches site stats and renders AboutGallery
  * Falls back to default stats if database fetch fails
  */
 export async function AboutGalleryWrapper() {
-  const supabase = await createClient()
-
   // Fetch charity percentage and stats in parallel
-  const [charityPercentage, { data: dbStats, error }] = await Promise.all([
-    getContent("global.charity.percentage", "67%"),
-    supabase.rpc("get_site_stats"),
-  ])
+  const charityPercentage = await getContent("global.charity.percentage", "67%")
 
   // Default stats to use if fetch fails or returns empty
   const defaultStats: AboutStat[] = [
@@ -22,6 +18,21 @@ export async function AboutGalleryWrapper() {
     { value: "1", label: "Partner Schools" },
     { value: charityPercentage, label: "Donated to STEM" },
   ]
+
+  if (isE2E) {
+    return <AboutGallery stats={defaultStats} />
+  }
+
+  let dbStats: { key: string; value: number; label: string; suffix: string | null }[] | null = null
+  let error: { message?: string } | null = null
+  try {
+    const supabase = await createClient()
+    const { data, error: rpcError } = await supabase.rpc("get_site_stats")
+    dbStats = data
+    if (rpcError) error = rpcError
+  } catch (err) {
+    error = err instanceof Error ? { message: err.message } : { message: "Unknown error" }
+  }
 
   if (error || !dbStats || dbStats.length === 0) {
     // Log error but don't break the page

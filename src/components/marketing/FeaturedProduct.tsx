@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server"
 import { ProductSpotlightSection } from "./ProductSpotlight"
 import { getProductSchema } from "@/lib/structured-data"
 import { headers } from "next/headers"
+import { getE2EProduct, isE2E } from "@/lib/e2e"
+import type { Json } from "@/lib/supabase/database.types"
 
 /**
  * Server component that fetches the featured product and renders ProductSpotlight
@@ -9,28 +11,83 @@ import { headers } from "next/headers"
  * Also generates Product schema JSON-LD for SEO
  */
 export async function FeaturedProduct() {
-  const supabase = await createClient()
   const nonce = (await headers()).get("x-nonce") ?? undefined
 
+  if (isE2E) {
+    const e2eProduct = getE2EProduct()
+    if (!e2eProduct) return null
+
+    const productSchema = getProductSchema({
+      name: e2eProduct.name,
+      description: e2eProduct.description || "",
+      price: e2eProduct.price_cents / 100,
+      slug: e2eProduct.slug,
+      sku: e2eProduct.slug,
+      inStock: true,
+    })
+
+    return (
+      <>
+        <script nonce={nonce} type="application/ld+json">{JSON.stringify(productSchema)}</script>
+        <ProductSpotlightSection
+          product={{
+            name: e2eProduct.name,
+            slug: e2eProduct.slug,
+            description: e2eProduct.description,
+            priceCents: e2eProduct.price_cents,
+            specs: null,
+            images: [],
+          }}
+        />
+      </>
+    )
+  }
+
+  const supabase = await createClient()
+
   // Get products with "featured" tag, sorted by priority (highest first)
-  const { data: featuredTags, error: tagsError } = await supabase
-    .from("product_tags")
-    .select(`
-      priority,
-      products (
-        id, name, slug, description, price_cents, specs,
-        product_media (
-          type,
-          url,
-          is_primary,
-          sort_order
+  let featuredTags: {
+    priority: number | null
+    products: {
+      id: string
+      name: string
+      slug: string
+      description: string | null
+      price_cents: number
+      specs: Json | null
+      product_media: {
+        type: string
+        url: string
+        is_primary: boolean | null
+        sort_order: number | null
+      }[]
+    } | null
+  } | null = null
+  let tagsError: { message?: string } | null = null
+  try {
+    const { data, error } = await supabase
+      .from("product_tags")
+      .select(`
+        priority,
+        products (
+          id, name, slug, description, price_cents, specs,
+          product_media (
+            type,
+            url,
+            is_primary,
+            sort_order
+          )
         )
-      )
-    `)
-    .eq("tag", "featured")
-    .order("priority", { ascending: false, nullsFirst: false })
-    .limit(1)
-    .maybeSingle()
+      `)
+      .eq("tag", "featured")
+      .order("priority", { ascending: false, nullsFirst: false })
+      .limit(1)
+      .maybeSingle()
+    featuredTags = data
+    if (error) tagsError = error
+  } catch (error) {
+    tagsError = error instanceof Error ? { message: error.message } : { message: "Unknown error" }
+  }
 
   if (tagsError || !featuredTags?.products) {
     console.error("Failed to fetch featured product:", tagsError?.message)
@@ -43,13 +100,29 @@ export async function FeaturedProduct() {
     slug: string
     description: string | null
     price_cents: number
-    specs: Record<string, string> | null
+    specs: Json | null
     product_media: {
       type: string
       url: string
       is_primary: boolean | null
       sort_order: number | null
     }[]
+  }
+
+  const normalizeSpecs = (value: Json | null): Record<string, string> | null => {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return null
+    const entries = Object.entries(value)
+    if (entries.length === 0) return null
+    const normalized: Record<string, string> = {}
+    for (const [key, entryValue] of entries) {
+      if (entryValue === null || entryValue === undefined) continue
+      if (typeof entryValue === "string" || typeof entryValue === "number" || typeof entryValue === "boolean") {
+        normalized[key] = String(entryValue)
+      } else {
+        return null
+      }
+    }
+    return Object.keys(normalized).length > 0 ? normalized : null
   }
 
   // Extract only images from product_media (filter out 3D models, videos, documents)
@@ -77,7 +150,7 @@ export async function FeaturedProduct() {
 	          slug: product.slug,
           description: product.description,
           priceCents: product.price_cents,
-          specs: product.specs,
+          specs: normalizeSpecs(product.specs),
           images,
         }}
       />

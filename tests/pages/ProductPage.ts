@@ -54,7 +54,7 @@ export class ProductPage {
     this.freeShippingNote = page.getByText(/free shipping/i)
     this.returnsNote = page.getByText(/30-day returns/i)
     this.secureCheckoutNote = page.getByText(/secure checkout/i)
-    this.charityNote = page.getByText(/70%.*supports/i)
+    this.charityNote = page.getByTestId("product-charity")
 
     // Tabs
     this.descriptionTab = page.getByRole("tab", { name: /description/i })

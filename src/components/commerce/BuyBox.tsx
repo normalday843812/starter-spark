@@ -10,7 +10,7 @@ import {
   RotateCcw,
   Shield,
 } from "lucide-react"
-import { useState } from "react"
+import { useId, useState } from "react"
 import { useCartStore } from "@/store/cart"
 import { trackAddToCart } from "@/lib/analytics"
 
@@ -47,6 +47,7 @@ export function BuyBox({
   charityPercentage = "67%",
 }: BuyBoxProps) {
   const [quantity, setQuantity] = useState(1)
+  const quantityLabelId = useId()
   const addItem = useCartStore((state) => state.addItem)
 
   // Check if discount is active (exists and not expired)
@@ -121,7 +122,7 @@ export function BuyBox({
           <span className="text-4xl font-mono text-amber-600">${price.toFixed(2)}</span>
           {hasActiveDiscount && originalPrice && (
             <>
-              <span className="text-xl font-mono text-slate-400 line-through">
+              <span className="text-xl font-mono text-slate-600 line-through">
                 ${originalPrice.toFixed(2)}
               </span>
               <span className="px-2 py-1 bg-red-500 text-white text-sm font-mono rounded">
@@ -143,15 +144,17 @@ export function BuyBox({
       </div>
 
       {/* Quantity Selector */}
-      <div className="space-y-2">
-        <label className="text-sm text-slate-600">Quantity</label>
+      <div className="space-y-2" role="group" aria-labelledby={quantityLabelId}>
+        <span id={quantityLabelId} className="text-sm text-slate-600">
+          Quantity
+        </span>
         <div className="flex items-center gap-3">
           <button
             onClick={() => { setQuantity(Math.max(1, quantity - 1)); }}
             className="w-10 h-10 rounded border border-slate-200 flex items-center justify-center hover:border-slate-300 transition-colors cursor-pointer"
             aria-label="Decrease quantity"
           >
-            <Minus className="w-4 h-4 text-slate-600" />
+            <Minus className="w-4 h-4 text-slate-600" aria-hidden="true" />
           </button>
           <span className="w-12 text-center font-mono text-lg">{quantity}</span>
           <button
@@ -159,7 +162,7 @@ export function BuyBox({
             className="w-10 h-10 rounded border border-slate-200 flex items-center justify-center hover:border-slate-300 transition-colors cursor-pointer"
             aria-label="Increase quantity"
           >
-            <Plus className="w-4 h-4 text-slate-600" />
+            <Plus className="w-4 h-4 text-slate-600" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -174,28 +177,31 @@ export function BuyBox({
             : "bg-slate-200 text-slate-500 cursor-not-allowed"
         }`}
       >
-        <ShoppingCart className="w-5 h-5 mr-2" />
+        <ShoppingCart className="w-5 h-5 mr-2" aria-hidden="true" />
         {inStock ? "Add to Cart" : "Out of Stock"}
       </Button>
 
       {/* Trust Signals */}
       <div className="space-y-3 pt-4 border-t border-slate-200">
         <div className="flex items-center gap-3 text-sm text-slate-600">
-          <Truck className="w-4 h-4 text-cyan-700" />
+          <Truck className="w-4 h-4 text-cyan-700" aria-hidden="true" />
           <span>Free shipping on orders $75+</span>
         </div>
         <div className="flex items-center gap-3 text-sm text-slate-600">
-          <RotateCcw className="w-4 h-4 text-cyan-700" />
+          <RotateCcw className="w-4 h-4 text-cyan-700" aria-hidden="true" />
           <span>30-day returns</span>
         </div>
         <div className="flex items-center gap-3 text-sm text-slate-600">
-          <Shield className="w-4 h-4 text-cyan-700" />
+          <Shield className="w-4 h-4 text-cyan-700" aria-hidden="true" />
           <span>Secure checkout</span>
         </div>
       </div>
 
       {/* Charity Notice */}
-      <div className="p-3 bg-amber-50 rounded border border-amber-200 text-sm text-slate-600">
+      <div
+        data-testid="product-charity"
+        className="p-3 bg-amber-50 rounded border border-amber-200 text-sm text-slate-600"
+      >
         <span className="font-mono text-amber-700 font-semibold">{charityPercentage}</span> of
         your purchase supports Hawaii STEM education.
       </div>

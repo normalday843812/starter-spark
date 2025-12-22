@@ -137,7 +137,7 @@
 
 /* The Blueprint Grid Texture (Light Mode) - Marketing pages only */
 body {
-  @apply bg-background text-foreground font-sans antialiased;
+  @apply bg-background text-foreground font-sans antialiased overflow-x-hidden;
   /* Slate-300 dots, 1.5px size, 32px spacing - Corrected Syntax */
   background-image: radial-gradient(var(--grid-color) 1.5px, transparent 1.5px);
   background-size: 32px 32px;

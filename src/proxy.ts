@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { isE2E } from './lib/e2e'
 
 function base64Encode(bytes: Uint8Array): string {
   // Edge runtime: btoa; Node fallback: Buffer.
@@ -53,13 +54,15 @@ function buildContentSecurityPolicy({
 }): string {
   const vercelEnv = process.env.VERCEL_ENV
   const isVercelPreview = vercelEnv === 'preview'
-  const isStrictProduction = process.env.NODE_ENV === 'production' && !isVercelPreview
+  const isStrictProduction =
+    process.env.NODE_ENV === 'production' && !isVercelPreview && !isE2E
   const scriptSrc = [
     "'self'",
     `'nonce-${nonce}'`,
     ...(isStrictProduction
       ? ["'wasm-unsafe-eval'"]
       : ["'unsafe-eval'", "'wasm-unsafe-eval'"]),
+    ...(isE2E ? ["'unsafe-inline'"] : []),
     // Vercel preview feedback widget
     ...(isVercelPreview ? ['https://vercel.live'] : []),
     // PostHog analytics
@@ -225,10 +228,19 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  // Refresh session if expired
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // Refresh session if expired (skip in E2E to avoid external dependencies)
+  let user: { id: string } | null = null
+  if (!isE2E) {
+    try {
+      const {
+        data: { user: fetchedUser },
+      } = await supabase.auth.getUser()
+      user = fetchedUser ?? null
+    } catch (error) {
+      console.error('[proxy] failed to fetch user session:', error)
+      user = null
+    }
+  }
 
   // Route classification
   const pathname = request.nextUrl.pathname
@@ -249,11 +261,19 @@ export async function proxy(request: NextRequest) {
     }
 
     // Check user role
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .maybeSingle()
+    let profile: { role: string | null } | null = null
+    let profileError: Error | null = null
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .maybeSingle()
+      profile = data ?? null
+      if (error) profileError = error
+    } catch (error) {
+      profileError = error instanceof Error ? error : new Error('Profile lookup failed')
+    }
 
     if (profileError) {
       console.error('[proxy] failed to verify admin role:', profileError)

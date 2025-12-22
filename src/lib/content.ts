@@ -6,6 +6,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server'
+import { isE2E } from './e2e'
 
 /**
  * Get a single content value by key
@@ -14,6 +15,7 @@ import { createClient } from '@/lib/supabase/server'
  * @returns The content string
  */
 export async function getContent(key: string, defaultValue = ''): Promise<string> {
+  if (isE2E) return defaultValue
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('site_content')
@@ -41,6 +43,7 @@ export async function getContents(
 ): Promise<Record<string, string>> {
   const result: Record<string, string> = { ...defaults }
   if (keys.length === 0) return result
+  if (isE2E) return result
 
   const supabase = await createClient()
   const { data, error } = await supabase
@@ -65,6 +68,7 @@ export async function getContents(
  * @returns Record mapping keys to content values
  */
 export async function getContentsByCategory(category: string): Promise<Record<string, string>> {
+  if (isE2E) return {}
   const supabase = await createClient()
   const { data } = await supabase
     .from('site_content')
@@ -95,6 +99,7 @@ export interface ContentItem {
 }
 
 export async function getAllContent(): Promise<ContentItem[]> {
+  if (isE2E) return []
   const supabase = await createClient()
   const { data } = await supabase
     .from('site_content')
@@ -106,6 +111,7 @@ export async function getAllContent(): Promise<ContentItem[]> {
 }
 
 export async function getContentByCategory(category: string): Promise<ContentItem[]> {
+  if (isE2E) return []
   const supabase = await createClient()
   const { data } = await supabase
     .from('site_content')

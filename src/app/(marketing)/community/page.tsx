@@ -15,6 +15,7 @@ import { Suspense } from "react"
 import { getContents } from "@/lib/content"
 import type { Metadata } from "next"
 import { siteConfig } from "@/config/site"
+import { isE2E } from "@/lib/e2e"
 
 const pageTitle = "The Lab - Community Q&A"
 const pageDescription = "Get help from the StarterSpark community. Ask questions, share solutions, and connect with other builders."
@@ -51,7 +52,7 @@ export default async function CommunityPage({
   searchParams: Promise<{ status?: string; tag?: string; product?: string; q?: string }>
 }) {
   const params = await searchParams
-  const supabase = await createClient()
+  const supabase = isE2E ? null : await createClient()
 
   // Fetch dynamic content
   const content = await getContents(
@@ -63,64 +64,90 @@ export default async function CommunityPage({
     }
   )
 
-  // Fetch posts with author info and comment count
-  let query = supabase
-    .from("posts")
-    .select(
-      `
-      id,
-      slug,
-      title,
-      status,
-      tags,
-      upvotes,
-      view_count,
-      created_at,
-      author:profiles!posts_author_id_fkey (
-        id,
-        full_name,
-        email,
-        role
-      ),
-      product:products (
-        id,
-        name,
-        slug
-      ),
-      comments (id)
-    `
-    )
-    .order("created_at", { ascending: false })
+  let posts: {
+    id: string
+    slug: string | null
+    title: string
+    status: string | null
+    tags: string[] | null
+    upvotes: number | null
+    view_count: number | null
+    created_at: string
+    author: { id: string; full_name: string | null; email: string; role: string | null } | null
+    product: { id: string; name: string; slug: string } | null
+    comments: { id: string }[]
+  }[] = []
+  let products: { id: string; name: string; slug: string }[] = []
 
-  // Apply filters
-  if (params.status && params.status !== "all") {
-    query = query.eq("status", params.status)
+  if (!isE2E && supabase) {
+    try {
+      // Fetch posts with author info and comment count
+      let query = supabase
+        .from("posts")
+        .select(
+          `
+          id,
+          slug,
+          title,
+          status,
+          tags,
+          upvotes,
+          view_count,
+          created_at,
+          author:profiles!posts_author_id_fkey (
+            id,
+            full_name,
+            email,
+            role
+          ),
+          product:products (
+            id,
+            name,
+            slug
+          ),
+          comments (id)
+        `
+        )
+        .order("created_at", { ascending: false })
+
+      // Apply filters
+      if (params.status && params.status !== "all") {
+        query = query.eq("status", params.status)
+      }
+
+      if (params.tag) {
+        query = query.contains("tags", [params.tag])
+      }
+
+      // Apply text search
+      if (params.q?.trim()) {
+        query = query.ilike("title", `%${params.q.trim()}%`)
+      }
+
+      const { data: postData, error } = await query.limit(50)
+
+      if (error) {
+        console.error("Error fetching posts:", error)
+      }
+      posts = (postData as typeof posts) || []
+    } catch (error) {
+      console.error("Error fetching posts:", error)
+    }
+
+    try {
+      const { data: productData } = await supabase
+        .from("products")
+        .select("id, name, slug")
+        .order("name")
+      products = (productData as typeof products) || []
+    } catch (error) {
+      console.error("Error fetching products:", error)
+    }
   }
-
-  if (params.tag) {
-    query = query.contains("tags", [params.tag])
-  }
-
-  // Apply text search
-  if (params.q?.trim()) {
-    query = query.ilike("title", `%${params.q.trim()}%`)
-  }
-
-  const { data: posts, error } = await query.limit(50)
-
-  if (error) {
-    console.error("Error fetching posts:", error)
-  }
-
-  // Fetch products for filter dropdown
-  const { data: products } = await supabase
-    .from("products")
-    .select("id, name, slug")
-    .order("name")
 
   // Get unique tags from posts
   const allTags = new Set<string>()
-  if (posts) for (const post of posts) {
+  for (const post of posts) {
     if (post.tags) for (const tag of post.tags) allTags.add(tag)
   }
   const availableTags = Array.from(allTags).sort()
@@ -131,10 +158,10 @@ export default async function CommunityPage({
       <section className="pt-32 pb-8 px-6 lg:px-20">
         <div className="max-w-7xl mx-auto">
           <p className="text-sm font-mono text-cyan-700 mb-2">Community</p>
-          <h1 className="font-mono text-4xl lg:text-5xl font-bold text-slate-900 mb-4">
+          <h1 className="font-mono text-4xl lg:text-5xl font-bold text-slate-900 mb-4 break-words">
             {content["community.header.title"]}
           </h1>
-          <p className="text-lg text-slate-600 max-w-2xl">
+          <p className="text-lg text-slate-600 max-w-2xl break-words">
             {content["community.header.description"]}
           </p>
         </div>

@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { createClient } from "@/lib/supabase/server"
 import ReactMarkdown from "react-markdown"
 import { isExternalHref, sanitizeMarkdownUrl, safeMarkdownUrlTransform } from "@/lib/safe-url"
+import { isE2E } from "@/lib/e2e"
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
@@ -9,15 +10,21 @@ export const metadata: Metadata = {
 }
 
 export default async function PrivacyPage() {
-  const supabase = await createClient()
-
-  // Fetch privacy policy content
-  const { data: page } = await supabase
-    .from("page_content")
-    .select("title, content, updated_at")
-    .eq("page_key", "privacy")
-    .not("published_at", "is", null)
-    .maybeSingle()
+  let page: { title: string | null; content: string | null; updated_at: string | null } | null = null
+  if (!isE2E) {
+    try {
+      const supabase = await createClient()
+      const { data } = await supabase
+        .from("page_content")
+        .select("title, content, updated_at")
+        .eq("page_key", "privacy")
+        .not("published_at", "is", null)
+        .maybeSingle()
+      page = data
+    } catch (error) {
+      console.error("Failed to fetch privacy policy content:", error)
+    }
+  }
 
   const lastUpdated = page?.updated_at
     ? new Date(page.updated_at).toLocaleDateString("en-US", {
@@ -56,20 +63,30 @@ export default async function PrivacyPage() {
                         </a>
                       )
                     },
+                    h1: ({ children }) => (
+                      <h2 className="text-2xl font-mono text-slate-900 mt-6 mb-4">
+                        {children}
+                      </h2>
+                    ),
+                    h2: ({ children }) => (
+                      <h3 className="text-xl font-mono text-slate-900 mt-5 mb-3">
+                        {children}
+                      </h3>
+                    ),
                   }}
                 >
                   {page.content}
                 </ReactMarkdown>
               </div>
             ) : (
-              <p className="text-slate-500 font-mono text-sm">
+              <p className="text-slate-600 font-mono text-sm">
                 Privacy policy content is being updated. Please check back later.
               </p>
             )}
           </div>
 
           {lastUpdated && (
-            <p className="mt-6 text-sm text-slate-500 text-center">
+            <p className="mt-6 text-sm text-slate-600 text-center">
               Last updated: {lastUpdated}
             </p>
           )}

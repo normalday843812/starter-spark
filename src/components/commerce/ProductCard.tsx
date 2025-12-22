@@ -101,18 +101,18 @@ export function ProductCard({
                   fallback={
                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
                       <div className="w-16 h-16 mb-3 rounded-full bg-slate-200 flex items-center justify-center">
-                        <ImageIcon className="w-8 h-8 text-slate-400" />
+                        <ImageIcon className="w-8 h-8 text-slate-400" aria-hidden="true" />
                     </div>
-                    <p className="text-slate-400 font-mono text-xs">Failed to load</p>
+                    <p className="text-slate-600 font-mono text-xs">Failed to load</p>
                   </div>
                 }
               />
             ) : (
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <div className="w-16 h-16 mb-3 rounded-full bg-slate-200 flex items-center justify-center">
-                  <ImageIcon className="w-8 h-8 text-slate-400" />
+                  <ImageIcon className="w-8 h-8 text-slate-400" aria-hidden="true" />
                 </div>
-                <p className="text-slate-400 font-mono text-xs">No image</p>
+                <p className="text-slate-600 font-mono text-xs">No image</p>
               </div>
             )}
 
@@ -180,15 +180,15 @@ export function ProductCard({
                 {name}
               </h3>
               {isFeatured && (
-                <Star className="h-5 w-5 fill-amber-400 text-amber-400 flex-shrink-0 mt-0.5" />
+                <Star className="h-5 w-5 fill-amber-400 text-amber-400 flex-shrink-0 mt-0.5" aria-hidden="true" />
               )}
             </div>
             {isComingSoon ? (
-              <p className="text-lg font-mono text-slate-400">Price TBD</p>
+              <p className="text-lg font-mono text-slate-600">Price TBD</p>
             ) : hasActiveDiscount ? (
               <div className="flex items-center gap-2 flex-wrap">
                 <p className="text-2xl font-mono text-amber-600">${price.toFixed(2)}</p>
-                <p className="text-lg font-mono text-slate-400 line-through">
+                <p className="text-lg font-mono text-slate-600 line-through">
                   ${originalPrice.toFixed(2)}
                 </p>
                 <span className="px-1.5 py-0.5 bg-red-500 text-white text-xs font-mono rounded">

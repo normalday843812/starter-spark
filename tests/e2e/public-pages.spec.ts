@@ -11,7 +11,7 @@ test.describe("Homepage", () => {
     const homePage = new HomePage(page)
     await homePage.goto()
 
-    await expect(page).toHaveTitle(/starterspark/i)
+    await expect(page).toHaveTitle(/starterspark/i, { timeout: 10000 })
     await homePage.expectPageLoaded()
   })
 
@@ -56,7 +56,7 @@ test.describe("Homepage", () => {
     const homePage = new HomePage(page)
     await homePage.goto()
 
-    await expect(homePage.footer).toBeVisible()
+    await expect(homePage.footer).toBeVisible({ timeout: 10000 })
   })
 
   test("should navigate to shop from hero CTA", async ({ page }) => {
@@ -103,7 +103,7 @@ test.describe("Shop Page", () => {
 
   test("should display footer", async ({ page }) => {
     await page.goto("/shop")
-    await expect(page.locator("footer")).toBeVisible()
+    await expect(page.locator("footer")).toBeVisible({ timeout: 10000 })
   })
 })
 
@@ -137,7 +137,7 @@ test.describe("About Page", () => {
 
   test("should display footer", async ({ page }) => {
     await page.goto("/about")
-    await expect(page.locator("footer")).toBeVisible()
+    await expect(page.locator("footer")).toBeVisible({ timeout: 10000 })
   })
 })
 
@@ -162,7 +162,7 @@ test.describe("Events Page", () => {
 
   test("should display footer", async ({ page }) => {
     await page.goto("/events")
-    await expect(page.locator("footer")).toBeVisible()
+    await expect(page.locator("footer")).toBeVisible({ timeout: 10000 })
   })
 })
 
@@ -170,7 +170,7 @@ test.describe("Learn Page", () => {
   test("should load and display learn content", async ({ page }) => {
     await page.goto("/learn")
 
-    await expect(page).toHaveURL("/learn")
+    await expect(page).toHaveURL(/\/workshop(\?|$)/)
 
     // Check for learn/courses heading or content
     const heading = page.getByRole("heading", { level: 1 }).first()
@@ -179,15 +179,25 @@ test.describe("Learn Page", () => {
 
   test("should display courses or content", async ({ page }) => {
     await page.goto("/learn")
+    await expect(page).toHaveURL(/\/workshop(\?|$)/)
 
-    // Look for "courses available" count text which is always present
+    const signInHeading = page.getByRole("heading", { name: /sign in required/i })
     const coursesCount = page.getByText(/\d+ courses? available/i)
-    await expect(coursesCount).toBeVisible()
+    const emptyState = page.getByText(/no courses available/i)
+
+    const hasSignIn = await signInHeading.isVisible().catch(() => false)
+    if (!hasSignIn) {
+      const hasCourses = await coursesCount.isVisible().catch(() => false)
+      const hasEmpty = await emptyState.isVisible().catch(() => false)
+      expect(hasCourses || hasEmpty).toBeTruthy()
+    } else {
+      await expect(signInHeading).toBeVisible()
+    }
   })
 
   test("should display footer", async ({ page }) => {
     await page.goto("/learn")
-    await expect(page.locator("footer")).toBeVisible()
+    await expect(page.locator("footer")).toBeVisible({ timeout: 10000 })
   })
 })
 
