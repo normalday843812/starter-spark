@@ -3,7 +3,7 @@ import { Calendar, MapPin, Clock, ExternalLink } from "lucide-react"
 import Link from "next/link"
 import { headers } from "next/headers"
 import { EventsToggle } from "./EventsToggle"
-import { getEventSchema, getBreadcrumbSchema } from "@/lib/structured-data"
+import { getEventSchema, getBreadcrumbSchema, jsonLdScript } from "@/lib/structured-data"
 import { getContents } from "@/lib/content"
 import type { Metadata } from "next"
 import { siteConfig } from "@/config/site"
@@ -291,11 +291,11 @@ export default async function EventsPage() {
       {/* JSON-LD Structured Data for SEO */}
       {eventSchemas.map((schema, index) => (
         <script key={index} nonce={nonce} type="application/ld+json">
-          {JSON.stringify(schema)}
+          {jsonLdScript(schema)}
         </script>
       ))}
       <script nonce={nonce} type="application/ld+json">
-        {JSON.stringify(breadcrumbSchema)}
+        {jsonLdScript(breadcrumbSchema)}
       </script>
       {/* Hero */}
       <section className="pt-32 pb-16 px-6 lg:px-20">

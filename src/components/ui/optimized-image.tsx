@@ -30,6 +30,9 @@ export function OptimizedImage({
   onLoadComplete,
   fadeInDuration = 300,
   fill,
+  priority = false,
+  loading,
+  fetchPriority,
   ...props
 }: OptimizedImageProps) {
   const [isLoading, setIsLoading] = useState(true)
@@ -77,6 +80,9 @@ export function OptimizedImage({
     )
   }
 
+  const resolvedLoading = priority ? "eager" : loading ?? "lazy"
+  const resolvedFetchPriority = priority ? "high" : fetchPriority ?? "low"
+
   return (
     <div className={cn("relative overflow-hidden", wrapperClassName)}>
       {/* Skeleton shimmer - shown while loading */}
@@ -92,6 +98,9 @@ export function OptimizedImage({
         src={src}
         alt={alt}
         fill={fill}
+        priority={priority}
+        loading={resolvedLoading}
+        fetchPriority={resolvedFetchPriority}
         className={cn(
           "transition-opacity",
           isLoading ? "opacity-0" : "opacity-100",

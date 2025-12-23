@@ -5,6 +5,12 @@ const nextConfig: NextConfig = {
   // Enable React strict mode for better development experience
   reactStrictMode: true,
 
+  // Avoid implicit 308 redirects on trailing slashes
+  skipTrailingSlashRedirect: true,
+
+  // Remove X-Powered-By header
+  poweredByHeader: false,
+
   // Expose non-secret config to the browser bundle
   env: {
     // Backwards compatible: prefer SUPABASE_URL, fallback to NEXT_PUBLIC_SUPABASE_URL
@@ -68,12 +74,64 @@ const nextConfig: NextConfig = {
         value: "camera=(), microphone=(), geolocation=()",
       },
     ]
+    const apiCspHeader = {
+      key: "Content-Security-Policy",
+      value: "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'",
+    }
+    const htmlContentTypeHeader = {
+      key: "Content-Type",
+      value: "text/html; charset=utf-8",
+    }
+    const jsonContentTypeHeader = {
+      key: "Content-Type",
+      value: "application/json; charset=utf-8",
+    }
 
     return Promise.resolve([
       {
         // Apply security headers to all routes
         source: "/:path*",
         headers: securityHeaders,
+      },
+      {
+        // Ensure the API root always returns a CSP + JSON content type
+        source: "/api",
+        headers: [apiCspHeader, jsonContentTypeHeader],
+      },
+      {
+        // Normalize trailing slash API probes with a CSP + content type
+        source: "/api/",
+        headers: [apiCspHeader, jsonContentTypeHeader],
+      },
+      {
+        // Apply a strict CSP to API routes (JSON responses)
+        source: "/api/:path*",
+        headers: [apiCspHeader],
+      },
+      {
+        // Ensure CSP is present on the Sentry tunnel route
+        source: "/monitoring",
+        headers: [apiCspHeader],
+      },
+      {
+        // Ensure HTML content type for common probes (avoids empty Content-Type on redirects)
+        source: "/admin/:path*",
+        headers: [htmlContentTypeHeader],
+      },
+      {
+        // Ensure HTML content type for common probes (avoids empty Content-Type on redirects)
+        source: "/auth/:path*",
+        headers: [htmlContentTypeHeader],
+      },
+      {
+        // Ensure HTML content type for common probes (avoids empty Content-Type on redirects)
+        source: "/checkout/:path*",
+        headers: [htmlContentTypeHeader],
+      },
+      {
+        // Ensure HTML content type for common probes (avoids empty Content-Type on redirects)
+        source: "/claim/:path*",
+        headers: [htmlContentTypeHeader],
       },
       {
         // Cache static assets for 1 year
@@ -106,6 +164,15 @@ const nextConfig: NextConfig = {
         ],
       },
     ])
+  },
+
+  async rewrites() {
+    return [
+      {
+        source: "/api/",
+        destination: "/api",
+      },
+    ]
   },
 }
 

@@ -81,6 +81,17 @@ function buildContentSecurityPolicy({
   const posthogOrigin = safeOrigin(process.env.NEXT_PUBLIC_POSTHOG_HOST)
   const sentryOrigin = safeOrigin(process.env.NEXT_PUBLIC_SENTRY_DSN)
   const supabaseOrigin = safeOrigin(supabaseUrl)
+  const imageOrigins = new Set<string>(["'self'", "data:", "blob:"])
+  const fontOrigins = new Set<string>(["'self'", "data:"])
+  const mediaOrigins = new Set<string>(["'self'", "blob:"])
+
+  if (supabaseOrigin) {
+    imageOrigins.add(supabaseOrigin)
+    mediaOrigins.add(supabaseOrigin)
+  }
+  imageOrigins.add('https://images.unsplash.com')
+  imageOrigins.add('https://avatars.githubusercontent.com')
+  fontOrigins.add('https://fonts.gstatic.com')
 
   const connectOrigins = new Set<string>()
   for (const origin of [supabaseOrigin, posthogOrigin, sentryOrigin]) {
@@ -126,8 +137,8 @@ function buildContentSecurityPolicy({
     "object-src 'none'",
     "frame-ancestors 'self'",
     "form-action 'self'",
-    "img-src 'self' https: data: blob:",
-    "font-src 'self' https: data:",
+    `img-src ${Array.from(imageOrigins).join(' ')}`,
+    `font-src ${Array.from(fontOrigins).join(' ')}`,
     `style-src ${styleSrc}`,
     `style-src-elem ${styleSrcElem}`,
     `style-src-attr ${styleSrcAttr}`,
@@ -136,7 +147,7 @@ function buildContentSecurityPolicy({
     "script-src-attr 'none'",
     `connect-src ${connectSrc}`,
     `frame-src ${frameSrc}`,
-    "media-src 'self' https: blob:",
+    `media-src ${Array.from(mediaOrigins).join(' ')}`,
     "worker-src 'self' blob:",
     "manifest-src 'self'",
     ...(isStrictProduction ? ['upgrade-insecure-requests'] : []),
@@ -190,6 +201,7 @@ export async function proxy(request: NextRequest) {
       res.cookies.set(name, value, options)
     }
     res.headers.set('Content-Security-Policy', csp)
+    res.headers.set('Content-Type', 'text/plain; charset=utf-8')
     return res
   }
 
@@ -200,6 +212,7 @@ export async function proxy(request: NextRequest) {
       res.cookies.set(name, value, options)
     }
     res.headers.set('Content-Security-Policy', csp)
+    res.headers.set('Content-Type', 'text/plain; charset=utf-8')
     return res
   }
 

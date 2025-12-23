@@ -14,7 +14,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { getCourseSchema, getBreadcrumbSchema } from "@/lib/structured-data"
+import { getCourseSchema, getBreadcrumbSchema, jsonLdScript } from "@/lib/structured-data"
 import { AnimatedProgressFill } from "@/components/learn/AnimatedProgressFill"
 import { headers } from "next/headers"
 
@@ -184,10 +184,10 @@ export default async function CoursePage({
 	    <div className="bg-slate-50">
 	      {/* JSON-LD Structured Data for SEO */}
 	      <script nonce={nonce} type="application/ld+json">
-	        {JSON.stringify(courseSchema)}
+	        {jsonLdScript(courseSchema)}
 	      </script>
 	      <script nonce={nonce} type="application/ld+json">
-	        {JSON.stringify(breadcrumbSchema)}
+	        {jsonLdScript(breadcrumbSchema)}
 	      </script>
 	      {/* Header */}
 	      <section className="pt-32 pb-8 px-6 lg:px-20 bg-white border-b border-slate-200">

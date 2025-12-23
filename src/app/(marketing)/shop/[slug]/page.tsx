@@ -5,7 +5,7 @@ import Link from "next/link"
 import { headers } from "next/headers"
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
-import { getProductSchema, getBreadcrumbSchema } from "@/lib/structured-data"
+import { getProductSchema, getBreadcrumbSchema, jsonLdScript } from "@/lib/structured-data"
 import { siteConfig } from "@/config/site"
 import { getContent } from "@/lib/content"
 import type { Json } from "@/lib/supabase/database.types"
@@ -254,10 +254,10 @@ export default async function ProductDetailPage({
     <div className="bg-slate-50">
       {/* JSON-LD Structured Data for SEO */}
       <script nonce={nonce} type="application/ld+json">
-        {JSON.stringify(productSchema)}
+        {jsonLdScript(productSchema)}
       </script>
       <script nonce={nonce} type="application/ld+json">
-        {JSON.stringify(breadcrumbSchema)}
+        {jsonLdScript(breadcrumbSchema)}
       </script>
       {/* Breadcrumb */}
       <section className="pt-24 pb-4 px-6 lg:px-20">

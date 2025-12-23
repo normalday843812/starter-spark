@@ -6,7 +6,7 @@ import {
   MissionImpact,
   EventsPreview,
 } from "@/components/marketing"
-import { getOrganizationSchema, getWebsiteSchema } from "@/lib/structured-data"
+import { getOrganizationSchema, getWebsiteSchema, jsonLdScript } from "@/lib/structured-data"
 import { headers } from "next/headers"
 
 export default async function Home() {
@@ -18,10 +18,10 @@ export default async function Home() {
     <div>
       {/* JSON-LD Structured Data for SEO */}
       <script nonce={nonce} type="application/ld+json">
-        {JSON.stringify(organizationSchema)}
+        {jsonLdScript(organizationSchema)}
       </script>
       <script nonce={nonce} type="application/ld+json">
-        {JSON.stringify(websiteSchema)}
+        {jsonLdScript(websiteSchema)}
       </script>
       <HeroWrapper />
       <DifferentiatorsWrapper />

@@ -52,6 +52,16 @@ export default async function CommunityPage({
 }) {
   const params = await searchParams
   const supabase = await createClient()
+  const allowedStatuses = new Set(["open", "solved"])
+  const statusFilter =
+    params.status && allowedStatuses.has(params.status) ? params.status : undefined
+  const tagFilter = (() => {
+    if (!params.tag) return undefined
+    const trimmed = params.tag.trim()
+    if (!trimmed || trimmed.length > 40) return undefined
+    return /^[\w\s-]+$/.test(trimmed) ? trimmed : undefined
+  })()
+  const searchQuery = params.q?.trim().slice(0, 120)
 
   // Fetch dynamic content
   const content = await getContents(
@@ -109,17 +119,17 @@ export default async function CommunityPage({
       .order("created_at", { ascending: false })
 
     // Apply filters
-    if (params.status && params.status !== "all") {
-      query = query.eq("status", params.status)
+    if (statusFilter) {
+      query = query.eq("status", statusFilter)
     }
 
-    if (params.tag) {
-      query = query.contains("tags", [params.tag])
+    if (tagFilter) {
+      query = query.contains("tags", [tagFilter])
     }
 
     // Apply text search
-    if (params.q?.trim()) {
-      query = query.ilike("title", `%${params.q.trim()}%`)
+    if (searchQuery) {
+      query = query.ilike("title", `%${searchQuery}%`)
     }
 
     const { data: postData, error } = await query.limit(50)
@@ -183,10 +193,10 @@ export default async function CommunityPage({
                 <ForumFilters
                   products={products || []}
                   availableTags={availableTags}
-                  currentStatus={params.status}
-                  currentTag={params.tag}
+                  currentStatus={statusFilter}
+                  currentTag={tagFilter}
                   currentProduct={params.product}
-                  currentSearch={params.q}
+                  currentSearch={searchQuery}
                 />
               </Suspense>
             </div>

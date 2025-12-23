@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { ProductSpotlightSection } from "./ProductSpotlight"
-import { getProductSchema } from "@/lib/structured-data"
+import { getProductSchema, jsonLdScript } from "@/lib/structured-data"
 import { headers } from "next/headers"
 import type { Json } from "@/lib/supabase/database.types"
 
@@ -112,7 +112,7 @@ export async function FeaturedProduct() {
 	  return (
 	    <>
 	      {/* Product Schema JSON-LD for SEO */}
-	      <script nonce={nonce} type="application/ld+json">{JSON.stringify(productSchema)}</script>
+      <script nonce={nonce} type="application/ld+json">{jsonLdScript(productSchema)}</script>
 	      <ProductSpotlightSection
 	        product={{
 	          name: product.name,

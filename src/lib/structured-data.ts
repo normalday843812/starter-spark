@@ -186,4 +186,8 @@ export function getWebsiteSchema() {
 // Helper to render JSON-LD as a script tag string
 export function jsonLdScript(data: object): string {
   return JSON.stringify(data)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026")
+    .replace(/\//g, "\\/")
 }

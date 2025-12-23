@@ -87,13 +87,12 @@ export function ProductSpotlightSection({ product }: ProductSpotlightProps) {
 	                  className="absolute inset-0 cursor-zoom-in group"
 	                  aria-label="Open image viewer"
 	                >
-	                  <ProductImage
-	                    src={displayImageSrc}
-	                    alt={`${product.name} - Image ${displayImageIndex + 1}`}
-	                    sizes="(max-width: 1024px) 100vw, 800px"
-	                    quality={95}
-	                    priority
-	                    wrapperClassName="absolute inset-0"
+                    <ProductImage
+                      src={displayImageSrc}
+                      alt={`${product.name} - Image ${displayImageIndex + 1}`}
+                      sizes="(max-width: 1024px) 100vw, 800px"
+                      quality={95}
+                      wrapperClassName="absolute inset-0"
                     fallback={
                       <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
                         <div className="text-center p-8">

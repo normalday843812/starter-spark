@@ -102,6 +102,8 @@ export function ProductGallery({
                 fill
                 sizes="(max-width: 1024px) 100vw, 60vw"
                 quality={20}
+                loading="lazy"
+                fetchPriority="low"
                 className="object-cover blur-2xl scale-110 opacity-25 pointer-events-none"
                 aria-hidden={true}
               />
@@ -111,7 +113,6 @@ export function ProductGallery({
                 alt={`${productName} - Image ${displayImageIndex + 1}`}
                 sizes="(max-width: 1024px) 100vw, 60vw"
                 quality={95}
-                priority
                 wrapperClassName="absolute inset-0"
                 fallback={
                   <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">

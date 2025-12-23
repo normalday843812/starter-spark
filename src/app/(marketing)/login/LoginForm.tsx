@@ -38,8 +38,19 @@ export function LoginForm({ redirectTo, claimToken }: LoginFormProps) {
       const supabase = createClient()
 
       // Build the redirect URL
-      const siteUrl = globalThis.location.origin
-      let callbackUrl = `${siteUrl}/auth/callback`
+      const fallbackOrigin = globalThis.location.origin
+      const envSiteUrl =
+        process.env.NEXT_PUBLIC_SITE_URL ||
+        process.env.NEXT_PUBLIC_APP_URL
+      const baseOrigin = (() => {
+        if (!envSiteUrl) return fallbackOrigin
+        try {
+          return new URL(envSiteUrl).origin
+        } catch {
+          return fallbackOrigin
+        }
+      })()
+      let callbackUrl = `${baseOrigin}/auth/callback`
 
       // Add redirect params
       const params = new URLSearchParams()
