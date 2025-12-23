@@ -211,16 +211,19 @@ export function CourseEditor({ course }: CourseEditorProps) {
     moduleIdsRef.current = moduleIds
   }, [moduleIds])
 
-  const handleSaveCourse = async (formData: FormData) => {
+  const handleSaveCourse = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
     setSaving(true)
-    const result = await updateCourse(course.id, formData)
-    setSaving(false)
-    if (result.error) {
-      toast.error("Failed to save course", { description: result.error })
-    } else {
-      toast.success("Course saved successfully")
-      router.refresh()
-    }
+    const formData = new FormData(e.currentTarget)
+    void updateCourse(course.id, formData).then((result) => {
+      setSaving(false)
+      if (result.error) {
+        toast.error("Failed to save course", { description: result.error })
+      } else {
+        toast.success("Course saved successfully")
+        router.refresh()
+      }
+    })
   }
 
   const handleDeleteCourse = async () => {
@@ -234,15 +237,18 @@ export function CourseEditor({ course }: CourseEditorProps) {
     }
   }
 
-  const handleCreateModule = async (formData: FormData) => {
-    const result = await createModule(course.id, formData)
-    if (result.error) {
-      toast.error("Failed to create module", { description: result.error })
-    } else {
-      setNewModuleOpen(false)
-      toast.success("Module created successfully")
-      router.refresh()
-    }
+  const handleCreateModule = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+    void createModule(course.id, formData).then((result) => {
+      if (result.error) {
+        toast.error("Failed to create module", { description: result.error })
+      } else {
+        setNewModuleOpen(false)
+        toast.success("Module created successfully")
+        router.refresh()
+      }
+    })
   }
 
   const handleUpdateModule = async (moduleId: string, formData: FormData) => {
@@ -344,7 +350,7 @@ export function CourseEditor({ course }: CourseEditorProps) {
         <div className="border-b border-slate-200 px-6 py-4">
           <h2 className="font-mono text-lg font-semibold text-slate-900">Course Settings</h2>
         </div>
-        <form ref={courseFormRef} action={handleSaveCourse} className="p-6 space-y-6">
+        <form ref={courseFormRef} onSubmit={handleSaveCourse} className="p-6 space-y-6">
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="title">Title</Label>
@@ -487,7 +493,7 @@ export function CourseEditor({ course }: CourseEditorProps) {
                   Create a new module for this course
                 </DialogDescription>
               </DialogHeader>
-	              <form action={handleCreateModule} className="space-y-4">
+	              <form onSubmit={handleCreateModule} className="space-y-4">
 	                <div className="space-y-2">
 	                  <Label htmlFor="module-title">Title</Label>
 	                  <Input
@@ -606,19 +612,25 @@ function ModuleCard({
     lessonIdsRef.current = lessonIds
   }, [lessonIds])
 
-  const handleUpdateModule = async (formData: FormData) => {
-    const result = await onUpdateModule(module.id, formData)
-    if (!result.error) {
-      setEditModuleOpen(false)
-    }
+  const handleUpdateModule = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+    void onUpdateModule(module.id, formData).then((result) => {
+      if (!result.error) {
+        setEditModuleOpen(false)
+      }
+    })
   }
 
-  const handleCreateLesson = async (formData: FormData) => {
-    const result = await onCreateLesson(formData)
-    if (!result.error) {
-      setNewLessonOpen(false)
-      setNewLessonType("content") // Reset the type
-    }
+  const handleCreateLesson = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+    void onCreateLesson(formData).then((result) => {
+      if (!result.error) {
+        setNewLessonOpen(false)
+        setNewLessonType("content") // Reset the type
+      }
+    })
   }
 
   return (
@@ -679,7 +691,7 @@ function ModuleCard({
               <DialogTitle>Edit Module</DialogTitle>
               <DialogDescription>Update module details and publishing status.</DialogDescription>
             </DialogHeader>
-            <form action={handleUpdateModule} className="space-y-4">
+            <form onSubmit={handleUpdateModule} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor={`module-title-${module.id}`}>Title</Label>
                 <Input id={`module-title-${module.id}`} name="title" defaultValue={module.title} required />
@@ -780,7 +792,7 @@ function ModuleCard({
                   <DialogTitle>New Lesson</DialogTitle>
                   <DialogDescription>Add a lesson to {module.title}</DialogDescription>
                 </DialogHeader>
-                <form action={handleCreateLesson} className="space-y-4">
+                <form onSubmit={handleCreateLesson} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor={`lesson-title-${module.id}`}>Title</Label>
                     <Input id={`lesson-title-${module.id}`} name="title" placeholder="Introduction" required />

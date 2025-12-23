@@ -61,21 +61,18 @@ function buildContentSecurityPolicy({
     ...(isStrictProduction
       ? ["'wasm-unsafe-eval'"]
       : ["'unsafe-eval'", "'wasm-unsafe-eval'"]),
-    // Vercel preview feedback widget
-    ...(isVercelPreview ? ['https://vercel.live'] : []),
+    // Vercel toolbar (preview cookie can persist to production visits)
+    'https://vercel.live',
     // PostHog analytics
     'https://us-assets.i.posthog.com',
   ].join(' ')
 
-  // CSS is trickier than scripts: React + animation/diagram libs rely on
-  // `style=""` attributes. We keep scripts strict (nonce-based) and allow only
-  // style *attributes* to be inline. For `<style>` tags we require a nonce in
-  // production (CodeMirror supports this via `EditorView.cspNonce`), while
-  // allowing inline stylesheets in development to keep HMR/dev tooling working.
-  const styleSrc = ["'self'"].join(' ')
-  const styleSrcElem = isStrictProduction
-    ? ["'self'", `'nonce-${nonce}'`].join(' ')
-    : ["'self'", "'unsafe-inline'"].join(' ')
+  // CSS: React + animation/diagram libs rely on inline styles. We keep scripts
+  // strict (nonce-based) but allow inline styles - style injection is far less
+  // dangerous than script injection, and many third-party libs (PostHog, etc.)
+  // inject styles without nonce support.
+  const styleSrc = ["'self'", "'unsafe-inline'"].join(' ')
+  const styleSrcElem = ["'self'", "'unsafe-inline'"].join(' ')
   const styleSrcAttr = ["'unsafe-inline'"].join(' ')
 
   const posthogOrigin = safeOrigin(process.env.NEXT_PUBLIC_POSTHOG_HOST)
@@ -104,18 +101,16 @@ function buildContentSecurityPolicy({
   connectOrigins.add('https://us-assets.i.posthog.com')
   // Draco decoder (gstatic)
   connectOrigins.add('https://www.gstatic.com')
-  if (isVercelPreview) {
-    connectOrigins.add('https://vercel.live')
-  }
+  // Vercel toolbar (preview cookie can persist to production visits)
+  connectOrigins.add('https://vercel.live')
 
   const connectWsOrigins = new Set<string>()
   for (const origin of [requestOrigin, supabaseOrigin, posthogOrigin]) {
     const wsOrigin = websocketOriginFor(origin)
     if (wsOrigin) connectWsOrigins.add(wsOrigin)
   }
-  if (isVercelPreview) {
-    connectWsOrigins.add('wss://vercel.live')
-  }
+  // Vercel toolbar websocket
+  connectWsOrigins.add('wss://vercel.live')
 
   const connectSrc = [
     "'self'",
