@@ -18,7 +18,7 @@ test.describe("Login Page", () => {
     const loginPage = new LoginPage(page)
     await loginPage.goto()
 
-    await expect(loginPage.emailInput).toBeVisible()
+    await loginPage.expectPageLoaded()
     await expect(loginPage.emailInput).toBeEnabled()
   })
 
@@ -46,13 +46,8 @@ test.describe("Login Page", () => {
     // Try to submit without email
     await loginPage.submitForm()
 
-    // Browser validation should prevent submission or show error
-    // The HTML5 validation will trigger for empty required field
-    const emailInput = loginPage.emailInput
-    const validity = await emailInput.evaluate(
-      (el: HTMLInputElement) => el.validity.valid
-    )
-    expect(validity).toBe(false)
+    await expect(loginPage.errorMessage).toBeVisible()
+    await expect(loginPage.errorMessage).toHaveText(/enter your email address/i)
   })
 
   test("should show error for invalid email format", async ({ page }) => {
@@ -62,12 +57,8 @@ test.describe("Login Page", () => {
     await loginPage.fillEmail("invalid-email")
     await loginPage.submitForm()
 
-    // Browser validation should trigger
-    const emailInput = loginPage.emailInput
-    const validity = await emailInput.evaluate(
-      (el: HTMLInputElement) => el.validity.valid
-    )
-    expect(validity).toBe(false)
+    await expect(loginPage.errorMessage).toBeVisible()
+    await expect(loginPage.errorMessage).toHaveText(/valid email address/i)
   })
 
   test("should show loading state when submitting", async ({ page }) => {
@@ -149,8 +140,11 @@ test.describe("Login Page - Query Parameters", () => {
     const loginPage = new LoginPage(page)
     await loginPage.expectPageLoaded()
 
-    // Page should load with claim param
-    expect(page.url()).toContain("claim")
+    // Page should load with claim param or show claim-specific copy
+    const hasClaimParam = page.url().includes("claim")
+    const claimCopy = page.getByText(/claim your kit license/i)
+    const hasClaimCopy = await claimCopy.isVisible().catch(() => false)
+    expect(hasClaimParam || hasClaimCopy).toBeTruthy()
   })
 
   test("should accept both redirect and claim parameters", async ({ page }) => {
@@ -190,8 +184,8 @@ test.describe("Protected Routes - Unauthenticated", () => {
   }) => {
     await page.goto("/claim/test-token-123")
 
-    // Wait for loading to complete
-    await page.waitForLoadState("networkidle")
+    // Wait for initial render to complete
+    await page.waitForLoadState("domcontentloaded")
 
     // Wait for content to load (page may show Loading... initially)
     const invalidHeading = page.getByRole("heading", { name: /invalid/i })
@@ -202,7 +196,7 @@ test.describe("Protected Routes - Unauthenticated", () => {
       invalidHeading.waitFor({ timeout: 10000 }),
       claimHeading.waitFor({ timeout: 10000 }),
       signInText.waitFor({ timeout: 10000 }),
-      page.waitForURL(/\/login/, { timeout: 10000 })
+      expect(page).toHaveURL(/\/login/, { timeout: 10000 })
     ]).catch(() => {})
 
     // With invalid token: shows "Invalid Claim Link" with shop buttons

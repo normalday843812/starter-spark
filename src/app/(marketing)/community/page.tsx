@@ -52,6 +52,16 @@ export default async function CommunityPage({
 }) {
   const params = await searchParams
   const supabase = await createClient()
+  const allowedStatuses = new Set(["open", "solved"])
+  const statusFilter =
+    params.status && allowedStatuses.has(params.status) ? params.status : undefined
+  const tagFilter = (() => {
+    if (!params.tag) return undefined
+    const trimmed = params.tag.trim()
+    if (!trimmed || trimmed.length > 40) return undefined
+    return /^[\w\s-]+$/.test(trimmed) ? trimmed : undefined
+  })()
+  const searchQuery = params.q?.trim().slice(0, 120)
 
   // Fetch dynamic content
   const content = await getContents(
@@ -63,78 +73,102 @@ export default async function CommunityPage({
     }
   )
 
-  // Fetch posts with author info and comment count
-  let query = supabase
-    .from("posts")
-    .select(
+  let posts: {
+    id: string
+    slug: string | null
+    title: string
+    status: string | null
+    tags: string[] | null
+    upvotes: number | null
+    view_count: number | null
+    created_at: string
+    author: { id: string; full_name: string | null; email: string; role: string | null } | null
+    product: { id: string; name: string; slug: string } | null
+    comments: { id: string }[]
+  }[] = []
+  let products: { id: string; name: string; slug: string }[] = []
+
+  try {
+    // Fetch posts with author info and comment count
+    let query = supabase
+      .from("posts")
+      .select(
+        `
+        id,
+        slug,
+        title,
+        status,
+        tags,
+        upvotes,
+        view_count,
+        created_at,
+        author:profiles!posts_author_id_fkey (
+          id,
+          full_name,
+          email,
+          role
+        ),
+        product:products (
+          id,
+          name,
+          slug
+        ),
+        comments (id)
       `
-      id,
-      slug,
-      title,
-      status,
-      tags,
-      upvotes,
-      view_count,
-      created_at,
-      author:profiles!posts_author_id_fkey (
-        id,
-        full_name,
-        email,
-        role
-      ),
-      product:products (
-        id,
-        name,
-        slug
-      ),
-      comments (id)
-    `
-    )
-    .order("created_at", { ascending: false })
+      )
+      .order("created_at", { ascending: false })
 
-  // Apply filters
-  if (params.status && params.status !== "all") {
-    query = query.eq("status", params.status)
-  }
+    // Apply filters
+    if (statusFilter) {
+      query = query.eq("status", statusFilter)
+    }
 
-  if (params.tag) {
-    query = query.contains("tags", [params.tag])
-  }
+    if (tagFilter) {
+      query = query.contains("tags", [tagFilter])
+    }
 
-  // Apply text search
-  if (params.q && params.q.trim()) {
-    query = query.ilike("title", `%${params.q.trim()}%`)
-  }
+    // Apply text search
+    if (searchQuery) {
+      query = query.ilike("title", `%${searchQuery}%`)
+    }
 
-  const { data: posts, error } = await query.limit(50)
+    const { data: postData, error } = await query.limit(50)
 
-  if (error) {
+    if (error) {
+      console.error("Error fetching posts:", error)
+    }
+    posts = (postData as typeof posts) || []
+  } catch (error) {
     console.error("Error fetching posts:", error)
   }
 
-  // Fetch products for filter dropdown
-  const { data: products } = await supabase
-    .from("products")
-    .select("id, name, slug")
-    .order("name")
+  try {
+    const { data: productData } = await supabase
+      .from("products")
+      .select("id, name, slug")
+      .order("name")
+    products = (productData as typeof products) || []
+  } catch (error) {
+    console.error("Error fetching products:", error)
+  }
 
   // Get unique tags from posts
   const allTags = new Set<string>()
-  posts?.forEach((post) => {
-    post.tags?.forEach((tag) => allTags.add(tag))
-  })
+  for (const post of posts) {
+    if (post.tags) for (const tag of post.tags) allTags.add(tag)
+  }
   const availableTags = Array.from(allTags).sort()
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="bg-slate-50">
       {/* Hero */}
       <section className="pt-32 pb-8 px-6 lg:px-20">
         <div className="max-w-7xl mx-auto">
           <p className="text-sm font-mono text-cyan-700 mb-2">Community</p>
-          <h1 className="font-mono text-4xl lg:text-5xl font-bold text-slate-900 mb-4">
+          <h1 className="font-mono text-4xl lg:text-5xl font-bold text-slate-900 mb-4 break-words">
             {content["community.header.title"]}
           </h1>
-          <p className="text-lg text-slate-600 max-w-2xl">
+          <p className="text-lg text-slate-600 max-w-2xl break-words">
             {content["community.header.description"]}
           </p>
         </div>
@@ -147,22 +181,22 @@ export default async function CommunityPage({
             {/* Sidebar */}
             <div className="w-full lg:w-64 flex-shrink-0">
               {/* Ask Question CTA */}
-              <Link href="/community/new">
-                <Button className="w-full bg-cyan-700 hover:bg-cyan-600 text-white font-mono mb-6">
+              <Button asChild className="w-full bg-cyan-700 hover:bg-cyan-600 text-white font-mono mb-6">
+                <Link href="/community/new">
                   <Plus className="w-4 h-4 mr-2" />
                   Ask a Question
-                </Button>
-              </Link>
+                </Link>
+              </Button>
 
               {/* Filters */}
               <Suspense fallback={<div className="animate-pulse bg-slate-100 rounded h-48" />}>
                 <ForumFilters
                   products={products || []}
                   availableTags={availableTags}
-                  currentStatus={params.status}
-                  currentTag={params.tag}
+                  currentStatus={statusFilter}
+                  currentTag={tagFilter}
                   currentProduct={params.product}
-                  currentSearch={params.q}
+                  currentSearch={searchQuery}
                 />
               </Suspense>
             </div>
@@ -290,12 +324,12 @@ export default async function CommunityPage({
                   <p className="text-slate-600 mb-6">
                     {content["community.empty"]}
                   </p>
-                  <Link href="/community/new">
-                    <Button className="bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
+                  <Button asChild className="bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
+                    <Link href="/community/new">
                       <Plus className="w-4 h-4 mr-2" />
                       Ask a Question
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 </div>
               )}
             </div>

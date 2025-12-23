@@ -3,7 +3,7 @@ import { GithubIcon, InstagramIcon, YoutubeIcon } from "@/components/icons/brand
 import { Heart } from "lucide-react"
 import Link from "next/link"
 import { NewsletterForm } from "./NewsletterForm"
-import { createClient } from "@/lib/supabase/server"
+import { createPublicClient } from "@/lib/supabase/public"
 import { getContents } from "@/lib/content"
 
 // Custom X (Twitter) icon since simple-icons doesn't have it as "X"
@@ -22,49 +22,51 @@ interface FooterProduct {
 }
 
 export async function Footer() {
-  const supabase = await createClient()
-
-  // Fetch dynamic content
+  // Fetch dynamic content (using unified global charity keys)
   const content = await getContents(
     [
       "footer.copyright",
-      "footer.charity.percentage",
-      "footer.charity.text",
+      "global.charity.percentage",
+      "global.charity.short",
       "footer.brand.tagline",
       "footer.newsletter.title",
       "footer.newsletter.description",
     ],
     {
       "footer.copyright": "© 2025 StarterSpark Robotics. All rights reserved.",
-      "footer.charity.percentage": "70%",
-      "footer.charity.text": "of every purchase goes directly to Hawaii STEM charities",
+      "global.charity.percentage": "67%",
+      "global.charity.short": "of every purchase goes to Hawaii STEM education",
       "footer.brand.tagline": "Open-source robotics education designed by students, for students. Building the next generation of Hawaii's engineers.",
       "footer.newsletter.title": "Stay Updated",
       "footer.newsletter.description": "Get notified about new kits and workshops.",
     }
   )
 
-  // Fetch active products for the footer links
-  const { data: products, error } = await supabase
-    .from("products")
-    .select("slug, name, status")
-    .in("status", ["active", "coming_soon"])
-    .order("created_at", { ascending: true })
-    .limit(5)
+  let footerProducts: FooterProduct[] = []
+  try {
+    const supabase = createPublicClient()
+    const { data: products, error } = await supabase
+      .from("products")
+      .select("slug, name, status")
+      .in("status", ["active", "coming_soon"])
+      .order("created_at", { ascending: true })
+      .limit(5)
 
-  if (error) {
-    console.error("Failed to fetch products for footer:", error.message)
+    if (error) {
+      console.error("Failed to fetch products for footer:", error.message)
+    }
+    footerProducts = products || []
+  } catch (error) {
+    console.error("Failed to fetch products for footer:", error)
   }
-
-  const footerProducts: FooterProduct[] = products || []
   return (
     <footer className="bg-white border-t border-slate-200">
       {/* Charity Banner */}
       <div className="bg-amber-50 border-b border-amber-200 py-4 px-6 lg:px-20">
         <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 text-sm">
           <Heart className="w-4 h-4 text-amber-600" />
-          <span className="text-slate-600">
-            <span className="font-mono text-amber-700 font-semibold">{content["footer.charity.percentage"]}</span> {content["footer.charity.text"]}
+          <span className="text-slate-600 break-words">
+            <span className="font-mono text-amber-700 font-semibold">{content["global.charity.percentage"]}</span> {content["global.charity.short"]}
           </span>
         </div>
       </div>
@@ -76,20 +78,32 @@ export async function Footer() {
             <p className="text-2xl font-bold text-slate-900 mb-4 tracking-tighter font-mono">
               STARTER<span className="text-cyan-700">SPARK</span>
             </p>
-            <p className="text-slate-600 max-w-sm mb-6 leading-relaxed text-sm">
+            <p className="text-slate-600 max-w-sm mb-6 leading-relaxed text-sm break-words">
               {content["footer.brand.tagline"]}
             </p>
             <div className="flex gap-3">
-              <Link href="https://github.com/normalday843812" target="_blank" rel="noopener noreferrer">
-                <Button variant="ghost" size="icon" aria-label="GitHub" className="text-slate-500 hover:text-cyan-700 hover:bg-slate-100">
+              <Button
+                asChild
+                variant="ghost"
+                size="icon"
+                aria-label="GitHub"
+                className="text-slate-500 hover:text-cyan-700 hover:bg-slate-100"
+              >
+                <a href="https://github.com/normalday843812" target="_blank" rel="noopener noreferrer">
                   <GithubIcon className="w-4 h-4" />
-                </Button>
-              </Link>
-              <Link href="https://x.com/AlQaholic00" target="_blank" rel="noopener noreferrer">
-                <Button variant="ghost" size="icon" aria-label="X" className="text-slate-500 hover:text-cyan-700 hover:bg-slate-100">
+                </a>
+              </Button>
+              <Button
+                asChild
+                variant="ghost"
+                size="icon"
+                aria-label="X"
+                className="text-slate-500 hover:text-cyan-700 hover:bg-slate-100"
+              >
+                <a href="https://x.com/AlQaholic00" target="_blank" rel="noopener noreferrer">
                   <XIcon className="w-4 h-4" />
-                </Button>
-              </Link>
+                </a>
+              </Button>
               <div className="relative group">
                 <Button variant="ghost" size="icon" aria-label="Instagram" className="text-slate-500 cursor-not-allowed" disabled>
                   <InstagramIcon className="w-4 h-4" />
@@ -98,11 +112,17 @@ export async function Footer() {
                   Coming Soon
                 </span>
               </div>
-              <Link href="https://www.youtube.com/@CrustySofa" target="_blank" rel="noopener noreferrer">
-                <Button variant="ghost" size="icon" aria-label="YouTube" className="text-slate-500 hover:text-cyan-700 hover:bg-slate-100">
+              <Button
+                asChild
+                variant="ghost"
+                size="icon"
+                aria-label="YouTube"
+                className="text-slate-500 hover:text-cyan-700 hover:bg-slate-100"
+              >
+                <a href="https://www.youtube.com/@CrustySofa" target="_blank" rel="noopener noreferrer">
                   <YoutubeIcon className="w-4 h-4" />
-                </Button>
-              </Link>
+                </a>
+              </Button>
             </div>
           </div>
 
@@ -188,8 +208,8 @@ export async function Footer() {
 
           {/* Newsletter Column */}
           <div>
-            <p className="font-mono text-sm text-cyan-700 mb-4 uppercase tracking-wider">{content["footer.newsletter.title"]}</p>
-            <p className="text-sm text-slate-600 mb-4">
+            <p className="font-mono text-sm text-cyan-700 mb-4 uppercase tracking-wider break-words">{content["footer.newsletter.title"]}</p>
+            <p className="text-sm text-slate-600 mb-4 break-words">
               {content["footer.newsletter.description"]}
             </p>
             <NewsletterForm />
@@ -200,7 +220,7 @@ export async function Footer() {
       {/* Bottom Bar */}
       <div className="border-t border-slate-200 py-6 px-6 lg:px-20">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
-          <p className="font-mono">{content["footer.copyright"]}</p>
+          <p className="font-mono break-words">{content["footer.copyright"]}</p>
           <nav aria-label="Legal">
             <div className="flex gap-6">
               <Link href="/privacy" className="hover:text-slate-900 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2">

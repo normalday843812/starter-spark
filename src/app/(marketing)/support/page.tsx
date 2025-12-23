@@ -53,16 +53,16 @@ export default async function SupportPage() {
   const articles = await getArticles()
 
   // Group articles by category
-  const articlesByCategory = articles.reduce((acc, article) => {
+  const articlesByCategory = articles.reduce<Record<string, typeof articles>>((acc, article) => {
     if (!acc[article.category]) {
       acc[article.category] = []
     }
     acc[article.category].push(article)
     return acc
-  }, {} as Record<string, typeof articles>)
+  }, {})
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="bg-slate-50">
       {/* Hero */}
       <section className="pt-32 pb-16 px-6 lg:px-20">
         <div className="max-w-4xl mx-auto text-center">

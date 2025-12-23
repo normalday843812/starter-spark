@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "13.0.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       achievements: {
@@ -51,6 +26,7 @@ export type Database = {
           name: string
           points: number | null
           sort_order: number | null
+          unlock_hint: string | null
         }
         Insert: {
           category?: string | null
@@ -63,6 +39,7 @@ export type Database = {
           name: string
           points?: number | null
           sort_order?: number | null
+          unlock_hint?: string | null
         }
         Update: {
           category?: string | null
@@ -75,6 +52,7 @@ export type Database = {
           name?: string
           points?: number | null
           sort_order?: number | null
+          unlock_hint?: string | null
         }
         Relationships: []
       }
@@ -261,32 +239,44 @@ export type Database = {
       }
       courses: {
         Row: {
+          cover_image_url: string | null
           created_at: string | null
           description: string | null
           difficulty: string
           duration_minutes: number
+          icon: string | null
           id: string
+          is_published: boolean | null
           product_id: string
+          slug: string | null
           title: string
           updated_at: string | null
         }
         Insert: {
+          cover_image_url?: string | null
           created_at?: string | null
           description?: string | null
           difficulty?: string
           duration_minutes?: number
+          icon?: string | null
           id?: string
+          is_published?: boolean | null
           product_id: string
+          slug?: string | null
           title: string
           updated_at?: string | null
         }
         Update: {
+          cover_image_url?: string | null
           created_at?: string | null
           description?: string | null
           difficulty?: string
           duration_minutes?: number
+          icon?: string | null
           id?: string
+          is_published?: boolean | null
           product_id?: string
+          slug?: string | null
           title?: string
           updated_at?: string | null
         }
@@ -296,6 +286,158 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      doc_attachments: {
+        Row: {
+          created_at: string | null
+          file_size: number | null
+          filename: string
+          id: string
+          mime_type: string | null
+          page_id: string
+          storage_path: string
+        }
+        Insert: {
+          created_at?: string | null
+          file_size?: number | null
+          filename: string
+          id?: string
+          mime_type?: string | null
+          page_id: string
+          storage_path: string
+        }
+        Update: {
+          created_at?: string | null
+          file_size?: number | null
+          filename?: string
+          id?: string
+          mime_type?: string | null
+          page_id?: string
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doc_attachments_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "doc_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      doc_categories: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          is_published: boolean | null
+          name: string
+          parent_id: string | null
+          slug: string
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_published?: boolean | null
+          name: string
+          parent_id?: string | null
+          slug: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_published?: boolean | null
+          name?: string
+          parent_id?: string | null
+          slug?: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doc_categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "doc_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      doc_pages: {
+        Row: {
+          category_id: string
+          content: string | null
+          created_at: string | null
+          created_by: string | null
+          excerpt: string | null
+          id: string
+          is_published: boolean | null
+          slug: string
+          sort_order: number | null
+          title: string
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          category_id: string
+          content?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          excerpt?: string | null
+          id?: string
+          is_published?: boolean | null
+          slug: string
+          sort_order?: number | null
+          title: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          category_id?: string
+          content?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          excerpt?: string | null
+          id?: string
+          is_published?: boolean | null
+          slug?: string
+          sort_order?: number | null
+          title?: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doc_pages_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "doc_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doc_pages_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doc_pages_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -354,6 +496,50 @@ export type Database = {
         }
         Relationships: []
       }
+      lesson_content: {
+        Row: {
+          code_solution: string | null
+          code_starter: string | null
+          content: string
+          content_blocks: Json
+          downloads: Json
+          lesson_id: string
+          updated_at: string | null
+          video_url: string | null
+          visual_blocks: Json | null
+        }
+        Insert: {
+          code_solution?: string | null
+          code_starter?: string | null
+          content?: string
+          content_blocks?: Json
+          downloads?: Json
+          lesson_id: string
+          updated_at?: string | null
+          video_url?: string | null
+          visual_blocks?: Json | null
+        }
+        Update: {
+          code_solution?: string | null
+          code_starter?: string | null
+          content?: string
+          content_blocks?: Json
+          downloads?: Json
+          lesson_id?: string
+          updated_at?: string | null
+          video_url?: string | null
+          visual_blocks?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_content_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: true
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_progress: {
         Row: {
           completed_at: string | null
@@ -392,36 +578,51 @@ export type Database = {
       }
       lessons: {
         Row: {
-          content: string
           created_at: string | null
           description: string | null
+          difficulty: string | null
           duration_minutes: number
+          estimated_minutes: number | null
           id: string
+          is_optional: boolean | null
+          is_published: boolean | null
+          lesson_type: string | null
           module_id: string
+          prerequisites: string[] | null
           slug: string
           sort_order: number
           title: string
           updated_at: string | null
         }
         Insert: {
-          content: string
           created_at?: string | null
           description?: string | null
+          difficulty?: string | null
           duration_minutes?: number
+          estimated_minutes?: number | null
           id?: string
+          is_optional?: boolean | null
+          is_published?: boolean | null
+          lesson_type?: string | null
           module_id: string
+          prerequisites?: string[] | null
           slug: string
           sort_order?: number
           title: string
           updated_at?: string | null
         }
         Update: {
-          content?: string
           created_at?: string | null
           description?: string | null
+          difficulty?: string | null
           duration_minutes?: number
+          estimated_minutes?: number | null
           id?: string
+          is_optional?: boolean | null
+          is_published?: boolean | null
+          lesson_type?: string | null
           module_id?: string
+          prerequisites?: string[] | null
           slug?: string
           sort_order?: number
           title?: string
@@ -447,7 +648,9 @@ export type Database = {
           id: string
           owner_id: string | null
           product_id: string
+          purchase_item_ref: string | null
           source: string | null
+          status: Database["public"]["Enums"]["license_status"]
           stripe_session_id: string | null
         }
         Insert: {
@@ -459,7 +662,9 @@ export type Database = {
           id?: string
           owner_id?: string | null
           product_id: string
+          purchase_item_ref?: string | null
           source?: string | null
+          status?: Database["public"]["Enums"]["license_status"]
           stripe_session_id?: string | null
         }
         Update: {
@@ -471,7 +676,9 @@ export type Database = {
           id?: string
           owner_id?: string | null
           product_id?: string
+          purchase_item_ref?: string | null
           source?: string | null
+          status?: Database["public"]["Enums"]["license_status"]
           stripe_session_id?: string | null
         }
         Relationships: [
@@ -496,25 +703,37 @@ export type Database = {
           course_id: string
           created_at: string | null
           description: string | null
+          icon: string | null
           id: string
+          is_published: boolean | null
+          slug: string | null
           sort_order: number
           title: string
+          updated_at: string | null
         }
         Insert: {
           course_id: string
           created_at?: string | null
           description?: string | null
+          icon?: string | null
           id?: string
+          is_published?: boolean | null
+          slug?: string | null
           sort_order?: number
           title: string
+          updated_at?: string | null
         }
         Update: {
           course_id?: string
           created_at?: string | null
           description?: string | null
+          icon?: string | null
           id?: string
+          is_published?: boolean | null
+          slug?: string | null
           sort_order?: number
           title?: string
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -573,6 +792,45 @@ export type Database = {
           version?: number | null
         }
         Relationships: []
+      }
+      post_reports: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          reason: string | null
+          reporter_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          reason?: string | null
+          reporter_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          reason?: string | null
+          reporter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_reports_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_reports_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       post_votes: {
         Row: {
@@ -681,7 +939,6 @@ export type Database = {
           file_size: number | null
           filename: string
           id: string
-          image_type: Database["public"]["Enums"]["product_image_type"] | null
           is_primary: boolean | null
           metadata: Json | null
           mime_type: string | null
@@ -698,7 +955,6 @@ export type Database = {
           file_size?: number | null
           filename: string
           id?: string
-          image_type?: Database["public"]["Enums"]["product_image_type"] | null
           is_primary?: boolean | null
           metadata?: Json | null
           mime_type?: string | null
@@ -715,7 +971,6 @@ export type Database = {
           file_size?: number | null
           filename?: string
           id?: string
-          image_type?: Database["public"]["Enums"]["product_image_type"] | null
           is_primary?: boolean | null
           metadata?: Json | null
           mime_type?: string | null
@@ -840,7 +1095,10 @@ export type Database = {
           email: string
           full_name: string | null
           id: string
+          preferred_learning_style: string | null
           role: Database["public"]["Enums"]["user_role"] | null
+          skill_level: string | null
+          skip_basics: boolean | null
           updated_at: string | null
         }
         Insert: {
@@ -849,7 +1107,10 @@ export type Database = {
           email: string
           full_name?: string | null
           id: string
+          preferred_learning_style?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
+          skill_level?: string | null
+          skip_basics?: boolean | null
           updated_at?: string | null
         }
         Update: {
@@ -858,7 +1119,10 @@ export type Database = {
           email?: string
           full_name?: string | null
           id?: string
+          preferred_learning_style?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
+          skill_level?: string | null
+          skip_basics?: boolean | null
           updated_at?: string | null
         }
         Relationships: []
@@ -1004,6 +1268,45 @@ export type Database = {
         }
         Relationships: []
       }
+      stripe_checkout_fulfillments: {
+        Row: {
+          attempt_count: number
+          created_at: string
+          email_sent_at: string | null
+          last_error: string | null
+          processed_at: string | null
+          status: string
+          stock_decremented_at: string | null
+          stripe_event_id: string | null
+          stripe_session_id: string
+          updated_at: string
+        }
+        Insert: {
+          attempt_count?: number
+          created_at?: string
+          email_sent_at?: string | null
+          last_error?: string | null
+          processed_at?: string | null
+          status?: string
+          stock_decremented_at?: string | null
+          stripe_event_id?: string | null
+          stripe_session_id: string
+          updated_at?: string
+        }
+        Update: {
+          attempt_count?: number
+          created_at?: string
+          email_sent_at?: string | null
+          last_error?: string | null
+          processed_at?: string | null
+          status?: string
+          stock_decremented_at?: string | null
+          stripe_event_id?: string | null
+          stripe_session_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       team_members: {
         Row: {
           bio: string | null
@@ -1129,11 +1432,47 @@ export type Database = {
           },
         ]
       }
+      user_learning_stats: {
+        Row: {
+          last_streak_date: string | null
+          level: number
+          streak_days: number
+          updated_at: string | null
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          last_streak_date?: string | null
+          level?: number
+          streak_days?: number
+          updated_at?: string | null
+          user_id: string
+          xp?: number
+        }
+        Update: {
+          last_streak_date?: string | null
+          level?: number
+          streak_days?: number
+          updated_at?: string | null
+          user_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      apply_learning_xp: {
+        Args: { p_completed_at?: string; p_user_id: string; p_xp: number }
+        Returns: {
+          last_streak_date: string
+          level: number
+          streak_days: number
+          xp: number
+        }[]
+      }
       award_achievement: {
         Args: {
           p_achievement_key: string
@@ -1142,13 +1481,19 @@ export type Database = {
         }
         Returns: boolean
       }
-      cleanup_expired_tags: { Args: never; Returns: undefined }
+      cleanup_expired_tags: { Args: Record<PropertyKey, never>; Returns: undefined }
+      decrement_product_stock: {
+        Args: { p_product_id: string; p_quantity: number }
+        Returns: {
+          stock_quantity: number
+        }[]
+      }
       get_course_progress: {
         Args: { p_course_id: string; p_user_id: string }
         Returns: number
       }
       get_site_stats: {
-        Args: never
+        Args: Record<PropertyKey, never>
         Returns: {
           key: string
           label: string
@@ -1160,13 +1505,28 @@ export type Database = {
         Args: { article_id: string }
         Returns: undefined
       }
+      increment_post_view: { Args: { p_post_id: string }; Returns: undefined }
       is_admin:
-        | { Args: never; Returns: boolean }
+        | { Args: Record<PropertyKey, never>; Returns: boolean }
         | { Args: { user_id: string }; Returns: boolean }
-      is_staff: { Args: { user_id: string }; Returns: boolean }
+      is_staff:
+        | { Args: Record<PropertyKey, never>; Returns: boolean }
+        | { Args: { user_id: string }; Returns: boolean }
       record_article_feedback: {
         Args: { article_id: string; is_helpful: boolean }
         Returns: undefined
+      }
+      search_docs: {
+        Args: { result_limit?: number; search_query: string }
+        Returns: {
+          category_name: string
+          category_slug: string
+          excerpt: string
+          id: string
+          rank: number
+          slug: string
+          title: string
+        }[]
       }
       update_comment_upvotes: {
         Args: { p_comment_id: string }
@@ -1176,13 +1536,7 @@ export type Database = {
       user_owns_product: { Args: { p_product_id: string }; Returns: boolean }
     }
     Enums: {
-      product_image_type:
-        | "hero"
-        | "knolling"
-        | "detail"
-        | "action"
-        | "packaging"
-        | "other"
+      license_status: "pending" | "claimed" | "rejected" | "claimed_by_other"
       product_status: "active" | "coming_soon" | "draft"
       product_tag_type:
         | "featured"
@@ -1318,19 +1672,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
-      product_image_type: [
-        "hero",
-        "knolling",
-        "detail",
-        "action",
-        "packaging",
-        "other",
-      ],
+      license_status: ["pending", "claimed", "rejected", "claimed_by_other"],
       product_status: ["active", "coming_soon", "draft"],
       product_tag_type: [
         "featured",

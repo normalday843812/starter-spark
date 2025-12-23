@@ -49,6 +49,24 @@ async function getSiteStats() {
 }
 
 async function getAuditLogs() {
+  // Defense-in-depth: verify admin/staff before using service role.
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) return []
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle()
+
+  if (!profile || (profile.role !== "admin" && profile.role !== "staff")) {
+    return []
+  }
+
   // Use admin client to fetch audit logs (RLS requires admin role)
   const { data: logs, error } = await supabaseAdmin
     .from("admin_audit_log")
@@ -63,15 +81,31 @@ async function getAuditLogs() {
 
   // Fetch user emails for display
   if (logs && logs.length > 0) {
-    const userIds = [...new Set(logs.map(log => log.user_id).filter(Boolean))]
-    const { data: profiles } = await supabaseAdmin
+    const userIds = [
+      ...new Set(
+        logs
+          .map((log) => log.user_id)
+          .filter((id): id is string => typeof id === "string" && id.length > 0)
+      ),
+    ]
+
+    if (userIds.length === 0) {
+      return logs.map((log) => ({ ...log, user_email: undefined }))
+    }
+
+    const { data: profiles, error: profilesError } = await supabaseAdmin
       .from("profiles")
       .select("id, email")
-      .in("id", userIds as string[])
+      .in("id", userIds)
 
-    const emailMap = new Map(profiles?.map(p => [p.id, p.email]) || [])
+    if (profilesError) {
+      console.error("Error fetching audit log user emails:", profilesError)
+      return logs.map((log) => ({ ...log, user_email: undefined }))
+    }
 
-    return logs.map(log => ({
+    const emailMap = new Map(profiles?.map((p) => [p.id, p.email]) || [])
+
+    return logs.map((log) => ({
       ...log,
       user_email: log.user_id ? emailMap.get(log.user_id) : undefined,
     }))
@@ -93,7 +127,7 @@ export default async function SettingsPage() {
       description: "Database and authentication",
       icon: Database,
       status: "connected",
-      url: process.env.NEXT_PUBLIC_SUPABASE_URL,
+      url: process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL,
     },
     {
       name: "Stripe",
@@ -244,7 +278,7 @@ export default async function SettingsPage() {
             <div className="flex justify-between rounded bg-slate-50 px-3 py-2">
               <span className="text-sm text-slate-600">Supabase URL</span>
               <code className="max-w-[300px] truncate text-sm text-slate-900">
-                {process.env.NEXT_PUBLIC_SUPABASE_URL || "Not set"}
+                {process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "Not set"}
               </code>
             </div>
             <div className="flex justify-between rounded bg-slate-50 px-3 py-2">

@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { motion } from "motion/react"
 import Link from "next/link"
 import { Star, ImageIcon } from "lucide-react"
-import { Database } from "@/lib/supabase/database.types"
+import { type Database } from "@/lib/supabase/database.types"
 import { ProductImage } from "@/components/ui/optimized-image"
 
 type ProductTagType = Database["public"]["Enums"]["product_tag_type"]
@@ -34,12 +34,12 @@ interface ProductCardProps {
 // Tag styling configuration
 const tagStyles: Record<ProductTagType, { bg: string; text: string; label: string }> = {
   featured: { bg: "bg-cyan-700", text: "text-white", label: "Featured" },
-  discount: { bg: "bg-amber-500", text: "text-white", label: "Sale" },
-  new: { bg: "bg-green-500", text: "text-white", label: "New" },
-  bestseller: { bg: "bg-purple-500", text: "text-white", label: "Bestseller" },
-  limited: { bg: "bg-red-500", text: "text-white", label: "Limited" },
-  bundle: { bg: "bg-blue-500", text: "text-white", label: "Bundle" },
-  out_of_stock: { bg: "bg-slate-400", text: "text-white", label: "Out of Stock" },
+  discount: { bg: "bg-amber-700", text: "text-white", label: "Sale" },
+  new: { bg: "bg-green-700", text: "text-white", label: "New" },
+  bestseller: { bg: "bg-purple-700", text: "text-white", label: "Bestseller" },
+  limited: { bg: "bg-red-700", text: "text-white", label: "Limited" },
+  bundle: { bg: "bg-blue-700", text: "text-white", label: "Bundle" },
+  out_of_stock: { bg: "bg-slate-600", text: "text-white", label: "Out of Stock" },
 }
 
 export function ProductCard({
@@ -101,18 +101,18 @@ export function ProductCard({
                   fallback={
                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
                       <div className="w-16 h-16 mb-3 rounded-full bg-slate-200 flex items-center justify-center">
-                        <ImageIcon className="w-8 h-8 text-slate-400" />
+                        <ImageIcon className="w-8 h-8 text-slate-400" aria-hidden="true" />
                     </div>
-                    <p className="text-slate-400 font-mono text-xs">Failed to load</p>
+                    <p className="text-slate-600 font-mono text-xs">Failed to load</p>
                   </div>
                 }
               />
             ) : (
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <div className="w-16 h-16 mb-3 rounded-full bg-slate-200 flex items-center justify-center">
-                  <ImageIcon className="w-8 h-8 text-slate-400" />
+                  <ImageIcon className="w-8 h-8 text-slate-400" aria-hidden="true" />
                 </div>
-                <p className="text-slate-400 font-mono text-xs">No image</p>
+                <p className="text-slate-600 font-mono text-xs">No image</p>
               </div>
             )}
 
@@ -180,18 +180,18 @@ export function ProductCard({
                 {name}
               </h3>
               {isFeatured && (
-                <Star className="h-5 w-5 fill-amber-400 text-amber-400 flex-shrink-0 mt-0.5" />
+                <Star className="h-5 w-5 fill-amber-400 text-amber-400 flex-shrink-0 mt-0.5" aria-hidden="true" />
               )}
             </div>
             {isComingSoon ? (
-              <p className="text-lg font-mono text-slate-400">Price TBD</p>
+              <p className="text-lg font-mono text-slate-600">Price TBD</p>
             ) : hasActiveDiscount ? (
               <div className="flex items-center gap-2 flex-wrap">
                 <p className="text-2xl font-mono text-amber-600">${price.toFixed(2)}</p>
-                <p className="text-lg font-mono text-slate-400 line-through">
+                <p className="text-lg font-mono text-slate-600 line-through">
                   ${originalPrice.toFixed(2)}
                 </p>
-                <span className="px-1.5 py-0.5 bg-red-500 text-white text-xs font-mono rounded">
+                <span className="px-1.5 py-0.5 bg-red-700 text-white text-xs font-mono rounded">
                   {discountPercent}% OFF
                 </span>
               </div>

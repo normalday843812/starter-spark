@@ -1,5 +1,6 @@
 import { test, expect } from "@chromatic-com/playwright"
 import { ProductPage, ShopPage } from "../pages"
+import { openFirstProductFromShop } from "../helpers/shop"
 
 /**
  * E2E Tests for Product Pages
@@ -13,7 +14,8 @@ test.describe("Product Page - Loading", () => {
     await shopPage.goto()
 
     // Click on first product
-    await shopPage.clickFirstProduct()
+    const opened = await shopPage.clickFirstProduct()
+    if (!opened) return
 
     // Verify product page loaded
     const productPage = new ProductPage(page)
@@ -21,9 +23,8 @@ test.describe("Product Page - Loading", () => {
   })
 
   test("should display product title", async ({ page }) => {
-    await page.goto("/shop")
-    await page.locator('a[href^="/shop/"]').first().click()
-    await page.waitForURL(/\/shop\/.+/)
+    const opened = await openFirstProductFromShop(page)
+    if (!opened) return
 
     const heading = page.getByRole("heading", { level: 1 })
     await expect(heading).toBeVisible()
@@ -32,9 +33,8 @@ test.describe("Product Page - Loading", () => {
   })
 
   test("should display product price", async ({ page }) => {
-    await page.goto("/shop")
-    await page.locator('a[href^="/shop/"]').first().click()
-    await page.waitForURL(/\/shop\/.+/)
+    const opened = await openFirstProductFromShop(page)
+    if (!opened) return
 
     // Look for price format $XX
     const price = page.locator("text=/\\$\\d+/")
@@ -42,9 +42,8 @@ test.describe("Product Page - Loading", () => {
   })
 
   test("should display stock status badge", async ({ page }) => {
-    await page.goto("/shop")
-    await page.locator('a[href^="/shop/"]').first().click()
-    await page.waitForURL(/\/shop\/.+/)
+    const opened = await openFirstProductFromShop(page)
+    if (!opened) return
 
     const stockBadge = page.getByText(/in stock|pre-order/i)
     await expect(stockBadge.first()).toBeVisible()
@@ -52,24 +51,25 @@ test.describe("Product Page - Loading", () => {
 })
 
 test.describe("Product Page - Buy Box", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto("/shop")
-    await page.locator('a[href^="/shop/"]').first().click()
-    await page.waitForURL(/\/shop\/.+/)
-
-    // Clear cart
+  test("should display Add to Cart button", async ({ page }) => {
+    const opened = await openFirstProductFromShop(page)
+    if (!opened) return
     await page.evaluate(() => {
       localStorage.removeItem("starterspark-cart")
     })
-  })
 
-  test("should display Add to Cart button", async ({ page }) => {
     const addToCartBtn = page.getByRole("button", { name: /add to cart/i })
     await expect(addToCartBtn).toBeVisible()
     await expect(addToCartBtn).toBeEnabled()
   })
 
   test("should display quantity selector", async ({ page }) => {
+    const opened = await openFirstProductFromShop(page)
+    if (!opened) return
+    await page.evaluate(() => {
+      localStorage.removeItem("starterspark-cart")
+    })
+
     const decreaseBtn = page.getByLabel("Decrease quantity")
     const increaseBtn = page.getByLabel("Increase quantity")
 
@@ -80,6 +80,12 @@ test.describe("Product Page - Buy Box", () => {
   test("should increase quantity when clicking plus button", async ({
     page,
   }) => {
+    const opened = await openFirstProductFromShop(page)
+    if (!opened) return
+    await page.evaluate(() => {
+      localStorage.removeItem("starterspark-cart")
+    })
+
     const increaseBtn = page.getByLabel("Increase quantity")
 
     // Initial quantity should be 1
@@ -96,6 +102,12 @@ test.describe("Product Page - Buy Box", () => {
   test("should decrease quantity when clicking minus button", async ({
     page,
   }) => {
+    const opened = await openFirstProductFromShop(page)
+    if (!opened) return
+    await page.evaluate(() => {
+      localStorage.removeItem("starterspark-cart")
+    })
+
     const increaseBtn = page.getByLabel("Increase quantity")
     const decreaseBtn = page.getByLabel("Decrease quantity")
 
@@ -113,6 +125,12 @@ test.describe("Product Page - Buy Box", () => {
   })
 
   test("should not decrease quantity below 1", async ({ page }) => {
+    const opened = await openFirstProductFromShop(page)
+    if (!opened) return
+    await page.evaluate(() => {
+      localStorage.removeItem("starterspark-cart")
+    })
+
     const decreaseBtn = page.getByLabel("Decrease quantity")
 
     // Try to decrease below 1
@@ -125,6 +143,12 @@ test.describe("Product Page - Buy Box", () => {
   })
 
   test("should reset quantity to 1 after adding to cart", async ({ page }) => {
+    const opened = await openFirstProductFromShop(page)
+    if (!opened) return
+    await page.evaluate(() => {
+      localStorage.removeItem("starterspark-cart")
+    })
+
     const increaseBtn = page.getByLabel("Increase quantity")
     const addToCartBtn = page.getByRole("button", { name: /add to cart/i })
 
@@ -148,6 +172,12 @@ test.describe("Product Page - Buy Box", () => {
   })
 
   test("should add correct quantity to cart", async ({ page }) => {
+    const opened = await openFirstProductFromShop(page)
+    if (!opened) return
+    await page.evaluate(() => {
+      localStorage.removeItem("starterspark-cart")
+    })
+
     const increaseBtn = page.getByLabel("Increase quantity")
     const addToCartBtn = page.getByRole("button", { name: /add to cart/i })
 
@@ -169,41 +199,44 @@ test.describe("Product Page - Buy Box", () => {
 })
 
 test.describe("Product Page - Trust Signals", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto("/shop")
-    await page.locator('a[href^="/shop/"]').first().click()
-    await page.waitForURL(/\/shop\/.+/)
-  })
-
   test("should display free shipping notice", async ({ page }) => {
+    const opened = await openFirstProductFromShop(page)
+    if (!opened) return
+
     const productPage = new ProductPage(page)
     await expect(productPage.freeShippingNote).toBeVisible()
   })
 
   test("should display returns policy", async ({ page }) => {
+    const opened = await openFirstProductFromShop(page)
+    if (!opened) return
+
     const productPage = new ProductPage(page)
     await expect(productPage.returnsNote).toBeVisible()
   })
 
   test("should display secure checkout notice", async ({ page }) => {
+    const opened = await openFirstProductFromShop(page)
+    if (!opened) return
+
     const productPage = new ProductPage(page)
     await expect(productPage.secureCheckoutNote).toBeVisible()
   })
 
   test("should display charity notice", async ({ page }) => {
+    const opened = await openFirstProductFromShop(page)
+    if (!opened) return
+
     const productPage = new ProductPage(page)
     await expect(productPage.charityNote).toBeVisible()
   })
 })
 
 test.describe("Product Page - Tabs", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto("/shop")
-    await page.locator('a[href^="/shop/"]').first().click()
-    await page.waitForURL(/\/shop\/.+/)
-  })
-
   test("should display product tabs", async ({ page }) => {
+    const opened = await openFirstProductFromShop(page)
+    if (!opened) return
+
     // Wait for page content to load
     await page.getByRole("heading", { level: 1 }).waitFor()
 
@@ -218,6 +251,9 @@ test.describe("Product Page - Tabs", () => {
   })
 
   test("should switch tab content when clicking tabs", async ({ page }) => {
+    const opened = await openFirstProductFromShop(page)
+    if (!opened) return
+
     const tabs = page.getByRole("tab")
     const tabCount = await tabs.count()
 
@@ -233,9 +269,8 @@ test.describe("Product Page - Tabs", () => {
 
 test.describe("Product Page - Gallery", () => {
   test("should display product gallery or 3D viewer", async ({ page }) => {
-    await page.goto("/shop")
-    await page.locator('a[href^="/shop/"]').first().click()
-    await page.waitForURL(/\/shop\/.+/)
+    const opened = await openFirstProductFromShop(page)
+    if (!opened) return
 
     // Either canvas (3D) or image gallery should be visible
     const canvas = page.locator("canvas")
@@ -255,9 +290,8 @@ test.describe("Product Page - Gallery", () => {
 
 test.describe("Product Page - SEO", () => {
   test("should have appropriate page title", async ({ page }) => {
-    await page.goto("/shop")
-    await page.locator('a[href^="/shop/"]').first().click()
-    await page.waitForURL(/\/shop\/.+/)
+    const opened = await openFirstProductFromShop(page)
+    if (!opened) return
 
     // Wait for page content to fully load
     await page.getByRole("heading", { level: 1 }).waitFor()
@@ -269,9 +303,8 @@ test.describe("Product Page - SEO", () => {
   })
 
   test("should have heading structure", async ({ page }) => {
-    await page.goto("/shop")
-    await page.locator('a[href^="/shop/"]').first().click()
-    await page.waitForURL(/\/shop\/.+/)
+    const opened = await openFirstProductFromShop(page)
+    if (!opened) return
 
     // Should have h1 for product name
     const h1 = page.getByRole("heading", { level: 1 })

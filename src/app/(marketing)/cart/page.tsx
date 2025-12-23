@@ -17,8 +17,9 @@ const DEFAULT_CONTENT = {
   "cart.checkout.processing": "Processing...",
   "cart.trust.freeShipping": "Free shipping on orders $75+",
   "cart.trust.secureCheckout": "Secure checkout with Stripe",
-  "cart.charity.notice": "of your purchase supports Hawaii STEM education.",
-  "cart.charity.percentage": "70%",
+  // Use unified global charity content
+  "global.charity.short": "of your purchase supports Hawaii STEM education",
+  "global.charity.percentage": "67%",
 }
 
 export default async function CartPage() {
@@ -41,8 +42,8 @@ export default async function CartPage() {
       processingText={content["cart.checkout.processing"]}
       trustFreeShipping={content["cart.trust.freeShipping"]}
       trustSecureCheckout={content["cart.trust.secureCheckout"]}
-      charityNotice={content["cart.charity.notice"]}
-      charityPercentage={content["cart.charity.percentage"]}
+      charityNotice={content["global.charity.short"]}
+      charityPercentage={content["global.charity.percentage"]}
     />
   )
 }

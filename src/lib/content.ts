@@ -5,7 +5,7 @@
  * Content can be managed by admins at /admin/content/site.
  */
 
-import { createClient } from '@/lib/supabase/server'
+import { createPublicClient } from '@/lib/supabase/public'
 
 /**
  * Get a single content value by key
@@ -13,13 +13,18 @@ import { createClient } from '@/lib/supabase/server'
  * @param defaultValue - Fallback value if content not found
  * @returns The content string
  */
-export async function getContent(key: string, defaultValue: string = ''): Promise<string> {
-  const supabase = await createClient()
-  const { data } = await supabase
+export async function getContent(key: string, defaultValue = ''): Promise<string> {
+  const supabase = createPublicClient()
+  const { data, error } = await supabase
     .from('site_content')
     .select('content')
     .eq('content_key', key)
-    .single()
+    .maybeSingle()
+
+  if (error) {
+    console.error(`Error fetching site_content for key "${key}":`, error)
+    return defaultValue
+  }
 
   return data?.content || defaultValue
 }
@@ -34,16 +39,23 @@ export async function getContents(
   keys: string[],
   defaults?: Record<string, string>
 ): Promise<Record<string, string>> {
-  const supabase = await createClient()
-  const { data } = await supabase
+  const result: Record<string, string> = { ...defaults }
+  if (keys.length === 0) return result
+
+  const supabase = createPublicClient()
+  const { data, error } = await supabase
     .from('site_content')
     .select('content_key, content')
     .in('content_key', keys)
 
-  const result: Record<string, string> = { ...(defaults || {}) }
-  data?.forEach(item => {
+  if (error) {
+    console.error("Error fetching site_content keys:", { keys, error })
+    return result
+  }
+
+  for (const item of data) {
     result[item.content_key] = item.content
-  })
+  }
   return result
 }
 
@@ -53,7 +65,7 @@ export async function getContents(
  * @returns Record mapping keys to content values
  */
 export async function getContentsByCategory(category: string): Promise<Record<string, string>> {
-  const supabase = await createClient()
+  const supabase = createPublicClient()
   const { data } = await supabase
     .from('site_content')
     .select('content_key, content')
@@ -61,9 +73,9 @@ export async function getContentsByCategory(category: string): Promise<Record<st
     .order('sort_order', { ascending: true })
 
   const result: Record<string, string> = {}
-  data?.forEach(item => {
+  for (const item of data ?? []) {
     result[item.content_key] = item.content
-  })
+  }
   return result
 }
 
@@ -83,7 +95,7 @@ export interface ContentItem {
 }
 
 export async function getAllContent(): Promise<ContentItem[]> {
-  const supabase = await createClient()
+  const supabase = createPublicClient()
   const { data } = await supabase
     .from('site_content')
     .select('*')
@@ -94,7 +106,7 @@ export async function getAllContent(): Promise<ContentItem[]> {
 }
 
 export async function getContentByCategory(category: string): Promise<ContentItem[]> {
-  const supabase = await createClient()
+  const supabase = createPublicClient()
   const { data } = await supabase
     .from('site_content')
     .select('*')

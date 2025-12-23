@@ -58,7 +58,7 @@ export function CartContent({
   trustFreeShipping = "Free shipping on orders $75+",
   trustSecureCheckout = "Secure checkout with Stripe",
   charityNotice = "of your purchase supports Hawaii STEM education.",
-  charityPercentage = "70%",
+  charityPercentage = "67%",
 }: CartContentProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
@@ -88,7 +88,7 @@ export function CartContent({
       const data = (await response.json()) as CheckoutResponse
 
       if (data.url) {
-        window.location.href = data.url
+        globalThis.location.href = data.url
       } else {
         console.error("No checkout URL returned")
         setIsLoading(false)
@@ -106,7 +106,7 @@ export function CartContent({
   // Show loading state during hydration
   if (!isMounted) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="bg-slate-50">
         <section className="pt-32 pb-8 px-6 lg:px-20">
           <div className="max-w-7xl mx-auto">
             <Link
@@ -136,7 +136,7 @@ export function CartContent({
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="bg-slate-50">
       {/* Header */}
       <section className="pt-32 pb-8 px-6 lg:px-20">
         <div className="max-w-7xl mx-auto">
@@ -218,7 +218,7 @@ export function CartContent({
                             </Link>
                             <button
                               type="button"
-                              onClick={() => removeItem(item.slug)}
+                              onClick={() => { removeItem(item.slug); }}
                               className="cursor-pointer p-1 text-slate-500 hover:text-red-600 transition-colors"
                               aria-label="Remove item"
                             >
@@ -261,7 +261,7 @@ export function CartContent({
                               <button
                                 type="button"
                                 onClick={() =>
-                                  updateQuantity(item.slug, item.quantity + 1)
+                                  { updateQuantity(item.slug, item.quantity + 1); }
                                 }
                                 className="cursor-pointer w-8 h-8 rounded border border-slate-200 flex items-center justify-center hover:border-slate-300 transition-colors"
                                 aria-label="Increase quantity"
@@ -363,7 +363,10 @@ export function CartContent({
                   </div>
 
                   {/* Charity Notice */}
-                  <div className="p-3 bg-amber-50 rounded border border-amber-200 text-sm text-slate-600">
+                  <div
+                    data-testid="cart-charity"
+                    className="p-3 bg-amber-50 rounded border border-amber-200 text-sm text-slate-600"
+                  >
                     <span className="font-mono text-amber-600 font-semibold">
                       {charityPercentage}
                     </span>{" "}

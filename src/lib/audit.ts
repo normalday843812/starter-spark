@@ -1,5 +1,6 @@
 import { headers } from 'next/headers'
 import { supabaseAdmin } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import type { Json } from '@/lib/supabase/database.types'
 
 /**
@@ -50,6 +51,32 @@ export type AuditAction =
   | 'banner.duplicated'
   | 'banner.activated'
   | 'banner.deactivated'
+  // Learning management
+  | 'course.created'
+  | 'course.updated'
+  | 'course.deleted'
+  | 'module.created'
+  | 'module.updated'
+  | 'module.deleted'
+  | 'module.reordered'
+  | 'lesson.created'
+  | 'lesson.updated'
+  | 'lesson.deleted'
+  | 'lesson.reordered'
+  // Docs management
+  | 'doc_category.created'
+  | 'doc_category.updated'
+  | 'doc_category.deleted'
+  | 'doc_page.created'
+  | 'doc_page.updated'
+  | 'doc_page.deleted'
+  | 'doc_page.published'
+  | 'doc_page.unpublished'
+  // Team management
+  | 'team_member.created'
+  | 'team_member.updated'
+  | 'team_member.deleted'
+  | 'team_member.reordered'
 
 /**
  * Resource types that can be audited
@@ -66,6 +93,12 @@ export type AuditResourceType =
   | 'stats'
   | 'site_content'
   | 'banner'
+  | 'course'
+  | 'module'
+  | 'lesson'
+  | 'doc_category'
+  | 'doc_page'
+  | 'team_member'
 
 interface AuditLogParams {
   userId: string
@@ -108,7 +141,7 @@ export async function logAuditEvent({
       action,
       resource_type: resourceType,
       resource_id: resourceId || null,
-      details: (details as Json) || null,
+      details: (details as unknown as Json) || null,
       ip_address: ipAddress,
       user_agent: userAgent,
     })
@@ -125,7 +158,7 @@ export async function logAuditEvent({
 
 /**
  * Fetch audit logs with optional filters
- * Only admins can access this function (enforced by RLS)
+ * Only admins/staff can access this function (enforced in code before using service role)
  */
 export async function getAuditLogs(options?: {
   userId?: string
@@ -136,6 +169,31 @@ export async function getAuditLogs(options?: {
   offset?: number
 }) {
   const { userId, action, resourceType, resourceId, limit = 50, offset = 0 } = options || {}
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser()
+
+  if (userError || !user) {
+    return []
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  if (profileError) {
+    console.error('[Audit] Failed to verify admin role:', profileError)
+    return []
+  }
+
+  if (!profile || (profile.role !== 'admin' && profile.role !== 'staff')) {
+    return []
+  }
 
   let query = supabaseAdmin
     .from('admin_audit_log')

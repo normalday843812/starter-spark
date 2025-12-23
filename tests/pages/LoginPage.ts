@@ -22,9 +22,9 @@ export class LoginPage {
 
     this.pageTitle = page.getByRole("heading", { name: /sign in|login/i })
     // Use #email id to avoid matching footer newsletter input
-    this.emailInput = page.locator("#email")
+    this.emailInput = page.locator("main input#email:visible").first()
     this.submitButton = page.getByRole("button", { name: /send magic link/i })
-    this.errorMessage = page.locator('[class*="text-red"]')
+    this.errorMessage = page.locator("#login-email-error")
 
     // Success state
     this.successMessage = page.getByText(/check your email/i)
@@ -49,12 +49,18 @@ export class LoginPage {
       url += `?${params.toString()}`
     }
 
-    await this.page.goto(url)
+    await this.page.goto(url, { waitUntil: "domcontentloaded" })
+    // Wait for client hydration to attach handlers before interactions
+    await this.page.waitForLoadState("networkidle")
   }
 
   async expectPageLoaded() {
-    await expect(this.emailInput).toBeVisible()
-    await expect(this.submitButton).toBeVisible()
+    await expect(this.emailInput).toBeVisible({ timeout: 10000 })
+    await expect(this.submitButton).toBeVisible({ timeout: 10000 })
+    await this.page
+      .locator('header[data-hydrated="true"]')
+      .waitFor({ timeout: 5000 })
+      .catch(() => {})
   }
 
   async fillEmail(email: string) {

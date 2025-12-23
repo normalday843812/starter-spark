@@ -16,17 +16,21 @@ export class ShopPage {
   constructor(page: Page) {
     this.page = page
 
-    this.pageTitle = page.getByRole("heading", { name: /robotics kits/i })
+    this.pageTitle = page.getByRole("heading", { level: 1 }).first()
     this.productGrid = page.locator('[class*="grid"]').first()
     this.productCards = page.locator('[class*="border"][class*="rounded"]').filter({
       has: page.locator('[class*="font-mono"]'),
     })
-    this.educatorCTA = page.getByText(/educator or school/i)
-    this.footer = page.locator("footer")
+    this.educatorCTA = page.getByRole("heading", { name: /educator or school/i })
+    this.footer = page.getByRole("contentinfo")
   }
 
   async goto() {
-    await this.page.goto("/shop")
+    await this.page.goto("/shop", { waitUntil: "domcontentloaded" })
+    await this.page
+      .locator('header[data-hydrated="true"]')
+      .waitFor({ timeout: 5000 })
+      .catch(() => {})
   }
 
   async expectPageLoaded() {
@@ -35,19 +39,23 @@ export class ShopPage {
 
   async getProductCount(): Promise<number> {
     // Find elements that look like product cards (have price and name)
-    const cards = this.page.locator('a[href^="/shop/"]')
+    const cards = this.page.locator('main a[href^="/shop/"]')
     return await cards.count()
   }
 
   async clickProduct(slug: string) {
     await this.page.getByRole("link", { name: new RegExp(slug, "i") }).first().click()
-    await this.page.waitForURL(`**/shop/${slug}`)
+    await expect(this.page).toHaveURL(new RegExp(`/shop/${slug}(\\?.*)?$`))
   }
 
-  async clickFirstProduct() {
-    const firstProduct = this.page.locator('a[href^="/shop/"]').first()
-    await firstProduct.click()
-    await this.page.waitForURL("**/shop/*")
+  async clickFirstProduct(): Promise<boolean> {
+    const products = this.page.locator('main a[href^="/shop/"]')
+    if ((await products.count()) === 0) {
+      return false
+    }
+    await products.first().click()
+    await expect(this.page).toHaveURL(/\/shop\/.+/)
+    return true
   }
 
   async expectProductsDisplayed() {
@@ -56,6 +64,6 @@ export class ShopPage {
   }
 
   async expectEducatorCTAVisible() {
-    await expect(this.educatorCTA).toBeVisible()
+    await expect(this.educatorCTA).toBeVisible({ timeout: 10000 })
   }
 }

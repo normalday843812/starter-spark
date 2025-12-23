@@ -48,12 +48,12 @@ export default async function EventsPage() {
           <h1 className="font-mono text-2xl font-bold text-slate-900">Events</h1>
           <p className="text-slate-600">Manage workshops and community events</p>
         </div>
-        <Link href="/admin/events/new">
-          <Button className="bg-cyan-700 hover:bg-cyan-600">
+        <Button asChild className="bg-cyan-700 hover:bg-cyan-600">
+          <Link href="/admin/events/new">
             <Plus className="mr-2 h-4 w-4" />
             Create Event
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
 
       {/* Stats */}
@@ -77,11 +77,9 @@ export default async function EventsPage() {
         <div className="rounded-lg border border-slate-200 bg-white p-12 text-center">
           <Calendar className="mx-auto h-12 w-12 text-slate-300" />
           <p className="mt-4 text-slate-600">No events yet.</p>
-          <Link href="/admin/events/new">
-            <Button className="mt-4 bg-cyan-700 hover:bg-cyan-600">
-              Create your first event
-            </Button>
-          </Link>
+          <Button asChild className="mt-4 bg-cyan-700 hover:bg-cyan-600">
+            <Link href="/admin/events/new">Create your first event</Link>
+          </Button>
         </div>
       ) : (
         <div className="rounded-lg border border-slate-200 bg-white">

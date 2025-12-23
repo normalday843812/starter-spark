@@ -51,7 +51,7 @@ function TypeWriter({ text, startDelay = 0 }: { text: string; startDelay?: numbe
       typeChar()
     }, startDelay)
 
-    return () => clearTimeout(timeout)
+    return () => { clearTimeout(timeout); }
   }, [isInView, text, startDelay])
 
   return (
@@ -83,10 +83,10 @@ export function LearningPreviewSection({
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="font-mono text-3xl lg:text-4xl text-slate-900 mb-4">
+          <h2 className="font-mono text-3xl lg:text-4xl text-slate-900 mb-4 break-words">
             {title}
           </h2>
-          <p className="text-slate-600 max-w-2xl mx-auto">
+          <p className="text-slate-600 max-w-2xl mx-auto break-words">
             {description}
           </p>
         </motion.div>
@@ -99,20 +99,34 @@ export function LearningPreviewSection({
             viewport={{ once: true }}
             className="w-full lg:w-1/2"
           >
-            {/* Platform Screenshot Placeholder */}
-            <div className="relative aspect-[4/3] bg-slate-900 rounded-lg border border-slate-700 shadow-xl overflow-hidden">
-              {/* Fake IDE Header */}
-              <div className="h-8 bg-slate-800 border-b border-slate-700 flex items-center px-3 gap-2">
-                <div className="w-3 h-3 rounded-full bg-red-500/70" />
-                <div className="w-3 h-3 rounded-full bg-yellow-500/70" />
-                <div className="w-3 h-3 rounded-full bg-green-500/70" />
-                <span className="ml-4 text-xs text-slate-500 font-mono">
-                  lesson-03-servo-control.ino
-                </span>
+            {/* Platform Screenshot - Dark Theme CodeEditor */}
+            <div className="relative aspect-[4/3] rounded border border-slate-700 shadow-xl overflow-hidden flex flex-col bg-[#0b1220]">
+              {/* Header - Dark theme */}
+              <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 bg-slate-800 border-b border-slate-700">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-sm font-mono text-slate-300 truncate">servo-control.ino</span>
+                  <span className="text-xs font-mono text-slate-400 bg-slate-700 px-1.5 py-0.5 rounded">
+                    arduino
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-slate-500">
+                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Verify
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-slate-500">
+                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Download
+                  </span>
+                </div>
               </div>
-              {/* Animated Code Content */}
-              <div className="p-4 font-mono text-xs text-slate-300">
-                <pre className="whitespace-pre-wrap">
+              {/* Code Content - Dark theme matching CodeEditor dark mode */}
+              <div className="bg-[#0b1220] p-4 font-mono text-sm leading-5 text-slate-300 flex-1">
+                <pre className="whitespace-pre-wrap m-0">
                   <TypeWriter
                     text={`#include <Servo.h>
 
@@ -142,26 +156,29 @@ void loop() {
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="w-full lg:w-1/2"
+            className="w-full lg:w-1/2 min-w-0"
           >
             <div className="w-12 h-12 rounded bg-cyan-50 flex items-center justify-center mb-4">
               <Code className="w-6 h-6 text-cyan-700" />
             </div>
-            <h3 className="font-mono text-2xl text-slate-900 mb-4">
+            <h3 className="font-mono text-2xl text-slate-900 mb-4 break-words">
               {block1Title}
             </h3>
-            <p className="text-slate-600 mb-4 leading-relaxed">
+            <p className="text-slate-600 mb-4 leading-relaxed break-words">
               {block1Description1}
             </p>
-            <p className="text-slate-600 leading-relaxed mb-6">
+            <p className="text-slate-600 leading-relaxed mb-6 break-words">
               {block1Description2}
             </p>
-            <Link href="/learn">
-              <Button className="bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
+            <Button
+              asChild
+              className="bg-cyan-700 hover:bg-cyan-600 text-white font-mono w-full sm:w-auto whitespace-normal break-words text-center leading-snug h-auto py-3 flex-wrap"
+            >
+              <Link href="/learn">
                 {block1Cta}
                 <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </motion.div>
         </div>
 
@@ -171,29 +188,30 @@ void loop() {
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="w-full lg:w-1/2"
+            className="w-full lg:w-1/2 min-w-0"
           >
             <div className="w-12 h-12 rounded bg-cyan-50 flex items-center justify-center mb-4">
               <MessageCircle className="w-6 h-6 text-cyan-700" />
             </div>
-            <h3 className="font-mono text-2xl text-slate-900 mb-4">
+            <h3 className="font-mono text-2xl text-slate-900 mb-4 break-words">
               {block2Title}
             </h3>
-            <p className="text-slate-600 mb-4 leading-relaxed">
+            <p className="text-slate-600 mb-4 leading-relaxed break-words">
               {block2Description1}
             </p>
-            <p className="text-slate-600 mb-6 leading-relaxed">
+            <p className="text-slate-600 mb-6 leading-relaxed break-words">
               {block2Description2}
             </p>
-            <Link href="/community">
-              <Button
-                variant="outline"
-                className="border-slate-200 hover:border-cyan-700 text-slate-600 hover:text-cyan-700 font-mono"
-              >
+            <Button
+              asChild
+              variant="outline"
+              className="border-slate-200 hover:border-cyan-700 text-slate-600 hover:text-cyan-700 font-mono w-full sm:w-auto whitespace-normal break-words text-center leading-snug h-auto py-3 flex-wrap"
+            >
+              <Link href="/community">
                 {block2Cta}
                 <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </motion.div>
 
           <motion.div

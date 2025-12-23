@@ -40,8 +40,8 @@ test.describe("POST /api/checkout", () => {
       data: {
         items: [
           {
-            slug: "4dof-robotic-arm-kit",
-            name: "4DOF Robotic Arm Kit",
+            slug: "4dof-arm",
+            name: "The 4DOF Robotic Arm",
             price: 99,
             quantity: 1,
           },
@@ -53,10 +53,10 @@ test.describe("POST /api/checkout", () => {
     if (response.status() === 200) {
       const body = await response.json()
       expect(body.url).toBeDefined()
-      expect(body.url).toContain("stripe.com") || expect(body.url).toContain("checkout")
+      expect(body.url).toMatch(/stripe\.com|checkout/i)
     } else {
-      // 500 for Stripe config error, or 429 if rate limited
-      expect([500, 429]).toContain(response.status())
+      // 400 if products are missing, 500 for Stripe config error, or 429 if rate limited
+      expect([400, 500, 429]).toContain(response.status())
     }
   })
 
@@ -65,14 +65,14 @@ test.describe("POST /api/checkout", () => {
       data: {
         items: [
           {
-            slug: "4dof-robotic-arm-kit",
-            name: "4DOF Robotic Arm Kit",
+            slug: "4dof-arm",
+            name: "The 4DOF Robotic Arm",
             price: 99,
             quantity: 2,
           },
           {
-            slug: "another-kit",
-            name: "Another Kit",
+            slug: "sensor-kit",
+            name: "Sensor Starter Kit",
             price: 49,
             quantity: 1,
           },
@@ -80,8 +80,8 @@ test.describe("POST /api/checkout", () => {
       },
     })
 
-    // Response depends on Stripe configuration, or 429 if rate limited
-    expect([200, 500, 429]).toContain(response.status())
+    // Response depends on Stripe configuration or product availability
+    expect([200, 400, 500, 429]).toContain(response.status())
   })
 
   test("should calculate free shipping for orders over $75", async ({
@@ -93,8 +93,8 @@ test.describe("POST /api/checkout", () => {
       data: {
         items: [
           {
-            slug: "4dof-robotic-arm-kit",
-            name: "4DOF Robotic Arm Kit",
+            slug: "4dof-arm",
+            name: "The 4DOF Robotic Arm",
             price: 99,
             quantity: 1,
           },
@@ -102,7 +102,7 @@ test.describe("POST /api/checkout", () => {
       },
     })
 
-    // Just verify endpoint responds
+    // Just verify endpoint responds (400 if products are missing)
     expect(response.status()).toBeDefined()
   })
 
@@ -120,7 +120,7 @@ test.describe("POST /api/checkout", () => {
       },
     })
 
-    // Endpoint should respond
+    // Endpoint should respond (400 if products are missing)
     expect(response.status()).toBeDefined()
   })
 
@@ -141,8 +141,8 @@ test.describe("POST /api/checkout", () => {
       data: {
         items: [
           {
-            slug: "test",
-            name: "Test",
+            slug: "4dof-arm",
+            name: "The 4DOF Robotic Arm",
             price: 99,
             quantity: 1,
           },

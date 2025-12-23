@@ -102,12 +102,12 @@ export default async function BannersPage() {
           <h1 className="font-mono text-2xl font-bold text-slate-900">Banners</h1>
           <p className="text-slate-600">Manage site-wide announcements and promotions</p>
         </div>
-        <Link href="/admin/banners/new">
-          <Button className="bg-cyan-700 hover:bg-cyan-600">
+        <Button asChild className="bg-cyan-700 hover:bg-cyan-600">
+          <Link href="/admin/banners/new">
             <Plus className="mr-2 h-4 w-4" />
             Create Banner
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
 
       {/* Stats */}
@@ -135,11 +135,9 @@ export default async function BannersPage() {
         <div className="rounded-lg border border-slate-200 bg-white p-12 text-center">
           <Megaphone className="mx-auto h-12 w-12 text-slate-300" />
           <p className="mt-4 text-slate-600">No banners yet.</p>
-          <Link href="/admin/banners/new">
-            <Button className="mt-4 bg-cyan-700 hover:bg-cyan-600">
-              Create your first banner
-            </Button>
-          </Link>
+          <Button asChild className="mt-4 bg-cyan-700 hover:bg-cyan-600">
+            <Link href="/admin/banners/new">Create your first banner</Link>
+          </Button>
         </div>
       ) : (
         <div className="rounded-lg border border-slate-200 bg-white">
@@ -170,7 +168,7 @@ export default async function BannersPage() {
                   banner.is_active && banner.ends_at && new Date(banner.ends_at) <= now
 
                 return (
-                  <TableRow key={banner.id} className={!banner.is_active ? "opacity-60" : ""}>
+                  <TableRow key={banner.id} className={banner.is_active ? "" : "opacity-60"}>
                     <TableCell>
                       <div className="max-w-[250px]">
                         <p className="truncate font-medium text-slate-900">{banner.title}</p>
@@ -224,11 +222,7 @@ export default async function BannersPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {!banner.is_active ? (
-                        <Badge variant="outline" className="border-slate-300 text-slate-500">
-                          Inactive
-                        </Badge>
-                      ) : isExpired ? (
+                      {banner.is_active ? isExpired ? (
                         <Badge variant="outline" className="border-slate-300 text-slate-500">
                           Expired
                         </Badge>
@@ -239,6 +233,10 @@ export default async function BannersPage() {
                       ) : (
                         <Badge variant="outline" className="border-amber-300 text-amber-700">
                           Draft
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="border-slate-300 text-slate-500">
+                          Inactive
                         </Badge>
                       )}
                     </TableCell>

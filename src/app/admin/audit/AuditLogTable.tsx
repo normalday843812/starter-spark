@@ -20,17 +20,15 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
-import {
   User,
   Package,
   FileText,
   Calendar,
   MessageSquare,
   Settings,
+  BookOpen,
+  Layers,
+  Folder,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -78,6 +76,12 @@ const resourceIcons = new Map<string, typeof User>([
   ["stats", Settings],
   ["page_content", FileText],
   ["site_content", FileText],
+  ["course", BookOpen],
+  ["module", Layers],
+  ["lesson", FileText],
+  ["doc_category", Folder],
+  ["doc_page", FileText],
+  ["team_member", User],
 ])
 
 const actionDescriptions = new Map<string, { label: string; verb: string; color: string }>([
@@ -118,6 +122,32 @@ const actionDescriptions = new Map<string, { label: string; verb: string; color:
   // Site content
   ["site_content.updated", { label: "Site Content Updated", verb: "updated site content", color: "bg-blue-100 text-blue-700 border-blue-200" }],
   ["site_content.reset", { label: "Site Content Reset", verb: "reset site content to default", color: "bg-amber-100 text-amber-700 border-amber-200" }],
+  // Learning management
+  ["course.created", { label: "Course Created", verb: "created course", color: "bg-green-100 text-green-700 border-green-200" }],
+  ["course.updated", { label: "Course Updated", verb: "updated course", color: "bg-blue-100 text-blue-700 border-blue-200" }],
+  ["course.deleted", { label: "Course Deleted", verb: "deleted course", color: "bg-red-100 text-red-700 border-red-200" }],
+  ["module.created", { label: "Module Created", verb: "created module", color: "bg-green-100 text-green-700 border-green-200" }],
+  ["module.updated", { label: "Module Updated", verb: "updated module", color: "bg-blue-100 text-blue-700 border-blue-200" }],
+  ["module.deleted", { label: "Module Deleted", verb: "deleted module", color: "bg-red-100 text-red-700 border-red-200" }],
+  ["module.reordered", { label: "Modules Reordered", verb: "reordered modules for", color: "bg-cyan-100 text-cyan-700 border-cyan-200" }],
+  ["lesson.created", { label: "Lesson Created", verb: "created lesson", color: "bg-green-100 text-green-700 border-green-200" }],
+  ["lesson.updated", { label: "Lesson Updated", verb: "updated lesson", color: "bg-blue-100 text-blue-700 border-blue-200" }],
+  ["lesson.deleted", { label: "Lesson Deleted", verb: "deleted lesson", color: "bg-red-100 text-red-700 border-red-200" }],
+  ["lesson.reordered", { label: "Lessons Reordered", verb: "reordered lessons for", color: "bg-cyan-100 text-cyan-700 border-cyan-200" }],
+  // Docs management
+  ["doc_category.created", { label: "Doc Category Created", verb: "created doc category", color: "bg-green-100 text-green-700 border-green-200" }],
+  ["doc_category.updated", { label: "Doc Category Updated", verb: "updated doc category", color: "bg-blue-100 text-blue-700 border-blue-200" }],
+  ["doc_category.deleted", { label: "Doc Category Deleted", verb: "deleted doc category", color: "bg-red-100 text-red-700 border-red-200" }],
+  ["doc_page.created", { label: "Doc Page Created", verb: "created doc page", color: "bg-green-100 text-green-700 border-green-200" }],
+  ["doc_page.updated", { label: "Doc Page Updated", verb: "updated doc page", color: "bg-blue-100 text-blue-700 border-blue-200" }],
+  ["doc_page.deleted", { label: "Doc Page Deleted", verb: "deleted doc page", color: "bg-red-100 text-red-700 border-red-200" }],
+  ["doc_page.published", { label: "Doc Page Published", verb: "published doc page", color: "bg-green-100 text-green-700 border-green-200" }],
+  ["doc_page.unpublished", { label: "Doc Page Unpublished", verb: "unpublished doc page", color: "bg-amber-100 text-amber-700 border-amber-200" }],
+  // Team management
+  ["team_member.created", { label: "Team Member Created", verb: "added team member", color: "bg-green-100 text-green-700 border-green-200" }],
+  ["team_member.updated", { label: "Team Member Updated", verb: "updated team member", color: "bg-blue-100 text-blue-700 border-blue-200" }],
+  ["team_member.deleted", { label: "Team Member Deleted", verb: "removed team member", color: "bg-red-100 text-red-700 border-red-200" }],
+  ["team_member.reordered", { label: "Team Reordered", verb: "reordered team members", color: "bg-cyan-100 text-cyan-700 border-cyan-200" }],
 ])
 
 const resourceLinks = new Map<string, (id: string) => string>([
@@ -129,6 +159,12 @@ const resourceLinks = new Map<string, (id: string) => string>([
   ["comment", () => `/admin/community`],
   ["content", (id) => `/admin/content/${id}`],
   ["site_content", () => `/admin/content/site`],
+  ["course", (id) => `/admin/learn/${id}`],
+  ["module", () => `/admin/learn`],
+  ["lesson", () => `/admin/learn`],
+  ["doc_category", () => `/admin/docs/categories`],
+  ["doc_page", (id) => `/admin/docs/${id}`],
+  ["team_member", () => `/admin/content/team`],
 ])
 
 function formatDate(dateStr: string | null): string {
@@ -167,7 +203,7 @@ function CopyButton({ text }: { text: string }) {
   const handleCopy = async () => {
     await navigator.clipboard.writeText(text)
     setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    setTimeout(() => { setCopied(false); }, 2000)
   }
 
   return (
@@ -254,7 +290,7 @@ function DetailsSection({ details }: { details: Json | null }) {
     <div className="space-y-1">
       {Object.entries(detailsObj).map(([key, value]) => (
         <div key={key} className="flex items-start gap-2 text-sm">
-          <span className="text-slate-500 capitalize min-w-[80px]">{key.replace(/_/g, " ")}:</span>
+          <span className="text-slate-500 capitalize min-w-[80px]">{key.replaceAll('_', " ")}:</span>
           <code className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded text-xs break-all">
             {formatValue(key, value)}
           </code>
@@ -311,7 +347,7 @@ export function AuditLogTable({
       <div className="flex gap-4 items-center bg-white p-4 rounded-lg border border-slate-200">
         <div className="flex items-center gap-2">
           <span className="text-sm text-slate-600">Resource:</span>
-          <Select value={filters.resource} onValueChange={(v) => updateFilter("resource", v)}>
+          <Select value={filters.resource} onValueChange={(v) => { updateFilter("resource", v); }}>
             <SelectTrigger className="w-[150px]">
               <SelectValue />
             </SelectTrigger>
@@ -319,7 +355,7 @@ export function AuditLogTable({
               <SelectItem value="all">All Resources</SelectItem>
               {allResources.map((r) => (
                 <SelectItem key={r} value={r}>
-                  {r.charAt(0).toUpperCase() + r.slice(1).replace(/_/g, " ")}
+                  {r.charAt(0).toUpperCase() + r.slice(1).replaceAll('_', " ")}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -328,7 +364,7 @@ export function AuditLogTable({
 
         <div className="flex items-center gap-2">
           <span className="text-sm text-slate-600">Action:</span>
-          <Select value={filters.action} onValueChange={(v) => updateFilter("action", v)}>
+          <Select value={filters.action} onValueChange={(v) => { updateFilter("action", v); }}>
             <SelectTrigger className="w-[180px]">
               <SelectValue />
             </SelectTrigger>
@@ -372,131 +408,156 @@ export function AuditLogTable({
 	                  color: "bg-slate-100 text-slate-700 border-slate-200",
 	                }
 	                const isExpanded = expandedRows.has(log.id)
-	                const hasDetails = log.details && typeof log.details === "object" && !Array.isArray(log.details) && Object.keys(log.details).length > 0
+	                const hasDetails =
+	                  log.details &&
+	                  typeof log.details === "object" &&
+	                  !Array.isArray(log.details) &&
+	                  Object.keys(log.details).length > 0
+	                const canExpand = hasDetails || Boolean(log.ip_address || log.user_agent)
 	                const resourceLinkBuilder = resourceLinks.get(log.resource_type)
 	                const resourceLink = log.resource_id && resourceLinkBuilder ? resourceLinkBuilder(log.resource_id) : null
 
-	                return (
-                  <Collapsible key={log.id} open={isExpanded} onOpenChange={() => toggleRow(log.id)} asChild>
-                    <>
-                      <TableRow className="hover:bg-slate-50">
-                        <TableCell>
-                          {(hasDetails || log.ip_address) && (
-                            <CollapsibleTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                <ChevronDown
-                                  className={`h-4 w-4 text-slate-400 transition-transform ${
-                                    isExpanded ? "rotate-180" : ""
-                                  }`}
-                                />
-                              </Button>
-                            </CollapsibleTrigger>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className={actionInfo.color}>
-                            {actionInfo.label}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <div className="flex h-8 w-8 items-center justify-center rounded bg-slate-100">
-                              <Icon className="h-4 w-4 text-slate-600" />
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-sm font-medium text-slate-900 capitalize">
-                                  {log.resource_type.replace(/_/g, " ")}
-                                </span>
-                                {resourceLink && (
-                                  <Link href={resourceLink} className="text-cyan-600 hover:text-cyan-700">
-                                    <ExternalLink className="h-3 w-3" />
-                                  </Link>
-                                )}
-                              </div>
-                              {log.resource_id && (
-                                <div className="flex items-center gap-1">
-                                  <code className="text-xs text-slate-500 font-mono">
-                                    {log.resource_id}
-                                  </code>
-                                  <CopyButton text={log.resource_id} />
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="text-sm text-slate-900">
-                              {log.user_id ? userEmails[log.user_id] || "Unknown User" : "System"}
-                            </p>
-                            {log.user_id && (
-                              <div className="flex items-center gap-1">
-                                <code className="text-xs text-slate-400 font-mono">
-                                  {log.user_id.slice(0, 8)}...
-                                </code>
-                                <CopyButton text={log.user_id} />
-                              </div>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="text-sm text-slate-900">{formatDate(log.created_at)}</p>
-                            <p className="text-xs text-slate-500">{formatRelativeTime(log.created_at)}</p>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                      <CollapsibleContent asChild>
-                        <TableRow className="bg-slate-50 hover:bg-slate-50">
-                          <TableCell colSpan={5} className="py-4">
-                            <div className="pl-12 space-y-4">
-                              {/* Human readable description */}
-                              <p className="text-sm text-slate-700">
-                                <span className="font-medium">
-                                  {log.user_id ? userEmails[log.user_id] || "Unknown" : "System"}
-                                </span>{" "}
-                                {actionInfo.verb}{" "}
-                                <code className="px-1.5 py-0.5 bg-slate-200 rounded text-xs font-mono">
-                                  {log.resource_id || log.resource_type}
-                                </code>
-                              </p>
+	                const detailsRowId = `audit-log-details-${log.id}`
 
-                              {/* Details */}
-                              {hasDetails && (
-                                <div className="bg-white rounded border border-slate-200 p-4">
-                                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
-                                    Change Details
-                                  </p>
-                                  <DetailsSection details={log.details} />
-                                </div>
-                              )}
+	                return [
+	                  <TableRow key={log.id} className="hover:bg-slate-50">
+	                    <TableCell>
+	                      {canExpand && (
+	                        <Button
+	                          type="button"
+	                          variant="ghost"
+	                          size="sm"
+	                          className="h-8 w-8 p-0"
+	                          aria-expanded={isExpanded}
+	                          aria-controls={detailsRowId}
+	                          onClick={() => { toggleRow(log.id); }}
+	                        >
+	                          <ChevronDown
+	                            className={`h-4 w-4 text-slate-400 transition-transform ${
+	                              isExpanded ? "rotate-180" : ""
+	                            }`}
+	                          />
+	                        </Button>
+	                      )}
+	                    </TableCell>
+	                    <TableCell>
+	                      <Badge variant="outline" className={actionInfo.color}>
+	                        {actionInfo.label}
+	                      </Badge>
+	                    </TableCell>
+	                    <TableCell>
+	                      <div className="flex items-center gap-2">
+	                        <div className="flex h-8 w-8 items-center justify-center rounded bg-slate-100">
+	                          <Icon className="h-4 w-4 text-slate-600" />
+	                        </div>
+	                        <div>
+	                          <div className="flex items-center gap-1.5">
+	                            <span className="text-sm font-medium text-slate-900 capitalize">
+	                              {log.resource_type.replaceAll('_', " ")}
+	                            </span>
+	                            {resourceLink && (
+	                              <Link
+	                                href={resourceLink}
+	                                className="text-cyan-600 hover:text-cyan-700"
+	                              >
+	                                <ExternalLink className="h-3 w-3" />
+	                              </Link>
+	                            )}
+	                          </div>
+	                          {log.resource_id && (
+	                            <div className="flex items-center gap-1">
+	                              <code className="text-xs text-slate-500 font-mono">
+	                                {log.resource_id}
+	                              </code>
+	                              <CopyButton text={log.resource_id} />
+	                            </div>
+	                          )}
+	                        </div>
+	                      </div>
+	                    </TableCell>
+	                    <TableCell>
+	                      <div>
+	                        <p className="text-sm text-slate-900">
+	                          {log.user_id
+	                            ? userEmails[log.user_id] || "Unknown User"
+	                            : "System"}
+	                        </p>
+	                        {log.user_id && (
+	                          <div className="flex items-center gap-1">
+	                            <code className="text-xs text-slate-400 font-mono">
+	                              {log.user_id.slice(0, 8)}...
+	                            </code>
+	                            <CopyButton text={log.user_id} />
+	                          </div>
+	                        )}
+	                      </div>
+	                    </TableCell>
+	                    <TableCell>
+	                      <div>
+	                        <p className="text-sm text-slate-900">
+	                          {formatDate(log.created_at)}
+	                        </p>
+	                        <p className="text-xs text-slate-500">
+	                          {formatRelativeTime(log.created_at)}
+	                        </p>
+	                      </div>
+	                    </TableCell>
+	                  </TableRow>,
+	                  isExpanded && canExpand ? (
+	                    <TableRow
+	                      key={`${log.id}-details`}
+	                      id={detailsRowId}
+	                      className="bg-slate-50 hover:bg-slate-50"
+	                    >
+	                      <TableCell colSpan={5} className="py-4">
+	                        <div className="pl-12 space-y-4">
+	                          <p className="text-sm text-slate-700">
+	                            <span className="font-medium">
+	                              {log.user_id
+	                                ? userEmails[log.user_id] || "Unknown"
+	                                : "System"}
+	                            </span>{" "}
+	                            {actionInfo.verb}{" "}
+	                            <code className="px-1.5 py-0.5 bg-slate-200 rounded text-xs font-mono">
+	                              {log.resource_id || log.resource_type}
+	                            </code>
+	                          </p>
 
-                              {/* Metadata */}
-                              {(log.ip_address || log.user_agent) && (
-                                <div className="flex gap-6 text-xs text-slate-500">
-                                  {log.ip_address && (
-                                    <div className="flex items-center gap-1">
-                                      <span>IP:</span>
-                                      <code className="font-mono">{log.ip_address}</code>
-                                    </div>
-                                  )}
-                                  {log.user_agent && (
-                                    <div className="flex items-center gap-1 max-w-md truncate">
-                                      <span>UA:</span>
-                                      <code className="font-mono truncate">{log.user_agent}</code>
-                                    </div>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      </CollapsibleContent>
-                    </>
-                  </Collapsible>
-                )
-              })
+	                          {hasDetails && (
+	                            <div className="bg-white rounded border border-slate-200 p-4">
+	                              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
+	                                Change Details
+	                              </p>
+	                              <DetailsSection details={log.details} />
+	                            </div>
+	                          )}
+
+	                          {(log.ip_address || log.user_agent) && (
+	                            <div className="flex gap-6 text-xs text-slate-500">
+	                              {log.ip_address && (
+	                                <div className="flex items-center gap-1">
+	                                  <span>IP:</span>
+	                                  <code className="font-mono">
+	                                    {log.ip_address}
+	                                  </code>
+	                                </div>
+	                              )}
+	                              {log.user_agent && (
+	                                <div className="flex items-center gap-1 max-w-md truncate">
+	                                  <span>UA:</span>
+	                                  <code className="font-mono truncate">
+	                                    {log.user_agent}
+	                                  </code>
+	                                </div>
+	                              )}
+	                            </div>
+	                          )}
+	                        </div>
+	                      </TableCell>
+	                    </TableRow>
+	                  ) : null,
+	                ]
+	              })
             )}
           </TableBody>
         </Table>
@@ -512,7 +573,7 @@ export function AuditLogTable({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => goToPage(currentPage - 1)}
+              onClick={() => { goToPage(currentPage - 1); }}
               disabled={currentPage <= 1}
             >
               <ChevronLeft className="h-4 w-4 mr-1" />
@@ -521,7 +582,7 @@ export function AuditLogTable({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => goToPage(currentPage + 1)}
+              onClick={() => { goToPage(currentPage + 1); }}
               disabled={currentPage >= totalPages}
             >
               Next

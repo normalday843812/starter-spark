@@ -11,6 +11,11 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Plus, Pencil, Star } from "lucide-react"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { formatPrice } from "@/lib/validation"
 
 export const metadata = {
@@ -46,23 +51,21 @@ export default async function ProductsPage() {
           <h1 className="font-mono text-2xl font-bold text-slate-900">Products</h1>
           <p className="text-slate-600">Manage your product catalog</p>
         </div>
-        <Link href="/admin/products/new">
-          <Button className="bg-cyan-700 hover:bg-cyan-600">
+        <Button asChild className="bg-cyan-700 hover:bg-cyan-600">
+          <Link href="/admin/products/new">
             <Plus className="mr-2 h-4 w-4" />
             Add Product
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
 
       {/* Products Table */}
       {products.length === 0 ? (
         <div className="rounded-lg border border-slate-200 bg-white p-12 text-center">
           <p className="text-slate-600">No products yet.</p>
-          <Link href="/admin/products/new">
-            <Button className="mt-4 bg-cyan-700 hover:bg-cyan-600">
-              Create your first product
-            </Button>
-          </Link>
+          <Button asChild className="mt-4 bg-cyan-700 hover:bg-cyan-600">
+            <Link href="/admin/products/new">Create your first product</Link>
+          </Button>
         </div>
       ) : (
         <div className="rounded-lg border border-slate-200 bg-white">
@@ -110,11 +113,16 @@ export default async function ProductsPage() {
                       )}
                     </TableCell>
                     <TableCell>
-                      <Link href={`/admin/products/${product.slug}`}>
-                        <Button variant="ghost" size="sm">
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                      </Link>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button asChild variant="ghost" size="sm">
+                            <Link href={`/admin/products/${product.slug}`} aria-label={`Edit ${product.name}`}>
+                              <Pencil className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Edit product</TooltipContent>
+                      </Tooltip>
                     </TableCell>
                   </TableRow>
                 )

@@ -15,15 +15,16 @@ import { Button } from "@/components/ui/button"
 interface ProductTabsProps {
   description: string
   learningOutcomes: string[]
-  includedItems: Array<{
+  includedItems: {
     quantity: number
     name: string
     description: string
-  }>
-  specs: Array<{
+  }[]
+  specs: {
     label: string
     value: string
-  }>
+  }[]
+  datasheetUrl?: string
 }
 
 export function ProductTabs({
@@ -31,25 +32,29 @@ export function ProductTabs({
   learningOutcomes,
   includedItems,
   specs,
+  datasheetUrl,
 }: ProductTabsProps) {
   return (
     <Tabs defaultValue="overview" className="w-full">
-      <TabsList className="w-full justify-start border-b border-slate-200 bg-transparent h-auto p-0 rounded-none">
+      <TabsList
+        aria-label="Product details"
+        className="w-full justify-start border-b border-slate-200 bg-transparent h-auto p-0 rounded-none flex-wrap gap-2"
+      >
         <TabsTrigger
           value="overview"
-          className="cursor-pointer font-mono text-sm data-[state=active]:text-cyan-700 data-[state=active]:border-b-2 data-[state=active]:border-cyan-700 rounded-none px-6 py-3 data-[state=active]:shadow-none"
+          className="cursor-pointer font-mono text-sm data-[state=active]:text-cyan-700 data-[state=active]:border-b-2 data-[state=active]:border-cyan-700 rounded-none px-6 py-3 data-[state=active]:shadow-none flex-none sm:flex-1 whitespace-normal sm:whitespace-nowrap text-center"
         >
           Overview
         </TabsTrigger>
         <TabsTrigger
           value="included"
-          className="cursor-pointer font-mono text-sm data-[state=active]:text-cyan-700 data-[state=active]:border-b-2 data-[state=active]:border-cyan-700 rounded-none px-6 py-3 data-[state=active]:shadow-none"
+          className="cursor-pointer font-mono text-sm data-[state=active]:text-cyan-700 data-[state=active]:border-b-2 data-[state=active]:border-cyan-700 rounded-none px-6 py-3 data-[state=active]:shadow-none flex-none sm:flex-1 whitespace-normal sm:whitespace-nowrap text-center"
         >
           What&apos;s Included
         </TabsTrigger>
         <TabsTrigger
           value="specs"
-          className="cursor-pointer font-mono text-sm data-[state=active]:text-cyan-700 data-[state=active]:border-b-2 data-[state=active]:border-cyan-700 rounded-none px-6 py-3 data-[state=active]:shadow-none"
+          className="cursor-pointer font-mono text-sm data-[state=active]:text-cyan-700 data-[state=active]:border-b-2 data-[state=active]:border-cyan-700 rounded-none px-6 py-3 data-[state=active]:shadow-none flex-none sm:flex-1 whitespace-normal sm:whitespace-nowrap text-center"
         >
           Technical Specs
         </TabsTrigger>
@@ -77,7 +82,7 @@ export function ProductTabs({
                       {idx + 1}
                     </span>
                   </div>
-                  <span className="text-slate-600">{outcome}</span>
+                  <span className="text-slate-700">{outcome}</span>
                 </li>
               ))}
             </ul>
@@ -94,7 +99,7 @@ export function ProductTabs({
                 key={stat.label}
                 className="p-4 bg-slate-50 rounded border border-slate-200 text-center"
               >
-                <p className="text-sm text-slate-500 mb-1">{stat.label}</p>
+                <p className="text-sm text-slate-700 mb-1">{stat.label}</p>
                 <p className="font-mono text-slate-900">{stat.value}</p>
               </div>
             ))}
@@ -110,10 +115,11 @@ export function ProductTabs({
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <div className="w-20 h-20 mb-4 rounded-full bg-slate-200 flex items-center justify-center">
                 <svg
-                  className="w-10 h-10 text-slate-500"
+                  className="w-10 h-10 text-slate-600"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -123,8 +129,8 @@ export function ProductTabs({
                   />
                 </svg>
               </div>
-              <p className="text-slate-500 font-mono text-sm">Knolling Photo</p>
-              <p className="text-slate-500 text-xs mt-1">
+              <p className="text-slate-700 font-mono text-sm">Knolling Photo</p>
+              <p className="text-slate-700 text-xs mt-1">
                 All components laid flat
               </p>
             </div>
@@ -134,13 +140,13 @@ export function ProductTabs({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="font-mono text-slate-500 w-20">
+                <TableHead className="font-mono text-slate-700 w-20">
                   Qty
                 </TableHead>
-                <TableHead className="font-mono text-slate-500">
+                <TableHead className="font-mono text-slate-700">
                   Component
                 </TableHead>
-                <TableHead className="font-mono text-slate-500">
+                <TableHead className="font-mono text-slate-700">
                   Description
                 </TableHead>
               </TableRow>
@@ -154,7 +160,7 @@ export function ProductTabs({
                   <TableCell className="font-medium text-slate-900">
                     {item.name}
                   </TableCell>
-                  <TableCell className="text-slate-600">
+                  <TableCell className="text-slate-700">
                     {item.description}
                   </TableCell>
                 </TableRow>
@@ -172,23 +178,28 @@ export function ProductTabs({
               <div
                 key={spec.label}
                 className={`flex justify-between p-4 ${
-                  idx !== specs.length - 1 ? "border-b border-slate-100" : ""
+                  idx === specs.length - 1 ? "" : "border-b border-slate-100"
                 }`}
               >
-                <span className="text-slate-500">{spec.label}</span>
+                <span className="text-slate-700">{spec.label}</span>
                 <span className="font-mono text-slate-900">{spec.value}</span>
               </div>
             ))}
           </div>
 
           {/* Download Datasheet */}
-          <Button
-            variant="outline"
-            className="mt-6 border-slate-200 text-slate-600 hover:text-cyan-700 hover:border-cyan-700 font-mono"
-          >
-            <FileDown className="w-4 h-4 mr-2" />
-            Download Datasheet (PDF)
-          </Button>
+          {datasheetUrl && (
+            <Button
+              variant="outline"
+              className="mt-6 border-slate-200 text-slate-700 hover:text-cyan-700 hover:border-cyan-700 font-mono w-full sm:w-auto whitespace-normal break-words text-center leading-snug h-auto py-3 flex-wrap"
+              asChild
+            >
+              <a href={datasheetUrl} target="_blank" rel="noopener noreferrer" download>
+                <FileDown className="w-4 h-4 mr-2" aria-hidden="true" />
+                Download Datasheet (PDF)
+              </a>
+            </Button>
+          )}
         </div>
       </TabsContent>
     </Tabs>

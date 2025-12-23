@@ -61,9 +61,9 @@ export function getProductSchema(product: {
       "@type": "Offer",
       price: product.price,
       priceCurrency: "USD",
-      availability: product.inStock !== false
-        ? "https://schema.org/InStock"
-        : "https://schema.org/OutOfStock",
+      availability: product.inStock === false
+        ? "https://schema.org/OutOfStock"
+        : "https://schema.org/InStock",
       seller: {
         "@type": "Organization",
         name: siteConfig.name,
@@ -186,4 +186,8 @@ export function getWebsiteSchema() {
 // Helper to render JSON-LD as a script tag string
 export function jsonLdScript(data: object): string {
   return JSON.stringify(data)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026")
+    .replace(/\//g, "\\/")
 }

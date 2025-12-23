@@ -4,6 +4,7 @@
 /node_modules
 /.pnp
 .pnp.*
+.npm-cache/
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
@@ -23,9 +24,8 @@
 # misc
 .DS_Store
 *.pem
-CLAUDE.md
-PLAN.md
-SESSION_LOG.md
+*.md
+!README.md
 
 # debug
 npm-debug.log*
@@ -35,6 +35,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+!.env.*.example
 .gemini
 AUDIT.md
 REPORT.md
@@ -53,3 +55,5 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+.env*.local
+.env.local.bak

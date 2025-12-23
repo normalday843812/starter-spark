@@ -83,17 +83,16 @@ export function ProductSpotlightSection({ product }: ProductSpotlightProps) {
 	              {hasImages && displayImageSrc ? (
 	                <button
 	                  type="button"
-	                  onClick={() => setLightboxOpen(true)}
+	                  onClick={() => { setLightboxOpen(true); }}
 	                  className="absolute inset-0 cursor-zoom-in group"
 	                  aria-label="Open image viewer"
 	                >
-	                  <ProductImage
-	                    src={displayImageSrc}
-	                    alt={`${product.name} - Image ${displayImageIndex + 1}`}
-	                    sizes="(max-width: 1024px) 100vw, 800px"
-	                    quality={95}
-	                    priority
-	                    wrapperClassName="absolute inset-0"
+                    <ProductImage
+                      src={displayImageSrc}
+                      alt={`${product.name} - Image ${displayImageIndex + 1}`}
+                      sizes="(max-width: 1024px) 100vw, 800px"
+                      quality={95}
+                      wrapperClassName="absolute inset-0"
                     fallback={
                       <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
                         <div className="text-center p-8">
@@ -139,7 +138,7 @@ export function ProductSpotlightSection({ product }: ProductSpotlightProps) {
                   <button
                     key={imageUrl + idx}
                     type="button"
-                    onClick={() => handleSelectImage(idx)}
+                    onClick={() => { handleSelectImage(idx); }}
                     className={cn(
                       "shrink-0 size-20 rounded border overflow-hidden transition-all cursor-pointer relative",
                       selectedImage === idx
@@ -225,12 +224,12 @@ export function ProductSpotlightSection({ product }: ProductSpotlightProps) {
                 <p className="text-sm text-slate-500">Starting at</p>
                 <p className="text-3xl font-mono text-amber-600">${priceDisplay}</p>
               </div>
-              <Link href={`/shop/${product.slug}`}>
-                <Button className="bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
+              <Button asChild className="bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
+                <Link href={`/shop/${product.slug}`}>
                   View Details
                   <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           </motion.div>
         </div>

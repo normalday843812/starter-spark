@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { createClient } from "@/lib/supabase/client"
 import { X, Info, AlertTriangle, CheckCircle, XCircle, Tag, Zap, Gift, Megaphone } from "lucide-react"
 import { motion, AnimatePresence } from "motion/react"
 import Link from "next/link"
@@ -103,7 +102,7 @@ function getDismissKey(bannerId: string) {
 }
 
 function isDismissed(bannerId: string, dismissDurationHours: number | null): boolean {
-  if (typeof window === "undefined") return false
+  if (globalThis.window === undefined) return false
 
   const dismissedAt = localStorage.getItem(getDismissKey(bannerId))
   if (!dismissedAt) return false
@@ -112,14 +111,14 @@ function isDismissed(bannerId: string, dismissDurationHours: number | null): boo
   if (dismissDurationHours === null) return true
 
   // Check if enough time has passed
-  const dismissedTime = parseInt(dismissedAt, 10)
+  const dismissedTime = Number.parseInt(dismissedAt, 10)
   const hoursSinceDismissed = (Date.now() - dismissedTime) / (1000 * 60 * 60)
 
   return hoursSinceDismissed < dismissDurationHours
 }
 
 function dismissBanner(bannerId: string) {
-  if (typeof window === "undefined") return
+  if (globalThis.window === undefined) return
   localStorage.setItem(getDismissKey(bannerId), Date.now().toString())
 }
 
@@ -136,6 +135,23 @@ function shouldShowOnPage(pages: string[], currentPath: string): boolean {
   })
 }
 
+function getSafeLinkUrl(linkUrl: string): string | null {
+  const trimmed = linkUrl.trim()
+  if (!trimmed) return null
+  if (trimmed.startsWith("/")) {
+    return trimmed.startsWith("//") ? null : trimmed
+  }
+  try {
+    const parsed = new URL(trimmed)
+    if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+      return trimmed
+    }
+  } catch {
+    return null
+  }
+  return null
+}
+
 export function SiteBanner() {
   const [banners, setBanners] = useState<Banner[]>([])
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set())
@@ -144,44 +160,71 @@ export function SiteBanner() {
 
   useEffect(() => {
     async function fetchBanners() {
-      const supabase = createClient()
+      try {
+        const response = await fetch("/api/site-banners", { cache: "no-store" })
+        if (!response.ok) {
+          const payload: unknown = await response.json().catch(() => null)
+          const message =
+            typeof payload === "object" &&
+            payload !== null &&
+            "error" in payload &&
+            typeof (payload as { error?: unknown }).error === "string"
+              ? (payload as { error: string }).error
+              : "Unknown error"
+          console.error("Failed to fetch banners:", message)
+          setIsLoading(false)
+          return
+        }
+        const data: unknown = await response.json().catch(() => [])
+        const rawBanners = Array.isArray(data) ? data : []
 
-      const { data, error } = await supabase
-        .from("site_banners")
-        .select("id, title, message, link_url, link_text, icon, color_scheme, pages, is_dismissible, dismiss_duration_hours")
-        .order("sort_order", { ascending: true })
+        // Transform data to match Banner interface with defaults
+        const transformedBanners: Banner[] = rawBanners.flatMap((item) => {
+          if (!item || typeof item !== "object") return []
+          const b = item as Partial<Banner>
+          if (
+            typeof b.id !== "string" ||
+            typeof b.title !== "string" ||
+            typeof b.message !== "string"
+          ) {
+            return []
+          }
 
-      if (error) {
-        console.error("Failed to fetch banners:", error.message)
+          const pages = Array.isArray(b.pages)
+            ? b.pages.filter((page) => typeof page === "string")
+            : []
+
+          return [{
+            id: b.id,
+            title: b.title,
+            message: b.message,
+            link_url: typeof b.link_url === "string" ? b.link_url : null,
+            link_text: typeof b.link_text === "string" ? b.link_text : null,
+            icon: typeof b.icon === "string" ? b.icon : null,
+            color_scheme: typeof b.color_scheme === "string" && b.color_scheme ? b.color_scheme : "info",
+            pages,
+            is_dismissible: typeof b.is_dismissible === "boolean" ? b.is_dismissible : true,
+            dismiss_duration_hours: typeof b.dismiss_duration_hours === "number" ? b.dismiss_duration_hours : null,
+          }]
+        })
+
+        setBanners(transformedBanners)
+
+        // Check which banners are already dismissed
+        const dismissed = new Set<string>()
+        for (const banner of transformedBanners) {
+          if (isDismissed(banner.id, banner.dismiss_duration_hours)) {
+            dismissed.add(banner.id)
+          }
+        }
+        setDismissedIds(dismissed)
+        setIsLoading(false)
+        return
+      } catch (error) {
+        console.error("Failed to fetch banners:", error)
         setIsLoading(false)
         return
       }
-
-      // Transform data to match Banner interface with defaults
-      const transformedBanners: Banner[] = (data || []).map(b => ({
-        id: b.id,
-        title: b.title,
-        message: b.message,
-        link_url: b.link_url,
-        link_text: b.link_text,
-        icon: b.icon,
-        color_scheme: b.color_scheme || "info",
-        pages: b.pages || [],
-        is_dismissible: b.is_dismissible ?? true,
-        dismiss_duration_hours: b.dismiss_duration_hours,
-      }))
-
-      setBanners(transformedBanners)
-
-      // Check which banners are already dismissed
-      const dismissed = new Set<string>()
-      transformedBanners.forEach(banner => {
-        if (isDismissed(banner.id, banner.dismiss_duration_hours)) {
-          dismissed.add(banner.id)
-        }
-      })
-      setDismissedIds(dismissed)
-      setIsLoading(false)
     }
 
     void fetchBanners()
@@ -206,6 +249,7 @@ export function SiteBanner() {
       {visibleBanners.map((banner) => {
         const scheme = COLOR_SCHEMES[banner.color_scheme] || COLOR_SCHEMES.info
         const IconComponent = scheme.icon
+        const safeLinkUrl = banner.link_url ? getSafeLinkUrl(banner.link_url) : null
 
         return (
           <motion.div
@@ -225,9 +269,9 @@ export function SiteBanner() {
                   </p>
                 </div>
 
-                {banner.link_url && banner.link_text && (
+                {safeLinkUrl && banner.link_text && (
                   <Link
-                    href={banner.link_url}
+                    href={safeLinkUrl}
                     className={`text-sm font-semibold underline underline-offset-2 hover:no-underline transition-colors ${scheme.linkStyle}`}
                   >
                     {banner.link_text}
@@ -236,7 +280,7 @@ export function SiteBanner() {
 
                 {banner.is_dismissible && (
                   <button
-                    onClick={() => handleDismiss(banner.id)}
+                    onClick={() => { handleDismiss(banner.id); }}
                     className={`absolute right-4 p-1.5 rounded-full transition-colors ${scheme.dismissStyle}`}
                     aria-label="Dismiss banner"
                   >

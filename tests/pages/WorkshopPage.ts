@@ -50,7 +50,7 @@ export class WorkshopPage {
       has: page.locator('[class*="font-mono"]'),
     })
     this.claimSection = page.getByText(/claim a kit/i)
-    this.claimCodeInput = page.getByPlaceholder(/enter kit code/i)
+    this.claimCodeInput = page.getByPlaceholder(/xxxx-xxxx-xxxx-xxxx/i)
     this.activateButton = page.getByRole("button", { name: /activate/i })
     this.quickToolsSection = page.getByText(/quick tools/i)
     this.achievementsSection = page.getByText(/achievements/i)
@@ -62,11 +62,15 @@ export class WorkshopPage {
 
   async goto() {
     await this.page.goto("/workshop")
+    await this.page
+      .locator('header[data-hydrated="true"]')
+      .waitFor({ timeout: 5000 })
+      .catch(() => {})
   }
 
   async expectPageLoaded() {
-    // Wait for page to fully load
-    await this.page.waitForLoadState("networkidle")
+    await expect(this.page.locator("main")).toBeVisible()
+    await expect(this.pageTitle.first()).toBeVisible()
   }
 
   async expectSignInRequired() {
@@ -101,6 +105,6 @@ export class WorkshopPage {
 
   async clickSignIn() {
     await this.signInButton.click()
-    await this.page.waitForURL("**/login**")
+    await expect(this.page).toHaveURL(/\/login/)
   }
 }

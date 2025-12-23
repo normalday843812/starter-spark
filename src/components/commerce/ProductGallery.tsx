@@ -102,6 +102,8 @@ export function ProductGallery({
                 fill
                 sizes="(max-width: 1024px) 100vw, 60vw"
                 quality={20}
+                loading="lazy"
+                fetchPriority="low"
                 className="object-cover blur-2xl scale-110 opacity-25 pointer-events-none"
                 aria-hidden={true}
               />
@@ -111,14 +113,13 @@ export function ProductGallery({
                 alt={`${productName} - Image ${displayImageIndex + 1}`}
                 sizes="(max-width: 1024px) 100vw, 60vw"
                 quality={95}
-                priority
                 wrapperClassName="absolute inset-0"
                 fallback={
                   <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
                     <div className="w-24 h-24 mb-4 rounded-full bg-slate-200 flex items-center justify-center">
-                      <ImageIcon className="w-12 h-12 text-slate-400" />
+                      <ImageIcon className="w-12 h-12 text-slate-600" aria-hidden="true" />
                     </div>
-                    <p className="text-slate-400 font-mono text-sm">Failed to load image</p>
+                    <p className="text-slate-600 font-mono text-sm">Failed to load image</p>
                   </div>
                 }
               />
@@ -131,7 +132,7 @@ export function ProductGallery({
                   className="absolute bottom-3 right-3 rounded-full bg-black/60 text-white p-2 opacity-0 group-hover:opacity-100 transition-opacity"
                   aria-hidden="true"
                 >
-                  <ZoomIn className="size-4" />
+                  <ZoomIn className="size-4" aria-hidden="true" />
                 </div>
               )}
             </div>
@@ -139,9 +140,9 @@ export function ProductGallery({
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
             <div className="w-24 h-24 mb-4 rounded-full bg-slate-200 flex items-center justify-center">
-              <ImageIcon className="w-12 h-12 text-slate-400" />
+              <ImageIcon className="w-12 h-12 text-slate-600" aria-hidden="true" />
             </div>
-            <p className="text-slate-400 font-mono text-sm">{productName}</p>
+            <p className="text-slate-600 font-mono text-sm">{productName}</p>
           </div>
         )}
 
@@ -156,7 +157,7 @@ export function ProductGallery({
               className="absolute left-3 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white border border-slate-200 shadow-sm text-slate-800 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
               aria-label="Previous image"
             >
-              <ChevronLeft className="size-5" />
+              <ChevronLeft className="size-5" aria-hidden="true" />
             </Button>
             <Button
               type="button"
@@ -166,7 +167,7 @@ export function ProductGallery({
               className="absolute right-3 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white border border-slate-200 shadow-sm text-slate-800 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
               aria-label="Next image"
             >
-              <ChevronRight className="size-5" />
+              <ChevronRight className="size-5" aria-hidden="true" />
             </Button>
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 rounded-full bg-black/60 text-white px-2 py-1 font-mono text-xs">
               {displayImageIndex + 1} / {images.length}
@@ -181,7 +182,7 @@ export function ProductGallery({
           {modelPath && (
             <button
               type="button"
-              onClick={() => setView("3d")}
+              onClick={() => { setView("3d"); }}
               className={cn(
                 "shrink-0 size-20 rounded border overflow-hidden transition-all cursor-pointer bg-slate-50",
                 view === "3d"
@@ -191,8 +192,11 @@ export function ProductGallery({
               aria-label="View 3D model"
             >
               <div className="w-full h-full flex flex-col items-center justify-center">
-                <Box className={cn("w-4 h-4 mb-0.5", view === "3d" ? "text-cyan-700" : "text-slate-500")} />
-                <span className={cn("text-[10px] font-mono", view === "3d" ? "text-cyan-700" : "text-slate-500")}>
+                <Box
+                  className={cn("w-4 h-4 mb-0.5", view === "3d" ? "text-cyan-700" : "text-slate-600")}
+                  aria-hidden="true"
+                />
+                <span className={cn("text-[10px] font-mono", view === "3d" ? "text-cyan-700" : "text-slate-600")}>
                   3D
                 </span>
               </div>
@@ -202,9 +206,9 @@ export function ProductGallery({
             <button
               key={imageUrl + idx}
               type="button"
-              onMouseEnter={() => handleHoverImage(idx)}
-              onFocus={() => handleHoverImage(idx)}
-              onClick={() => handleSelectImage(idx)}
+              onMouseEnter={() => { handleHoverImage(idx); }}
+              onFocus={() => { handleHoverImage(idx); }}
+              onClick={() => { handleSelectImage(idx); }}
               className={cn(
                 "shrink-0 size-20 rounded border overflow-hidden transition-all cursor-pointer relative",
                 view === "images" && displayImageIndex === idx

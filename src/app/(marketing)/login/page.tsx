@@ -13,7 +13,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const { redirect, claim } = await searchParams
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="bg-slate-50">
       <section className="pt-32 pb-24 px-6 lg:px-20">
         <div className="max-w-md mx-auto">
           <div className="text-center mb-8">
@@ -31,7 +31,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             <LoginForm redirectTo={redirect} claimToken={claim} />
           </div>
 
-          <p className="text-center text-sm text-slate-500 mt-6">
+          <p className="text-center text-sm text-slate-600 mt-6">
             We&apos;ll send you a magic link to sign in. No password needed.
           </p>
         </div>

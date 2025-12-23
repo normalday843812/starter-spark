@@ -11,6 +11,7 @@ export class HomePage {
   readonly header: Locator
   readonly logo: Locator
   readonly mobileMenuButton: Locator
+  readonly cartButton: Locator
   readonly footer: Locator
 
   // Hero section
@@ -29,10 +30,12 @@ export class HomePage {
     this.page = page
 
     // Header
-    this.header = page.locator("header")
-    this.logo = page.getByRole("link", { name: /starterspark/i })
-    this.mobileMenuButton = page.getByLabel("Toggle menu")
-    this.footer = page.locator("footer")
+    this.header = page.getByRole("banner")
+    this.logo = this.header.getByRole("link", { name: /starterspark/i })
+    this.mobileMenuButton = this.header.getByLabel("Toggle menu")
+    // Cart exists in both desktop+mobile header; select the visible one to avoid timeouts
+    this.cartButton = this.header.locator('button[aria-label^="Shopping cart"]:visible')
+    this.footer = page.getByRole("contentinfo")
 
     // Hero
     this.heroSection = page.locator("section").first()
@@ -52,7 +55,14 @@ export class HomePage {
    */
   async isMobileViewport(): Promise<boolean> {
     const viewportSize = this.page.viewportSize()
-    return viewportSize ? viewportSize.width < 768 : false
+    if (viewportSize) {
+      return viewportSize.width < 768
+    }
+    return this.page.evaluate(() => window.matchMedia("(max-width: 767px)").matches)
+  }
+
+  private get mobileMenu(): Locator {
+    return this.page.locator("#mobile-menu")
   }
 
   /**
@@ -62,12 +72,9 @@ export class HomePage {
     if (await this.isMobileViewport()) {
       const isMobileMenuVisible = await this.mobileMenuButton.isVisible()
       if (isMobileMenuVisible) {
-        // Check if menu is already open by looking for the mobile nav
-        const mobileNav = this.page.locator(".md\\:hidden nav, nav.md\\:hidden")
-        if (!(await mobileNav.isVisible())) {
+        if (!(await this.mobileMenu.isVisible())) {
           await this.mobileMenuButton.click()
-          // Wait for menu to be visible instead of arbitrary timeout
-          await mobileNav.waitFor({ state: "visible", timeout: 3000 })
+          await this.mobileMenu.waitFor({ state: "visible", timeout: 3000 })
         }
       }
     }
@@ -85,82 +92,122 @@ export class HomePage {
   }
 
   /**
-   * Get the navigation link based on viewport
+   * Open a desktop dropdown and click a menu item (Radix DropdownMenu).
    */
-  private getNavLink(name: string): Locator {
-    return this.page.getByRole("link", { name, exact: true }).first()
+  private async clickDesktopMenuLink(
+    menu: "Documentation" | "Community",
+    href: string
+  ): Promise<void> {
+    const trigger = this.page
+      .getByRole("banner")
+      .getByRole("button", { name: menu, exact: true })
+      .first()
+
+    await expect(trigger).toBeVisible()
+    await trigger.scrollIntoViewIfNeeded()
+    await trigger.click({ force: true })
+
+    // Scope to the open menu to avoid matching hero/other links.
+    const menuContent = this.page
+      .locator('[data-slot="dropdown-menu-content"][data-state="open"]')
+      .filter({ has: this.page.locator(`a[href="${href}"]`) })
+      .first()
+    await expect(menuContent).toBeVisible()
+    const link = menuContent.locator(`a[href="${href}"]`).first()
+    await expect(link).toBeVisible()
+    await link.click({ force: true })
   }
 
   // Desktop-only locators (for visibility assertions)
-  get navShop(): Locator {
-    return this.page.locator("nav.hidden.md\\:flex").getByRole("link", { name: "Shop" })
+  get navDocumentation(): Locator {
+    return this.page
+      .getByRole("banner")
+      .locator("nav.hidden.md\\:flex")
+      .getByRole("button", { name: "Documentation", exact: true })
   }
 
-  get navLearn(): Locator {
-    return this.page.locator("nav.hidden.md\\:flex").getByRole("link", { name: "Learn" })
-  }
-
-  get navCommunity(): Locator {
-    return this.page.locator("nav.hidden.md\\:flex").getByRole("link", { name: "Community" })
-  }
-
-  get navAbout(): Locator {
-    return this.page.locator("nav.hidden.md\\:flex").getByRole("link", { name: "About" })
-  }
-
-  get navEvents(): Locator {
-    return this.page.locator("nav.hidden.md\\:flex").getByRole("link", { name: "Events" })
-  }
-
-  get cartButton(): Locator {
-    return this.page.getByLabel("Cart").first()
+  get navCommunityMenu(): Locator {
+    return this.page
+      .getByRole("banner")
+      .locator("nav.hidden.md\\:flex")
+      .getByRole("button", { name: "Community", exact: true })
   }
 
   get workshopButton(): Locator {
-    return this.page.getByRole("link", { name: "Workshop" }).first()
+    return this.page.getByRole("banner").getByRole("link", { name: "Workshop", exact: true }).first()
   }
 
   get shopKitsButton(): Locator {
-    return this.page.getByRole("link", { name: "Shop Kits" }).first()
+    return this.page.getByRole("banner").getByRole("link", { name: "Shop Kits", exact: true }).first()
   }
 
   async goto() {
     await this.page.goto("/")
+    await this.page.waitForLoadState("domcontentloaded")
+    await expect(this.header).toBeVisible({ timeout: 10000 })
+    await this.page
+      .locator('header[data-hydrated="true"]')
+      .waitFor({ timeout: 2000 })
+      .catch(() => {})
   }
 
   async expectPageLoaded() {
-    await expect(this.header).toBeVisible()
-    await expect(this.heroTitle).toBeVisible()
+    await expect(this.header).toBeVisible({ timeout: 10000 })
+    await expect(this.heroTitle).toBeVisible({ timeout: 10000 })
   }
 
   async navigateToShop() {
-    await this.ensureMobileMenuOpen()
-    await this.getNavLink("Shop").click()
-    await this.page.waitForURL("**/shop")
+    if (await this.isMobileViewport()) {
+      await this.ensureMobileMenuOpen()
+      await this.mobileMenu.getByRole("link", { name: "Shop Kits", exact: true }).click()
+    } else {
+      await this.page.getByRole("banner").getByRole("link", { name: "Shop Kits", exact: true }).click()
+    }
+    await expect(this.page).toHaveURL("/shop")
   }
 
   async navigateToLearn() {
-    await this.ensureMobileMenuOpen()
-    await this.getNavLink("Learn").click()
-    await this.page.waitForURL("**/learn")
+    if (await this.isMobileViewport()) {
+      await this.ensureMobileMenuOpen()
+      await this.mobileMenu.getByRole("button", { name: "Documentation", exact: true }).click()
+      await this.mobileMenu.getByRole("link", { name: "Getting Started", exact: true }).click()
+    } else {
+      await this.clickDesktopMenuLink("Documentation", "/learn")
+    }
+    await expect(this.page).toHaveURL(/\/(learn|workshop)(\?|$)/)
   }
 
   async navigateToAbout() {
-    await this.ensureMobileMenuOpen()
-    await this.getNavLink("About").click()
-    await this.page.waitForURL("**/about")
+    if (await this.isMobileViewport()) {
+      await this.ensureMobileMenuOpen()
+      await this.mobileMenu.getByRole("button", { name: "Community", exact: true }).click()
+      await this.mobileMenu.getByRole("link", { name: "About Us", exact: true }).click()
+    } else {
+      await this.clickDesktopMenuLink("Community", "/about")
+    }
+    await expect(this.page).toHaveURL("/about")
   }
 
   async navigateToEvents() {
-    await this.ensureMobileMenuOpen()
-    await this.getNavLink("Events").click()
-    await this.page.waitForURL("**/events")
+    if (await this.isMobileViewport()) {
+      await this.ensureMobileMenuOpen()
+      await this.mobileMenu.getByRole("button", { name: "Community", exact: true }).click()
+      await this.mobileMenu.getByRole("link", { name: "Events", exact: true }).click()
+    } else {
+      await this.clickDesktopMenuLink("Community", "/events")
+    }
+    await expect(this.page).toHaveURL("/events")
   }
 
   async navigateToCommunity() {
-    await this.ensureMobileMenuOpen()
-    await this.getNavLink("Community").click()
-    await this.page.waitForURL("**/community")
+    if (await this.isMobileViewport()) {
+      await this.ensureMobileMenuOpen()
+      await this.mobileMenu.getByRole("button", { name: "Community", exact: true }).click()
+      await this.mobileMenu.getByRole("link", { name: "The Lab", exact: true }).click()
+    } else {
+      await this.clickDesktopMenuLink("Community", "/community")
+    }
+    await expect(this.page).toHaveURL("/community")
   }
 
   async navigateToWorkshop() {
@@ -170,22 +217,16 @@ export class HomePage {
     if (await this.isMobileViewport()) {
       await this.ensureMobileMenuOpen()
       // On mobile, Workshop is inside the mobile menu
-      await this.page.locator(".md\\:hidden").getByRole("link", { name: "Workshop" }).click()
+      await this.mobileMenu.getByRole("link", { name: "Workshop", exact: true }).click()
     } else {
-      // On desktop, Workshop is in the header actions section
-      await this.page.locator("header").getByRole("link", { name: "Workshop" }).click()
+      // On desktop, Workshop is in the header nav
+      await this.page.getByRole("banner").getByRole("link", { name: "Workshop", exact: true }).click()
     }
-    await this.page.waitForURL("**/workshop")
+    await expect(this.page).toHaveURL("/workshop")
   }
 
   async openCart() {
-    if (await this.isMobileViewport()) {
-      await this.ensureMobileMenuOpen()
-      // On mobile, cart is a button in the mobile menu
-      await this.page.getByRole("button", { name: /cart/i }).click()
-    } else {
-      await this.cartButton.click()
-    }
+    await this.cartButton.click()
   }
 
   async openMobileMenu() {
@@ -193,8 +234,8 @@ export class HomePage {
   }
 
   async getCartCount(): Promise<number> {
-    const badge = this.page.locator('[aria-label^="Shopping cart"] span')
-    if (await badge.isVisible()) {
+    const badge = this.cartButton.locator("span")
+    if (await badge.isVisible().catch(() => false)) {
       const text = await badge.textContent()
       return text === "9+" ? 10 : parseInt(text || "0", 10)
     }

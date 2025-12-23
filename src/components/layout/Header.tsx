@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState, useSyncExternalStore } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import {
@@ -13,6 +13,36 @@ import { Menu, X, ShoppingCart, ChevronDown, Lock } from "lucide-react"
 import { useCartStore, selectCartCount } from "@/store/cart"
 import { documentationNav, communityNav, type NavItem } from "@/config/navigation"
 import { cn } from "@/lib/utils"
+
+const hydrationListeners = new Set<() => void>()
+let hasHydrated = false
+
+function notifyHydration() {
+  if (hasHydrated) return
+  hasHydrated = true
+  for (const listener of hydrationListeners) {
+    listener()
+  }
+}
+
+function subscribeHydration(listener: () => void) {
+  hydrationListeners.add(listener)
+  return () => { hydrationListeners.delete(listener); }
+}
+
+function useHydrated() {
+  const isHydrated = useSyncExternalStore(
+    subscribeHydration,
+    () => hasHydrated,
+    () => false
+  )
+
+  useEffect(() => {
+    notifyHydration()
+  }, [])
+
+  return isHydrated
+}
 
 function NavDropdownItem({ item, onSelect }: { item: NavItem; onSelect?: () => void }) {
   const Icon = item.icon
@@ -112,6 +142,7 @@ function MobileNavSection({
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [openSection, setOpenSection] = useState<string | null>(null)
+  const isHydrated = useHydrated()
   const cartCount = useCartStore(selectCartCount)
   const openCart = useCartStore((state) => state.openCart)
 
@@ -125,7 +156,10 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200">
+    <header
+      data-hydrated={isHydrated ? "true" : "false"}
+      className="sticky top-0 z-50 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200"
+    >
       <div className="max-w-7xl mx-auto px-6 lg:px-20">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -224,7 +258,7 @@ export function Header() {
             <button
               type="button"
               className="p-2 text-slate-600 hover:text-cyan-700 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              onClick={() => { setMobileMenuOpen(!mobileMenuOpen); }}
               aria-label="Toggle menu"
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-menu"
@@ -251,14 +285,14 @@ export function Header() {
               title={documentationNav.title}
               items={documentationNav.items}
               isOpen={openSection === "documentation"}
-              onToggle={() => toggleSection("documentation")}
+              onToggle={() => { toggleSection("documentation"); }}
               onNavigate={closeMobileMenu}
             />
             <MobileNavSection
               title={communityNav.title}
               items={communityNav.items}
               isOpen={openSection === "community"}
-              onToggle={() => toggleSection("community")}
+              onToggle={() => { toggleSection("community"); }}
               onNavigate={closeMobileMenu}
             />
 

@@ -1,17 +1,29 @@
-import { NextRequest, NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server"
 import { supabaseAdmin } from "@/lib/supabase/admin"
+import { rateLimit, rateLimitHeaders } from "@/lib/rate-limit"
+import { isUuid } from "@/lib/uuid"
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = await rateLimit(request, "supportFeedback")
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const body: unknown = await request.json()
     const articleId = isRecord(body) && typeof body.articleId === "string" ? body.articleId : null
     const isHelpful = isRecord(body) && typeof body.isHelpful === "boolean" ? body.isHelpful : null
 
     if (!articleId || typeof isHelpful !== "boolean") {
+      return NextResponse.json(
+        { error: "Invalid request" },
+        { status: 400 }
+      )
+    }
+
+    if (!isUuid(articleId)) {
       return NextResponse.json(
         { error: "Invalid request" },
         { status: 400 }
@@ -32,7 +44,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true }, { headers: rateLimitHeaders("supportFeedback") })
   } catch (error) {
     console.error("Error in feedback endpoint:", error)
     return NextResponse.json(

@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server"
 import { resend, NEWSLETTER_AUDIENCE_ID } from "@/lib/resend"
 import { z } from "zod"
+import { rateLimit, rateLimitHeaders } from "@/lib/rate-limit"
 
 const subscribeSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
 })
 
 export async function POST(request: Request) {
+  const rateLimitResponse = await rateLimit(request, "newsletter")
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const body: unknown = await request.json()
     const { email } = subscribeSchema.parse(body)
@@ -28,8 +32,8 @@ export async function POST(request: Request) {
 
     if (existingContact && !existingContact.unsubscribed) {
       return NextResponse.json(
-        { message: "You're already subscribed!" },
-        { status: 200 }
+        { message: "Thanks for subscribing!" },
+        { status: 200, headers: rateLimitHeaders("newsletter") }
       )
     }
 
@@ -42,13 +46,13 @@ export async function POST(request: Request) {
       })
 
       return NextResponse.json(
-        { message: "Welcome back! You've been resubscribed." },
-        { status: 200 }
+        { message: "Thanks for subscribing!" },
+        { status: 200, headers: rateLimitHeaders("newsletter") }
       )
     }
 
     // Create new contact
-    const { data, error } = await resend.contacts.create({
+    const { error } = await resend.contacts.create({
       audienceId: NEWSLETTER_AUDIENCE_ID,
       email,
       unsubscribed: false,
@@ -63,8 +67,8 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(
-      { message: "Thanks for subscribing!", data },
-      { status: 201 }
+      { message: "Thanks for subscribing!" },
+      { status: 200, headers: rateLimitHeaders("newsletter") }
     )
   } catch (error) {
     if (error instanceof z.ZodError) {

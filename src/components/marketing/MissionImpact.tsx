@@ -42,7 +42,7 @@ function AnimatedCounter({ value, suffix }: { value: number; suffix: string }) {
         }
       }, duration / steps)
 
-      return () => clearInterval(timer)
+      return () => { clearInterval(timer); }
     }
   }, [isInView, value])
 
@@ -65,7 +65,7 @@ export function MissionImpactSection({
   story1 = "StarterSpark started as a classroom project: students teaching students how to build robots with whatever parts we could find. We saw how hands-on learning sparked curiosity in ways textbooks never could.",
   story2 = "Now we're taking that experience and packaging it for anyone to access. Each kit represents hundreds of hours of curriculum development, testing with real students, and refinement based on their feedback.",
   commitmentTitle = "Our Commitment",
-  commitmentText = "70% of every dollar goes directly to local STEM charities and school robotics programs. 30% funds new kit development and operations.",
+  commitmentText = "67% of every dollar goes directly to local STEM charities and school robotics programs. The rest funds new kit development and operations.",
   commitmentSubtext = "Your purchase directly impacts Hawaii's next generation of engineers.",
 }: MissionImpactSectionProps) {
   return (
@@ -77,10 +77,10 @@ export function MissionImpactSection({
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="font-mono text-3xl lg:text-4xl text-slate-900 mb-4">
+          <h2 className="font-mono text-3xl lg:text-4xl text-slate-900 mb-4 break-words">
             {title}
           </h2>
-          <p className="text-slate-600 max-w-2xl mx-auto">
+          <p className="text-slate-600 max-w-2xl mx-auto break-words">
             {subtitle}
           </p>
         </motion.div>
@@ -91,27 +91,27 @@ export function MissionImpactSection({
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="w-full lg:w-3/5 space-y-8"
+            className="w-full lg:w-3/5 space-y-8 min-w-0"
           >
             {/* The Story */}
             <div className="space-y-4 text-slate-600 leading-relaxed">
-              <p>
+              <p className="break-words">
                 {story1}
               </p>
-              <p>
+              <p className="break-words">
                 {story2}
               </p>
             </div>
 
             {/* The 70/30 Model Callout */}
             <div className="bg-white rounded border-l-4 border-amber-500 p-6 shadow-sm">
-              <h3 className="font-mono text-lg text-slate-900 mb-2">
+              <h3 className="font-mono text-lg text-slate-900 mb-2 break-words">
                 {commitmentTitle}
               </h3>
-              <p className="text-slate-600">
+              <p className="text-slate-600 break-words">
                 {commitmentText}
               </p>
-              <p className="text-slate-500 text-sm mt-3">
+              <p className="text-slate-500 text-sm mt-3 break-words">
                 {commitmentSubtext}
               </p>
             </div>
@@ -123,7 +123,7 @@ export function MissionImpactSection({
                   <div className="text-4xl font-mono text-cyan-700 mb-1">
                     <AnimatedCounter value={stat.value} suffix={stat.suffix} />
                   </div>
-                  <div className="text-sm text-slate-500">{stat.label}</div>
+                  <div className="text-sm text-slate-500 break-words">{stat.label}</div>
                 </div>
               ))}
             </div>

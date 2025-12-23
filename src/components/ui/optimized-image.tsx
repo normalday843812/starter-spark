@@ -1,6 +1,6 @@
 "use client"
 
-import Image, { ImageProps } from "next/image"
+import Image, { type ImageProps } from "next/image"
 import { useState, useCallback } from "react"
 import { cn } from "@/lib/utils"
 
@@ -30,6 +30,9 @@ export function OptimizedImage({
   onLoadComplete,
   fadeInDuration = 300,
   fill,
+  priority = false,
+  loading,
+  fetchPriority,
   ...props
 }: OptimizedImageProps) {
   const [isLoading, setIsLoading] = useState(true)
@@ -50,10 +53,11 @@ export function OptimizedImage({
     <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="w-12 h-12 mb-2 rounded-full bg-slate-200 flex items-center justify-center">
         <svg
-          className="w-6 h-6 text-slate-400"
+          className="w-6 h-6 text-slate-600"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
+          aria-hidden="true"
         >
           <path
             strokeLinecap="round"
@@ -63,7 +67,7 @@ export function OptimizedImage({
           />
         </svg>
       </div>
-      <span className="text-xs text-slate-400 font-mono">Image unavailable</span>
+      <span className="text-xs text-slate-600 font-mono">Image unavailable</span>
     </div>
   )
 
@@ -75,6 +79,9 @@ export function OptimizedImage({
       </div>
     )
   }
+
+  const resolvedLoading = priority ? "eager" : loading ?? "lazy"
+  const resolvedFetchPriority = priority ? "high" : fetchPriority ?? "low"
 
   return (
     <div className={cn("relative overflow-hidden", wrapperClassName)}>
@@ -91,6 +98,9 @@ export function OptimizedImage({
         src={src}
         alt={alt}
         fill={fill}
+        priority={priority}
+        loading={resolvedLoading}
+        fetchPriority={resolvedFetchPriority}
         className={cn(
           "transition-opacity",
           isLoading ? "opacity-0" : "opacity-100",

@@ -1,8 +1,9 @@
 import { createClient } from "@/lib/supabase/server"
 import { Calendar, MapPin, Clock, ExternalLink } from "lucide-react"
 import Link from "next/link"
+import { headers } from "next/headers"
 import { EventsToggle } from "./EventsToggle"
-import { getEventSchema, getBreadcrumbSchema } from "@/lib/structured-data"
+import { getEventSchema, getBreadcrumbSchema, jsonLdScript } from "@/lib/structured-data"
 import { getContents } from "@/lib/content"
 import type { Metadata } from "next"
 import { siteConfig } from "@/config/site"
@@ -76,12 +77,12 @@ function formatDateRange(start: string, end: string | null): string {
 
   // Same day event
   if (endDate && startDate.toDateString() === endDate.toDateString()) {
-    return `${formatEventTime(start)} - ${formatEventTime(end as string)}`
+    return `${formatEventTime(start)} - ${formatEventTime(end!)}`
   }
 
   // Multi-day event
   if (endDate) {
-    return `${formatEventDate(start)} - ${formatEventDate(end as string)}`
+    return `${formatEventDate(start)} - ${formatEventDate(end!)}`
   }
 
   return formatEventTime(start)
@@ -227,6 +228,7 @@ function EventCard({ event, isPast = false }: { event: Event; isPast?: boolean }
 }
 
 export default async function EventsPage() {
+  const nonce = (await headers()).get("x-nonce") ?? undefined
   const supabase = await createClient()
 
   // Fetch dynamic content
@@ -240,13 +242,19 @@ export default async function EventsPage() {
   )
 
   // Fetch all public events
-  const { data: events, error } = await supabase
-    .from("events")
-    .select("*")
-    .eq("is_public", true)
-    .order("event_date", { ascending: true })
+  let events: Event[] = []
+  try {
+    const { data, error } = await supabase
+      .from("events")
+      .select("*")
+      .eq("is_public", true)
+      .order("event_date", { ascending: true })
 
-  if (error) {
+    if (error) {
+      console.error("Error fetching events:", error)
+    }
+    events = (data as Event[]) || []
+  } catch (error) {
     console.error("Error fetching events:", error)
   }
 
@@ -279,14 +287,16 @@ export default async function EventsPage() {
   ])
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="bg-slate-50">
       {/* JSON-LD Structured Data for SEO */}
       {eventSchemas.map((schema, index) => (
-        <script key={index} type="application/ld+json">
-          {JSON.stringify(schema)}
+        <script key={index} nonce={nonce} type="application/ld+json">
+          {jsonLdScript(schema)}
         </script>
       ))}
-      <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
+      <script nonce={nonce} type="application/ld+json">
+        {jsonLdScript(breadcrumbSchema)}
+      </script>
       {/* Hero */}
       <section className="pt-32 pb-16 px-6 lg:px-20">
         <div className="max-w-4xl mx-auto text-center">
@@ -294,10 +304,10 @@ export default async function EventsPage() {
             <Calendar className="w-4 h-4" />
             Events & Workshops
           </div>
-          <h1 className="font-mono text-4xl lg:text-5xl text-slate-900 mb-4">
+          <h1 className="font-mono text-4xl lg:text-5xl text-slate-900 mb-4 break-words">
             {content["events.header.title"]}
           </h1>
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto break-words">
             {content["events.header.description"]}
           </p>
         </div>

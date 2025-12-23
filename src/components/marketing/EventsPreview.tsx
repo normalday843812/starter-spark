@@ -98,10 +98,10 @@ export function EventsPreviewSection({
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="font-mono text-3xl lg:text-4xl text-slate-900 mb-4">
+          <h2 className="font-mono text-3xl lg:text-4xl text-slate-900 mb-4 break-words">
             {title}
           </h2>
-          <p className="text-slate-600 max-w-2xl mx-auto">
+          <p className="text-slate-600 max-w-2xl mx-auto break-words">
             {description}
           </p>
         </motion.div>
@@ -112,23 +112,24 @@ export function EventsPreviewSection({
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="w-full lg:w-1/2 flex flex-col"
+            className="w-full lg:w-1/2 flex flex-col min-w-0"
           >
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="font-mono text-xl text-slate-900 flex items-center gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+              <h3 className="font-mono text-xl text-slate-900 flex items-center gap-2 break-words">
                 <Calendar className="w-5 h-5 text-cyan-700" />
                 {workshopsTitle}
               </h3>
-              <Link href="/events">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-cyan-700 hover:text-cyan-600 font-mono"
-                >
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="text-cyan-700 hover:text-cyan-600 font-mono whitespace-normal break-words text-left h-auto py-2 flex-wrap"
+              >
+                <Link href="/events">
                   {workshopsViewAll}
                   <ArrowRight className="w-4 h-4 ml-1" />
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
 
             {hasWorkshops ? (
@@ -146,7 +147,7 @@ export function EventsPreviewSection({
                             <p className="font-mono text-sm text-cyan-700 mb-1">
                               {formatEventDate(workshop.event_date)}
                             </p>
-                            <h4 className="font-medium text-slate-900 mb-2">
+                            <h4 className="font-medium text-slate-900 mb-2 break-words">
                               {workshop.title}
                             </h4>
                             <div className="flex items-center gap-1 text-sm text-slate-500">
@@ -179,29 +180,30 @@ export function EventsPreviewSection({
                 <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-4">
                   <Calendar className="w-6 h-6 text-slate-400" />
                 </div>
-                <h4 className="font-medium text-slate-900 mb-2">
+                <h4 className="font-medium text-slate-900 mb-2 break-words">
                   {workshopsEmptyTitle}
                 </h4>
-                <p className="text-sm text-slate-500 mb-4">
+                <p className="text-sm text-slate-500 mb-4 break-words">
                   {workshopsEmptyDescription}
                 </p>
-                <Link href="/events">
-                  <Button variant="outline" size="sm" className="font-mono">
-                    {workshopsEmptyCta}
-                  </Button>
-                </Link>
+                <Button asChild variant="outline" size="sm" className="font-mono whitespace-normal break-words text-center h-auto py-2 flex-wrap">
+                  <Link href="/events">{workshopsEmptyCta}</Link>
+                </Button>
               </div>
             )}
 
-            <Link href="/events" className="block mt-auto pt-6">
+            <div className="mt-auto pt-6">
               <Button
+                asChild
                 variant="outline"
-                className="w-full border-slate-200 hover:border-cyan-700 text-slate-600 hover:text-cyan-700 font-mono"
+                className="w-full border-slate-200 hover:border-cyan-700 text-slate-600 hover:text-cyan-700 font-mono whitespace-normal break-words text-center h-auto py-3 flex-wrap"
               >
-                {hasWorkshops ? workshopsCta : workshopsCtaEmpty}
-                <ArrowRight className="w-4 h-4 ml-2" />
+                <Link href="/events">
+                  {hasWorkshops ? workshopsCta : workshopsCtaEmpty}
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Link>
               </Button>
-            </Link>
+            </div>
           </motion.div>
 
           {/* Right - The Lab Preview (50%) */}
@@ -209,27 +211,28 @@ export function EventsPreviewSection({
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="w-full lg:w-1/2 flex flex-col"
+            className="w-full lg:w-1/2 flex flex-col min-w-0"
           >
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="font-mono text-xl text-slate-900 flex items-center gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+              <h3 className="font-mono text-xl text-slate-900 flex items-center gap-2 break-words">
                 <Users className="w-5 h-5 text-cyan-700" />
                 {labTitle}
               </h3>
-              <Link href="/community">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-cyan-700 hover:text-cyan-600 font-mono"
-                >
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="text-cyan-700 hover:text-cyan-600 font-mono whitespace-normal break-words text-left h-auto py-2 flex-wrap"
+              >
+                <Link href="/community">
                   {labJoinNow}
                   <ArrowRight className="w-4 h-4 ml-1" />
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
 
             {/* Stats Bar - Clean and minimal */}
-            <div className="flex items-center gap-4 mb-4 text-sm text-slate-600">
+            <div className="flex flex-wrap items-center gap-4 mb-4 text-sm text-slate-600">
               <span>
                 <span className="font-mono text-slate-900">{communityStats.totalMembers}</span> {labMembersLabel}
               </span>
@@ -306,26 +309,26 @@ export function EventsPreviewSection({
                 <div className="w-12 h-12 rounded-full bg-cyan-50 flex items-center justify-center mb-4">
                   <PlusCircle className="w-6 h-6 text-cyan-600" />
                 </div>
-                <h4 className="font-medium text-slate-900 mb-2">
+                <h4 className="font-medium text-slate-900 mb-2 break-words">
                   {labEmptyTitle}
                 </h4>
-                <p className="text-sm text-slate-500 mb-4">
+                <p className="text-sm text-slate-500 mb-4 break-words">
                   {labEmptyDescription}
                 </p>
-                <Link href="/community/new">
-                  <Button size="sm" className="bg-cyan-700 hover:bg-cyan-600 font-mono">
-                    {labEmptyCta}
-                  </Button>
-                </Link>
+                <Button asChild size="sm" className="bg-cyan-700 hover:bg-cyan-600 font-mono whitespace-normal break-words text-center h-auto py-2 flex-wrap">
+                  <Link href="/community/new">{labEmptyCta}</Link>
+                </Button>
               </div>
             )}
 
-            <Link href="/community" className="block mt-auto pt-6">
-              <Button className="w-full bg-cyan-700 hover:bg-cyan-600 text-white font-mono">
-                {labCta}
-                <ArrowRight className="w-4 h-4 ml-2" />
+            <div className="mt-auto pt-6">
+              <Button asChild className="w-full bg-cyan-700 hover:bg-cyan-600 text-white font-mono whitespace-normal break-words text-center h-auto py-3 flex-wrap">
+                <Link href="/community">
+                  {labCta}
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Link>
               </Button>
-            </Link>
+            </div>
           </motion.div>
         </div>
       </div>
