@@ -16,7 +16,7 @@ export function TeapotContent({ viewCount }: TeapotContentProps) {
  ,-.'---\`.__ ;
 ((j\`=====',-'
  \`-\\     /
-    \`-=-'
+    \`-=-'     hjw
 `}
         </pre>
 
