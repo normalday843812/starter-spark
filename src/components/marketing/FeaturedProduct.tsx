@@ -2,7 +2,6 @@ import { createClient } from "@/lib/supabase/server"
 import { ProductSpotlightSection } from "./ProductSpotlight"
 import { getProductSchema } from "@/lib/structured-data"
 import { headers } from "next/headers"
-import { getE2EProduct, isE2E } from "@/lib/e2e"
 import type { Json } from "@/lib/supabase/database.types"
 
 /**
@@ -12,36 +11,6 @@ import type { Json } from "@/lib/supabase/database.types"
  */
 export async function FeaturedProduct() {
   const nonce = (await headers()).get("x-nonce") ?? undefined
-
-  if (isE2E) {
-    const e2eProduct = getE2EProduct()
-    if (!e2eProduct) return null
-
-    const productSchema = getProductSchema({
-      name: e2eProduct.name,
-      description: e2eProduct.description || "",
-      price: e2eProduct.price_cents / 100,
-      slug: e2eProduct.slug,
-      sku: e2eProduct.slug,
-      inStock: true,
-    })
-
-    return (
-      <>
-        <script nonce={nonce} type="application/ld+json">{JSON.stringify(productSchema)}</script>
-        <ProductSpotlightSection
-          product={{
-            name: e2eProduct.name,
-            slug: e2eProduct.slug,
-            description: e2eProduct.description,
-            priceCents: e2eProduct.price_cents,
-            specs: null,
-            images: [],
-          }}
-        />
-      </>
-    )
-  }
 
   const supabase = await createClient()
 

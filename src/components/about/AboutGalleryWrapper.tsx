@@ -1,7 +1,6 @@
 import { createPublicClient } from "@/lib/supabase/public"
 import { getContent } from "@/lib/content"
 import { AboutGallery, type AboutStat } from "./AboutGallery"
-import { isE2E } from "@/lib/e2e"
 
 /**
  * Server component that fetches site stats and renders AboutGallery
@@ -18,10 +17,6 @@ export async function AboutGalleryWrapper() {
     { value: "1", label: "Partner Schools" },
     { value: charityPercentage, label: "Donated to STEM" },
   ]
-
-  if (isE2E) {
-    return <AboutGallery stats={defaultStats} />
-  }
 
   let dbStats: { key: string; value: number; label: string; suffix: string | null }[] | null = null
   let error: { message?: string } | null = null

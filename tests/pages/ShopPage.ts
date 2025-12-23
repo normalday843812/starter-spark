@@ -39,7 +39,7 @@ export class ShopPage {
 
   async getProductCount(): Promise<number> {
     // Find elements that look like product cards (have price and name)
-    const cards = this.page.locator('a[href^="/shop/"]')
+    const cards = this.page.locator('main a[href^="/shop/"]')
     return await cards.count()
   }
 
@@ -48,10 +48,14 @@ export class ShopPage {
     await expect(this.page).toHaveURL(new RegExp(`/shop/${slug}(\\?.*)?$`))
   }
 
-  async clickFirstProduct() {
-    const firstProduct = this.page.locator('main a[href^="/shop/"]').first()
-    await firstProduct.click()
+  async clickFirstProduct(): Promise<boolean> {
+    const products = this.page.locator('main a[href^="/shop/"]')
+    if ((await products.count()) === 0) {
+      return false
+    }
+    await products.first().click()
     await expect(this.page).toHaveURL(/\/shop\/.+/)
+    return true
   }
 
   async expectProductsDisplayed() {

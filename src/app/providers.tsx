@@ -14,10 +14,9 @@ interface ProvidersProps {
 
 export function Providers({ children }: ProvidersProps) {
   const prefersReducedMotion = useReducedMotion()
-  const isE2E = process.env.NEXT_PUBLIC_E2E === "1"
   const pathname = usePathname()
   const disableSmoothScroll =
-    isE2E || pathname.startsWith("/admin") || pathname.startsWith("/learn")
+    pathname.startsWith("/admin") || pathname.startsWith("/learn")
 
   useEffect(() => {
     if (!prefersReducedMotion && !disableSmoothScroll) return
@@ -89,7 +88,7 @@ export function Providers({ children }: ProvidersProps) {
     </ReactLenis>
   )
 
-  const wrappedContent = prefersReducedMotion || isE2E ? (
+  const wrappedContent = prefersReducedMotion ? (
     <MotionConfig reducedMotion="always">{content}</MotionConfig>
   ) : (
     content

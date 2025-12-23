@@ -7,7 +7,6 @@ import { getEventSchema, getBreadcrumbSchema } from "@/lib/structured-data"
 import { getContents } from "@/lib/content"
 import type { Metadata } from "next"
 import { siteConfig } from "@/config/site"
-import { isE2E } from "@/lib/e2e"
 
 const pageTitle = "Events & Workshops"
 const pageDescription = "Workshops, competitions, and community events in Hawaii. Learn robotics with hands-on experiences."
@@ -230,7 +229,7 @@ function EventCard({ event, isPast = false }: { event: Event; isPast?: boolean }
 
 export default async function EventsPage() {
   const nonce = (await headers()).get("x-nonce") ?? undefined
-  const supabase = isE2E ? null : await createClient()
+  const supabase = await createClient()
 
   // Fetch dynamic content
   const content = await getContents(
@@ -244,21 +243,19 @@ export default async function EventsPage() {
 
   // Fetch all public events
   let events: Event[] = []
-  if (!isE2E && supabase) {
-    try {
-      const { data, error } = await supabase
-        .from("events")
-        .select("*")
-        .eq("is_public", true)
-        .order("event_date", { ascending: true })
+  try {
+    const { data, error } = await supabase
+      .from("events")
+      .select("*")
+      .eq("is_public", true)
+      .order("event_date", { ascending: true })
 
-      if (error) {
-        console.error("Error fetching events:", error)
-      }
-      events = (data as Event[]) || []
-    } catch (error) {
+    if (error) {
       console.error("Error fetching events:", error)
     }
+    events = (data as Event[]) || []
+  } catch (error) {
+    console.error("Error fetching events:", error)
   }
 
   const now = new Date()

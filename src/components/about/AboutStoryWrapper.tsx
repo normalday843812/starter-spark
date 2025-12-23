@@ -1,6 +1,5 @@
 import { createPublicClient } from "@/lib/supabase/public"
 import { AboutStory } from "./AboutStory"
-import { isE2E } from "@/lib/e2e"
 
 /**
  * Server component that fetches About Story content from page_content table
@@ -15,10 +14,6 @@ This section will discuss the challenges we identified in robotics education and
 This section will explain our approach to building an accessible, educational robotics kit with comprehensive learning materials.
 
 This section will highlight our commitment to giving back and supporting Hawaii STEM education through our 70/30 model.`
-
-  if (isE2E) {
-    return <AboutStory content={defaultContent} isPlaceholder />
-  }
 
   // Try to fetch content from database
   let pageContent: { content: string } | null = null

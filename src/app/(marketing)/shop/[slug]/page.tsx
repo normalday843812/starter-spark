@@ -8,7 +8,6 @@ import { notFound } from "next/navigation"
 import { getProductSchema, getBreadcrumbSchema } from "@/lib/structured-data"
 import { siteConfig } from "@/config/site"
 import { getContent } from "@/lib/content"
-import { getE2EProduct, isE2E } from "@/lib/e2e"
 import type { Json } from "@/lib/supabase/database.types"
 
 // Type for product specs JSONB
@@ -34,43 +33,6 @@ export async function generateMetadata({
   params: PageParams
 }): Promise<Metadata> {
   const { slug } = await params
-  if (isE2E) {
-    const product = getE2EProduct(slug)
-    if (!product) return { title: "Product Not Found" }
-    const title = product.name
-    const description = product.description?.slice(0, 160) || ""
-    const ogImageUrl = `/api/og?${new URLSearchParams({
-      title,
-      subtitle: description,
-      type: "product",
-    }).toString()}`
-    return {
-      title,
-      description,
-      openGraph: {
-        title,
-        description,
-        url: `${siteConfig.url}/shop/${slug}`,
-        siteName: siteConfig.name,
-        images: [
-          {
-            url: ogImageUrl,
-            width: 1200,
-            height: 630,
-            alt: title,
-          },
-        ],
-        type: "website",
-      },
-      twitter: {
-        card: "summary_large_image",
-        title,
-        description,
-        images: [ogImageUrl],
-      },
-    }
-  }
-
   const supabase = await createClient()
   let product: {
     name: string
@@ -183,10 +145,7 @@ export default async function ProductDetailPage({
     product_tags: { tag: string }[]
   } | null = null
 
-  if (isE2E) {
-    product = getE2EProduct(slug) as typeof product  
-  } else {
-    try {
+  try {
     const supabase = await createClient()
     const { data, error } = await supabase
       .from("products")
@@ -204,17 +163,16 @@ export default async function ProductDetailPage({
           sort_order
         )
       `)
-        .eq("slug", slug)
-        .maybeSingle()
+      .eq("slug", slug)
+      .maybeSingle()
 
-      if (error) {
-        console.error("Error fetching product:", error)
-      }
-      product = data
-    } catch (error) {
+    if (error) {
       console.error("Error fetching product:", error)
-      throw new Error("Failed to load product")
     }
+    product = data
+  } catch (error) {
+    console.error("Error fetching product:", error)
+    throw new Error("Failed to load product")
   }
 
   if (!product) {

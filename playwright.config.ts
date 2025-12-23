@@ -53,12 +53,6 @@ export default defineConfig({
     command: `npm run start -- -H 127.0.0.1 -p ${playwrightPort}`,
     url: `http://localhost:${playwrightPort}`,
     reuseExistingServer: process.env.PLAYWRIGHT_REUSE_SERVER === '1' && !process.env.CI,
-    env: {
-      ...process.env,
-      E2E_TESTS: '1',
-      NEXT_PUBLIC_E2E: '1',
-      NEXT_PUBLIC_SENTRY_DISABLED: '1',
-    },
     stdout: 'pipe',
     stderr: 'pipe',
   },

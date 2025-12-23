@@ -1,6 +1,5 @@
 import { createPublicClient } from "@/lib/supabase/public"
 import { AboutTeam } from "./AboutTeam"
-import { isE2E } from "@/lib/e2e"
 
 interface TeamMember {
   id: string
@@ -16,10 +15,6 @@ interface TeamMember {
 }
 
 export async function AboutTeamWrapper() {
-  if (isE2E) {
-    return <AboutTeam team={[]} />
-  }
-
   let members: TeamMember[] = []
   try {
     const supabase = createPublicClient()

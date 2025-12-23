@@ -2,15 +2,14 @@ import { Ratelimit } from "@upstash/ratelimit"
 import { Redis } from "@upstash/redis"
 import { NextResponse } from "next/server"
 
-// Check if we're in a test/development/local environment
-const isTestEnvironment = process.env.NODE_ENV === "test" || process.env.CI === "true"
+// Check if we're in a development/local environment
 const isDevelopment = process.env.NODE_ENV === "development"
 const isLocalhost = process.env.NEXT_PUBLIC_SITE_URL?.includes("localhost")
 
 // Validate Upstash configuration at startup
 const hasUpstashConfig = !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
 
-if (!hasUpstashConfig && !isDevelopment && !isTestEnvironment) {
+if (!hasUpstashConfig && !isDevelopment) {
   console.warn(
     "⚠️  UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are not configured. " +
     "Falling back to in-memory rate limiting (per instance)."
@@ -22,7 +21,7 @@ const upstashLimiters = new Map<RateLimitConfig, Ratelimit>()
 
 // Rate limit configurations for different endpoints
 // More lenient in development/test/local environments
-const multiplier = isTestEnvironment || isDevelopment || isLocalhost ? 10 : 1
+const multiplier = isDevelopment || isLocalhost ? 10 : 1
 export const rateLimitConfigs = {
   // Sensitive endpoints - stricter limits (but more lenient in test)
   claimLicense: { requests: 5 * multiplier, window: "1 m" as const },

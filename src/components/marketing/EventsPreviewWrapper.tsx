@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
 import { getContents } from "@/lib/content"
-import { isE2E } from "@/lib/e2e"
 import { EventsPreviewSection, type Workshop, type Discussion } from "./EventsPreview"
 
 const DEFAULT_CONTENT = {
@@ -30,33 +29,6 @@ const DEFAULT_CONTENT = {
 export async function EventsPreview() {
   // Fetch content and events in parallel
   const content = await getContents(Object.keys(DEFAULT_CONTENT), DEFAULT_CONTENT)
-
-  if (isE2E) {
-    return (
-      <EventsPreviewSection
-        workshops={[]}
-        discussions={[]}
-        communityStats={{ totalMembers: 0, totalDiscussions: 0 }}
-        title={content["home.community.title"]}
-        description={content["home.community.description"]}
-        workshopsTitle={content["home.community.workshops.title"]}
-        workshopsViewAll={content["home.community.workshops.viewAll"]}
-        workshopsEmptyTitle={content["home.community.workshops.empty.title"]}
-        workshopsEmptyDescription={content["home.community.workshops.empty.description"]}
-        workshopsEmptyCta={content["home.community.workshops.empty.cta"]}
-        workshopsCta={content["home.community.workshops.cta"]}
-        workshopsCtaEmpty={content["home.community.workshops.ctaEmpty"]}
-        labTitle={content["home.community.lab.title"]}
-        labJoinNow={content["home.community.lab.joinNow"]}
-        labMembersLabel={content["home.community.lab.membersLabel"]}
-        labDiscussionsLabel={content["home.community.lab.discussionsLabel"]}
-        labEmptyTitle={content["home.community.lab.empty.title"]}
-        labEmptyDescription={content["home.community.lab.empty.description"]}
-        labEmptyCta={content["home.community.lab.empty.cta"]}
-        labCta={content["home.community.lab.cta"]}
-      />
-    )
-  }
 
   const supabase = await createClient()
 

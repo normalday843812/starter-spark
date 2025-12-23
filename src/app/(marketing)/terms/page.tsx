@@ -2,7 +2,6 @@ import type { Metadata } from "next"
 import { createPublicClient } from "@/lib/supabase/public"
 import ReactMarkdown from "react-markdown"
 import { isExternalHref, sanitizeMarkdownUrl, safeMarkdownUrlTransform } from "@/lib/safe-url"
-import { isE2E } from "@/lib/e2e"
 
 export const metadata: Metadata = {
   title: "Terms of Service",
@@ -11,19 +10,17 @@ export const metadata: Metadata = {
 
 export default async function TermsPage() {
   let page: { title: string | null; content: string | null; updated_at: string | null } | null = null
-  if (!isE2E) {
-    try {
-      const supabase = createPublicClient()
-      const { data } = await supabase
-        .from("page_content")
-        .select("title, content, updated_at")
-        .eq("page_key", "terms")
-        .not("published_at", "is", null)
-        .maybeSingle()
-      page = data
-    } catch (error) {
-      console.error("Failed to fetch terms of service content:", error)
-    }
+  try {
+    const supabase = createPublicClient()
+    const { data } = await supabase
+      .from("page_content")
+      .select("title, content, updated_at")
+      .eq("page_key", "terms")
+      .not("published_at", "is", null)
+      .maybeSingle()
+    page = data
+  } catch (error) {
+    console.error("Failed to fetch terms of service content:", error)
   }
 
   const lastUpdated = page?.updated_at

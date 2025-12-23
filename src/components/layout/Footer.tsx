@@ -5,7 +5,6 @@ import Link from "next/link"
 import { NewsletterForm } from "./NewsletterForm"
 import { createPublicClient } from "@/lib/supabase/public"
 import { getContents } from "@/lib/content"
-import { isE2E } from "@/lib/e2e"
 
 // Custom X (Twitter) icon since simple-icons doesn't have it as "X"
 function XIcon({ className }: { className?: string }) {
@@ -44,23 +43,21 @@ export async function Footer() {
   )
 
   let footerProducts: FooterProduct[] = []
-  if (!isE2E) {
-    try {
-      const supabase = createPublicClient()
-      const { data: products, error } = await supabase
-        .from("products")
-        .select("slug, name, status")
-        .in("status", ["active", "coming_soon"])
-        .order("created_at", { ascending: true })
-        .limit(5)
+  try {
+    const supabase = createPublicClient()
+    const { data: products, error } = await supabase
+      .from("products")
+      .select("slug, name, status")
+      .in("status", ["active", "coming_soon"])
+      .order("created_at", { ascending: true })
+      .limit(5)
 
-      if (error) {
-        console.error("Failed to fetch products for footer:", error.message)
-      }
-      footerProducts = products || []
-    } catch (error) {
-      console.error("Failed to fetch products for footer:", error)
+    if (error) {
+      console.error("Failed to fetch products for footer:", error.message)
     }
+    footerProducts = products || []
+  } catch (error) {
+    console.error("Failed to fetch products for footer:", error)
   }
   return (
     <footer className="bg-white border-t border-slate-200">

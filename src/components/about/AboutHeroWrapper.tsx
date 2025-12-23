@@ -1,7 +1,6 @@
 import { createPublicClient } from "@/lib/supabase/public"
 import { getContent } from "@/lib/content"
 import { AboutHero } from "./AboutHero"
-import { isE2E } from "@/lib/e2e"
 
 interface AboutHeroContent {
   headline?: string
@@ -21,10 +20,6 @@ export async function AboutHeroWrapper() {
     headline: "Making Robotics Education Accessible to Everyone",
     description:
       `We believe every student deserves the chance to build, code, and create—regardless of their background or resources. That's why we donate ${charityPercentage} of every dollar to local STEM programs.`,
-  }
-
-  if (isE2E) {
-    return <AboutHero {...defaultContent} />
   }
 
   // Try to fetch content from database

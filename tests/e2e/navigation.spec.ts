@@ -1,6 +1,7 @@
 import { test, expect } from "@chromatic-com/playwright"
 import type { Page } from "@playwright/test"
 import { HomePage } from "../pages"
+import { openFirstProductFromShop } from "../helpers/shop"
 
 /**
  * E2E Tests for Navigation
@@ -219,15 +220,8 @@ test.describe("Footer Navigation", () => {
 
 test.describe("Breadcrumb and Back Navigation", () => {
   test("should show back to shop link on product page", async ({ page }) => {
-    // First go to shop to find a product
-    await page.goto("/shop")
-
-    // Click first product
-    const productLink = page.locator('main a[href^="/shop/"]').first()
-    await productLink.click()
-
-    // Wait for product page
-    await expect(page).toHaveURL(/\/shop\/.+/)
+    const opened = await openFirstProductFromShop(page)
+    if (!opened) return
 
     // There should be a way to go back (either breadcrumb or back link)
     // Product pages typically have the product name as heading

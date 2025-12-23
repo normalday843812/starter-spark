@@ -13,7 +13,6 @@ import { CoursesTab } from "./CoursesTab"
 import { ToolsTab } from "./ToolsTab"
 import { ProgressTab } from "./ProgressTab"
 import { SkillAssessmentWrapper } from "../learn/SkillAssessmentWrapper"
-import { isE2E } from "@/lib/e2e"
 
 interface CourseModule {
   id: string
@@ -43,19 +42,17 @@ export default async function WorkshopPage({
   searchParams: Promise<{ tab?: string; difficulty?: string }>
 }) {
   const { difficulty: difficultyFilter } = await searchParams
-  const supabase = isE2E ? null : await createClient()
+  const supabase = await createClient()
 
   let user: { id: string } | null = null
-  if (supabase) {
-    try {
-      const {
-        data: { user: fetchedUser },
-      } = await supabase.auth.getUser()
-      user = fetchedUser ?? null
-    } catch (error) {
-      console.error("Failed to fetch user:", error)
-      user = null
-    }
+  try {
+    const {
+      data: { user: fetchedUser },
+    } = await supabase.auth.getUser()
+    user = fetchedUser ?? null
+  } catch (error) {
+    console.error("Failed to fetch user:", error)
+    user = null
   }
 
   // Fetch dynamic content

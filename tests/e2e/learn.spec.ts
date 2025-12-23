@@ -3,7 +3,25 @@ import type { Page } from "@playwright/test"
 
 const isSignedOut = async (page: Page) => {
   const signInHeading = page.getByRole("heading", { name: /sign in required/i })
-  return await signInHeading.isVisible().catch(() => false)
+  const signInLink = page.getByRole("link", { name: /sign in/i })
+  const coursesCount = page.getByText(/\d+ courses? available/i)
+  const emptyState = page.getByText(/no courses available/i)
+
+  await expect.poll(
+    async () => {
+      const hasSignIn = (await signInHeading.isVisible().catch(() => false))
+        || (await signInLink.isVisible().catch(() => false))
+      const hasCourses = await coursesCount.isVisible().catch(() => false)
+      const hasEmpty = await emptyState.isVisible().catch(() => false)
+      return hasSignIn || hasCourses || hasEmpty
+    },
+    { timeout: 15000 }
+  ).toBeTruthy()
+
+  return (
+    (await signInHeading.isVisible().catch(() => false)) ||
+    (await signInLink.isVisible().catch(() => false))
+  )
 }
 
 /**
@@ -16,6 +34,16 @@ test.describe("Learn Page - Course Listing", () => {
     await page.goto("/learn")
     await expect(page).toHaveURL(/\/workshop(\?|$)/)
 
+    await expect.poll(
+      async () => {
+        const hasSignIn = await isSignedOut(page)
+        const hasCourses = await page.getByText(/\d+ courses? available/i).isVisible().catch(() => false)
+        const hasEmpty = await page.getByText(/no courses available/i).isVisible().catch(() => false)
+        return hasSignIn || hasCourses || hasEmpty
+      },
+      { timeout: 15000 }
+    ).toBeTruthy()
+
     if (await isSignedOut(page)) {
       await expect(page.getByRole("heading", { name: /sign in required/i })).toBeVisible()
       return
@@ -27,8 +55,9 @@ test.describe("Learn Page - Course Listing", () => {
 
     // Should show courses count
     const coursesCount = page.getByText(/\d+ courses? available/i)
+    const emptyState = page.getByText(/no courses available/i)
     if (!(await coursesCount.isVisible().catch(() => false))) {
-      await expect(page.getByText(/no courses available/i)).toBeVisible()
+      await expect(emptyState).toBeVisible()
     }
   })
 

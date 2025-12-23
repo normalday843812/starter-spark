@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
 import { getContents, getContent } from "@/lib/content"
-import { isE2E } from "@/lib/e2e"
 import { MissionImpactSection, type Stat } from "./MissionImpact"
 
 const DEFAULT_CONTENT = {
@@ -32,21 +31,6 @@ export async function MissionImpact() {
     "{charityPercentage}",
     charityPercentage
   )
-
-  if (isE2E) {
-    return (
-      <MissionImpactSection
-        stats={FALLBACK_STATS}
-        title={content["home.mission.title"]}
-        subtitle={content["home.mission.subtitle"]}
-        story1={content["home.mission.story1"]}
-        story2={content["home.mission.story2"]}
-        commitmentTitle={content["home.mission.commitment.title"]}
-        commitmentText={commitmentText}
-        commitmentSubtext={content["home.mission.commitment.subtext"]}
-      />
-    )
-  }
 
   let transformedStats: Stat[] = FALLBACK_STATS
   try {

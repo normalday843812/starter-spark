@@ -1,6 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-import { isE2E } from './lib/e2e'
 
 function base64Encode(bytes: Uint8Array): string {
   // Edge runtime: btoa; Node fallback: Buffer.
@@ -55,14 +54,13 @@ function buildContentSecurityPolicy({
   const vercelEnv = process.env.VERCEL_ENV
   const isVercelPreview = vercelEnv === 'preview'
   const isStrictProduction =
-    process.env.NODE_ENV === 'production' && !isVercelPreview && !isE2E
+    process.env.NODE_ENV === 'production' && !isVercelPreview
   const scriptSrc = [
     "'self'",
     `'nonce-${nonce}'`,
     ...(isStrictProduction
       ? ["'wasm-unsafe-eval'"]
       : ["'unsafe-eval'", "'wasm-unsafe-eval'"]),
-    ...(isE2E ? ["'unsafe-inline'"] : []),
     // Vercel preview feedback widget
     ...(isVercelPreview ? ['https://vercel.live'] : []),
     // PostHog analytics
@@ -230,18 +228,16 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  // Refresh session if expired (skip in E2E to avoid external dependencies)
+  // Refresh session if expired.
   let user: { id: string } | null = null
-  if (!isE2E) {
-    try {
-      const {
-        data: { user: fetchedUser },
-      } = await supabase.auth.getUser()
-      user = fetchedUser ?? null
-    } catch (error) {
-      console.error('[proxy] failed to fetch user session:', error)
-      user = null
-    }
+  try {
+    const {
+      data: { user: fetchedUser },
+    } = await supabase.auth.getUser()
+    user = fetchedUser ?? null
+  } catch (error) {
+    console.error('[proxy] failed to fetch user session:', error)
+    user = null
   }
 
   // Route classification

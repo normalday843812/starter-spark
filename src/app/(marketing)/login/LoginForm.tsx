@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { createClient } from "@/lib/supabase/client"
 import { Loader2, Mail, CheckCircle } from "lucide-react"
-import { isE2E } from "@/lib/e2e"
 
 interface LoginFormProps {
   redirectTo?: string
@@ -36,12 +35,6 @@ export function LoginForm({ redirectTo, claimToken }: LoginFormProps) {
     setError(null)
 
     try {
-      if (isE2E) {
-        await new Promise((resolve) => setTimeout(resolve, 150))
-        setIsSent(true)
-        return
-      }
-
       const supabase = createClient()
 
       // Build the redirect URL

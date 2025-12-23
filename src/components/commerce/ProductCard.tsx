@@ -34,12 +34,12 @@ interface ProductCardProps {
 // Tag styling configuration
 const tagStyles: Record<ProductTagType, { bg: string; text: string; label: string }> = {
   featured: { bg: "bg-cyan-700", text: "text-white", label: "Featured" },
-  discount: { bg: "bg-amber-500", text: "text-white", label: "Sale" },
-  new: { bg: "bg-green-500", text: "text-white", label: "New" },
-  bestseller: { bg: "bg-purple-500", text: "text-white", label: "Bestseller" },
-  limited: { bg: "bg-red-500", text: "text-white", label: "Limited" },
-  bundle: { bg: "bg-blue-500", text: "text-white", label: "Bundle" },
-  out_of_stock: { bg: "bg-slate-400", text: "text-white", label: "Out of Stock" },
+  discount: { bg: "bg-amber-700", text: "text-white", label: "Sale" },
+  new: { bg: "bg-green-700", text: "text-white", label: "New" },
+  bestseller: { bg: "bg-purple-700", text: "text-white", label: "Bestseller" },
+  limited: { bg: "bg-red-700", text: "text-white", label: "Limited" },
+  bundle: { bg: "bg-blue-700", text: "text-white", label: "Bundle" },
+  out_of_stock: { bg: "bg-slate-600", text: "text-white", label: "Out of Stock" },
 }
 
 export function ProductCard({
@@ -191,7 +191,7 @@ export function ProductCard({
                 <p className="text-lg font-mono text-slate-600 line-through">
                   ${originalPrice.toFixed(2)}
                 </p>
-                <span className="px-1.5 py-0.5 bg-red-500 text-white text-xs font-mono rounded">
+                <span className="px-1.5 py-0.5 bg-red-700 text-white text-xs font-mono rounded">
                   {discountPercent}% OFF
                 </span>
               </div>

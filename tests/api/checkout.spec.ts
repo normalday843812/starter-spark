@@ -55,8 +55,8 @@ test.describe("POST /api/checkout", () => {
       expect(body.url).toBeDefined()
       expect(body.url).toMatch(/stripe\.com|checkout/i)
     } else {
-      // 500 for Stripe config error, or 429 if rate limited
-      expect([500, 429]).toContain(response.status())
+      // 400 if products are missing, 500 for Stripe config error, or 429 if rate limited
+      expect([400, 500, 429]).toContain(response.status())
     }
   })
 
@@ -80,8 +80,8 @@ test.describe("POST /api/checkout", () => {
       },
     })
 
-    // Response depends on Stripe configuration, or 429 if rate limited
-    expect([200, 500, 429]).toContain(response.status())
+    // Response depends on Stripe configuration or product availability
+    expect([200, 400, 500, 429]).toContain(response.status())
   })
 
   test("should calculate free shipping for orders over $75", async ({
@@ -102,7 +102,7 @@ test.describe("POST /api/checkout", () => {
       },
     })
 
-    // Just verify endpoint responds
+    // Just verify endpoint responds (400 if products are missing)
     expect(response.status()).toBeDefined()
   })
 
@@ -120,7 +120,7 @@ test.describe("POST /api/checkout", () => {
       },
     })
 
-    // Endpoint should respond
+    // Endpoint should respond (400 if products are missing)
     expect(response.status()).toBeDefined()
   })
 

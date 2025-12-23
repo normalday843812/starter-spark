@@ -15,7 +15,6 @@ import { Suspense } from "react"
 import { getContents } from "@/lib/content"
 import type { Metadata } from "next"
 import { siteConfig } from "@/config/site"
-import { isE2E } from "@/lib/e2e"
 
 const pageTitle = "The Lab - Community Q&A"
 const pageDescription = "Get help from the StarterSpark community. Ask questions, share solutions, and connect with other builders."
@@ -52,7 +51,7 @@ export default async function CommunityPage({
   searchParams: Promise<{ status?: string; tag?: string; product?: string; q?: string }>
 }) {
   const params = await searchParams
-  const supabase = isE2E ? null : await createClient()
+  const supabase = await createClient()
 
   // Fetch dynamic content
   const content = await getContents(
@@ -79,70 +78,68 @@ export default async function CommunityPage({
   }[] = []
   let products: { id: string; name: string; slug: string }[] = []
 
-  if (!isE2E && supabase) {
-    try {
-      // Fetch posts with author info and comment count
-      let query = supabase
-        .from("posts")
-        .select(
-          `
-          id,
-          slug,
-          title,
-          status,
-          tags,
-          upvotes,
-          view_count,
-          created_at,
-          author:profiles!posts_author_id_fkey (
-            id,
-            full_name,
-            email,
-            role
-          ),
-          product:products (
-            id,
-            name,
-            slug
-          ),
-          comments (id)
+  try {
+    // Fetch posts with author info and comment count
+    let query = supabase
+      .from("posts")
+      .select(
         `
-        )
-        .order("created_at", { ascending: false })
+        id,
+        slug,
+        title,
+        status,
+        tags,
+        upvotes,
+        view_count,
+        created_at,
+        author:profiles!posts_author_id_fkey (
+          id,
+          full_name,
+          email,
+          role
+        ),
+        product:products (
+          id,
+          name,
+          slug
+        ),
+        comments (id)
+      `
+      )
+      .order("created_at", { ascending: false })
 
-      // Apply filters
-      if (params.status && params.status !== "all") {
-        query = query.eq("status", params.status)
-      }
+    // Apply filters
+    if (params.status && params.status !== "all") {
+      query = query.eq("status", params.status)
+    }
 
-      if (params.tag) {
-        query = query.contains("tags", [params.tag])
-      }
+    if (params.tag) {
+      query = query.contains("tags", [params.tag])
+    }
 
-      // Apply text search
-      if (params.q?.trim()) {
-        query = query.ilike("title", `%${params.q.trim()}%`)
-      }
+    // Apply text search
+    if (params.q?.trim()) {
+      query = query.ilike("title", `%${params.q.trim()}%`)
+    }
 
-      const { data: postData, error } = await query.limit(50)
+    const { data: postData, error } = await query.limit(50)
 
-      if (error) {
-        console.error("Error fetching posts:", error)
-      }
-      posts = (postData as typeof posts) || []
-    } catch (error) {
+    if (error) {
       console.error("Error fetching posts:", error)
     }
+    posts = (postData as typeof posts) || []
+  } catch (error) {
+    console.error("Error fetching posts:", error)
+  }
 
-    try {
-      const { data: productData } = await supabase
-        .from("products")
-        .select("id, name, slug")
-        .order("name")
-      products = (productData as typeof products) || []
-    } catch (error) {
-      console.error("Error fetching products:", error)
-    }
+  try {
+    const { data: productData } = await supabase
+      .from("products")
+      .select("id, name, slug")
+      .order("name")
+    products = (productData as typeof products) || []
+  } catch (error) {
+    console.error("Error fetching products:", error)
   }
 
   // Get unique tags from posts

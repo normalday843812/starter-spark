@@ -6,7 +6,6 @@ import { type ProductTag } from "@/components/commerce"
 import { getContents } from "@/lib/content"
 import type { Metadata } from "next"
 import { siteConfig } from "@/config/site"
-import { getE2EShopProducts, isE2E } from "@/lib/e2e"
 
 const pageTitle = "Robotics Kits"
 const pageDescription = "Precision robotics kits for the next generation of engineers. Each kit includes components, tools, and full access to our learning platform."
@@ -71,93 +70,89 @@ export default async function ShopPage() {
 
   let transformedProducts: ShopProduct[] = []
 
-  if (isE2E) {
-    transformedProducts = getE2EShopProducts()
-  } else {
-    try {
-      const supabase = createPublicClient()
-      const { data: products, error } = await supabase
-        .from("products")
-        .select(`
-          id,
-          slug,
-          name,
-          price_cents,
-          original_price_cents,
+  try {
+    const supabase = createPublicClient()
+    const { data: products, error } = await supabase
+      .from("products")
+      .select(`
+        id,
+        slug,
+        name,
+        price_cents,
+        original_price_cents,
+        discount_percent,
+        discount_expires_at,
+        specs,
+        status,
+        created_at,
+        product_tags (
+          tag,
+          priority,
           discount_percent,
-          discount_expires_at,
-          specs,
-          status,
-          created_at,
-          product_tags (
-            tag,
-            priority,
-            discount_percent,
-            expires_at
-          ),
-          product_media (
-            type,
-            url,
-            is_primary,
-            sort_order
-          )
-        `)
-        .in("status", ["active", "coming_soon"])
+          expires_at
+        ),
+        product_media (
+          type,
+          url,
+          is_primary,
+          sort_order
+        )
+      `)
+      .in("status", ["active", "coming_soon"])
 
-      if (error) {
-        console.error("Error fetching products:", error)
-      }
-
-      transformedProducts = (products || []).map((product) => {
-        const specs = product.specs as {
-          category?: string
-          badge?: string | null
-          inStock?: boolean
-        } | null
-
-        // Filter out expired tags
-        const now = new Date()
-        const productTags = (product.product_tags as unknown as ProductTagItem[] | null) || []
-        const validTags = productTags.filter((t) => {
-          if (!t.expires_at) return true // No expiration = always valid
-          return new Date(t.expires_at) > now
-        })
-
-        const tags = validTags.map((t) => ({
-          tag: t.tag as ProductTag["tag"],
-          priority: t.priority,
-          discount_percent: t.discount_percent,
-        }))
-
-        // Get primary image or first image by sort_order (filter out 3D models, videos, documents)
-        const productMedia = (product.product_media as unknown as ProductMediaItem[] | null) || []
-        const media = productMedia.filter((m) => m.type === "image" || !m.type)
-        const primaryImage = media.find((m) => m.is_primary)
-        const sortedMedia = [...media].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
-        const firstImage = sortedMedia[0]
-        const image = primaryImage?.url || firstImage?.url || undefined
-
-        return {
-          id: product.id,
-          slug: product.slug,
-          name: product.name,
-          price: product.price_cents / 100,
-          inStock: specs?.inStock ?? true,
-          badge: specs?.badge || undefined,
-          category: specs?.category || "kit",
-          status: (product.status || "active"),
-          tags,
-          createdAt: product.created_at,
-          image,
-          // Discount fields (Phase 14.3)
-          originalPrice: product.original_price_cents ? product.original_price_cents / 100 : null,
-          discountPercent: product.discount_percent,
-          discountExpiresAt: product.discount_expires_at,
-        }
-      })
-    } catch (error) {
+    if (error) {
       console.error("Error fetching products:", error)
     }
+
+    transformedProducts = (products || []).map((product) => {
+      const specs = product.specs as {
+        category?: string
+        badge?: string | null
+        inStock?: boolean
+      } | null
+
+      // Filter out expired tags
+      const now = new Date()
+      const productTags = (product.product_tags as unknown as ProductTagItem[] | null) || []
+      const validTags = productTags.filter((t) => {
+        if (!t.expires_at) return true // No expiration = always valid
+        return new Date(t.expires_at) > now
+      })
+
+      const tags = validTags.map((t) => ({
+        tag: t.tag as ProductTag["tag"],
+        priority: t.priority,
+        discount_percent: t.discount_percent,
+      }))
+
+      // Get primary image or first image by sort_order (filter out 3D models, videos, documents)
+      const productMedia = (product.product_media as unknown as ProductMediaItem[] | null) || []
+      const media = productMedia.filter((m) => m.type === "image" || !m.type)
+      const primaryImage = media.find((m) => m.is_primary)
+      const sortedMedia = [...media].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+      const firstImage = sortedMedia[0]
+      const image = primaryImage?.url || firstImage?.url || undefined
+
+      return {
+        id: product.id,
+        slug: product.slug,
+        name: product.name,
+        price: product.price_cents / 100,
+        inStock: specs?.inStock ?? true,
+        badge: specs?.badge || undefined,
+        category: specs?.category || "kit",
+        status: (product.status || "active"),
+        tags,
+        createdAt: product.created_at,
+        image,
+        // Discount fields (Phase 14.3)
+        originalPrice: product.original_price_cents ? product.original_price_cents / 100 : null,
+        discountPercent: product.discount_percent,
+        discountExpiresAt: product.discount_expires_at,
+      }
+    })
+  } catch (error) {
+    console.error("Error fetching products:", error)
   }
 
   // Sort products according to PLAN.md algorithm:

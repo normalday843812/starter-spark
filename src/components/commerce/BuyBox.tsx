@@ -125,7 +125,7 @@ export function BuyBox({
               <span className="text-xl font-mono text-slate-600 line-through">
                 ${originalPrice.toFixed(2)}
               </span>
-              <span className="px-2 py-1 bg-red-500 text-white text-sm font-mono rounded">
+              <span className="px-2 py-1 bg-red-700 text-white text-sm font-mono rounded">
                 {discountPercent}% OFF
               </span>
             </>

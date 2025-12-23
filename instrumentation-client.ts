@@ -9,7 +9,6 @@ const sentryEnabled =
   process.env.NODE_ENV === "production" &&
   !!process.env.NEXT_PUBLIC_SENTRY_DSN &&
   process.env.NEXT_PUBLIC_SENTRY_DISABLED !== "1" &&
-  process.env.NEXT_PUBLIC_E2E !== "1" &&
   !isLocalHost
 
 Sentry.init({

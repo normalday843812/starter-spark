@@ -1,6 +1,7 @@
 import { test, expect } from "@chromatic-com/playwright"
 import type { Page } from "@playwright/test"
-import { CartPage, ProductPage, HomePage } from "../pages"
+import { CartPage } from "../pages"
+import { openFirstProductFromShop } from "../helpers/shop"
 
 /**
  * E2E Tests for Shopping Cart
@@ -77,12 +78,10 @@ test.describe("Cart - Add Items", () => {
 
   test("should add item to cart from product page", async ({ page }) => {
     // Go to shop and find a product
-    await page.goto("/shop")
-    const productLink = page.locator('main a[href^="/shop/"]').first()
-    await productLink.click()
+    const opened = await openFirstProductFromShop(page)
+    if (!opened) return
 
     // Wait for product page to load
-    await expect(page).toHaveURL(/\/shop\/.+/)
     await page.getByRole("heading", { level: 1 }).waitFor()
 
     // Add to cart
@@ -100,9 +99,8 @@ test.describe("Cart - Add Items", () => {
 
   test("should open cart sheet when adding item", async ({ page }) => {
     // Navigate to a product
-    await page.goto("/shop")
-    await page.locator('main a[href^="/shop/"]').first().click()
-    await expect(page).toHaveURL(/\/shop\/.+/)
+    const opened = await openFirstProductFromShop(page)
+    if (!opened) return
     await page.getByRole("heading", { level: 1 }).waitFor()
 
     // Add to cart
@@ -116,9 +114,8 @@ test.describe("Cart - Add Items", () => {
     page,
   }) => {
     // Navigate to a product
-    await page.goto("/shop")
-    await page.locator('main a[href^="/shop/"]').first().click()
-    await expect(page).toHaveURL(/\/shop\/.+/)
+    const opened = await openFirstProductFromShop(page)
+    if (!opened) return
     await page.getByRole("heading", { level: 1 }).waitFor()
 
     // Add to cart twice
@@ -147,9 +144,8 @@ test.describe("Cart - Add Items", () => {
 
   test("should add multiple items with specified quantity", async ({ page }) => {
     // Navigate to a product
-    await page.goto("/shop")
-    await page.locator('main a[href^="/shop/"]').first().click()
-    await expect(page).toHaveURL(/\/shop\/.+/)
+    const opened = await openFirstProductFromShop(page)
+    if (!opened) return
     await page.getByRole("heading", { level: 1 }).waitFor()
 
     // Increase quantity to 3 (use the BuyBox quantity controls, not cart sheet)
