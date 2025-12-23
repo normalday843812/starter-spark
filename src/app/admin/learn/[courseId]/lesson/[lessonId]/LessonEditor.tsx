@@ -393,7 +393,9 @@ export function LessonEditor({ lesson, courseId, availableLessons }: LessonEdito
     return list.filter((l) => l.title.toLowerCase().includes(q))
   }, [availableLessons, lesson.id, prereqQuery])
 
-  const handleSave = (formData: FormData) => {
+  const handleSave = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget)
     startTransition(async () => {
       const result = await updateLesson(lesson.id, courseId, formData)
       if (result.error) {
@@ -558,7 +560,7 @@ export function LessonEditor({ lesson, courseId, availableLessons }: LessonEdito
               : undefined
 
   return (
-    <form ref={formRef} action={handleSave} className="space-y-6">
+    <form ref={formRef} onSubmit={handleSave} className="space-y-6">
       {/* Hidden fields that back Radix inputs + block model */}
       <input type="hidden" name="lesson_type" value={lessonType} />
       <input type="hidden" name="difficulty" value={difficulty} />

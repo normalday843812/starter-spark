@@ -115,11 +115,6 @@ const nextConfig: NextConfig = {
       },
       {
         // Ensure HTML content type for common probes (avoids empty Content-Type on redirects)
-        source: "/admin/:path*",
-        headers: [htmlContentTypeHeader],
-      },
-      {
-        // Ensure HTML content type for common probes (avoids empty Content-Type on redirects)
         source: "/auth/:path*",
         headers: [htmlContentTypeHeader],
       },
@@ -166,7 +161,7 @@ const nextConfig: NextConfig = {
     ])
   },
 
-  async rewrites() {
+  rewrites() {
     return [
       {
         source: "/api/",
