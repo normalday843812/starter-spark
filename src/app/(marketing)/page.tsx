@@ -10,9 +10,7 @@ import {
 import {
   getOrganizationSchema,
   getWebsiteSchema,
-  jsonLdScript,
 } from '@/lib/structured-data'
-import { headers } from 'next/headers'
 import {
   HeroSkeleton,
   DifferentiatorsSkeleton,
@@ -23,19 +21,21 @@ import {
 } from './loading'
 
 export default async function Home() {
-  const nonce = (await headers()).get('x-nonce') ?? undefined
   const organizationSchema = getOrganizationSchema()
   const websiteSchema = getWebsiteSchema()
 
   return (
-    <div>
-      {/* JSON-LD Structured Data for SEO */}
-      <script nonce={nonce} type="application/ld+json">
-        {jsonLdScript(organizationSchema)}
-      </script>
-      <script nonce={nonce} type="application/ld+json">
-        {jsonLdScript(websiteSchema)}
-      </script>
+    <>
+      {/* JSON-LD via Next.js script - rendered only on server, no hydration issues */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+      />
+      <div>
       <Suspense fallback={<HeroSkeleton />}>
         <HeroWrapper />
       </Suspense>
@@ -54,6 +54,7 @@ export default async function Home() {
       <Suspense fallback={<EventsPreviewSkeleton />}>
         <EventsPreview />
       </Suspense>
-    </div>
+      </div>
+    </>
   )
 }

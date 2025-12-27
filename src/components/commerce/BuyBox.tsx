@@ -29,7 +29,7 @@ interface BuyBoxProps {
   discountExpiresAt?: string | null
   // Inventory fields
   stockQuantity?: number | null
-  isLimitedStock?: boolean
+  lowStockThreshold?: number | null
   // Charity percentage from site content
   charityPercentage?: string
 }
@@ -59,12 +59,12 @@ function getDiscountTimeRemaining(discountExpiresAt?: string | null) {
 
 function getStockBadge({
   inStock,
-  isLimitedStock,
   stockQuantity,
+  lowStockThreshold = 10,
 }: {
   inStock: boolean
-  isLimitedStock?: boolean
   stockQuantity?: number | null
+  lowStockThreshold?: number | null
 }) {
   if (!inStock) {
     return {
@@ -73,10 +73,12 @@ function getStockBadge({
     }
   }
 
+  // Show "Only X left" when tracking inventory and stock is at or below threshold
+  const threshold = lowStockThreshold ?? 10
   if (
-    isLimitedStock &&
     stockQuantity !== null &&
-    stockQuantity !== undefined
+    stockQuantity !== undefined &&
+    stockQuantity <= threshold
   ) {
     return {
       label: `Only ${stockQuantity} left`,
@@ -101,12 +103,17 @@ export function BuyBox({
   discountPercent,
   discountExpiresAt,
   stockQuantity,
-  isLimitedStock,
+  lowStockThreshold,
   charityPercentage = '67%',
 }: BuyBoxProps) {
   const [quantity, setQuantity] = useState(1)
   const quantityLabelId = useId()
   const addItem = useCartStore((state) => state.addItem)
+
+  // Max quantity is limited by stock if inventory is tracked
+  const maxQuantity = stockQuantity !== null && stockQuantity !== undefined
+    ? stockQuantity
+    : 99
 
   // Check if discount is active (exists and not expired)
   const hasActiveDiscount = Boolean(
@@ -121,8 +128,8 @@ export function BuyBox({
     : null
   const stockBadge = getStockBadge({
     inStock,
-    isLimitedStock,
     stockQuantity,
+    lowStockThreshold,
   })
   const addToCartClassName = cn(
     'w-full h-14 font-mono text-lg',
@@ -141,6 +148,8 @@ export function BuyBox({
         originalPrice: hasActiveDiscount
           ? (originalPrice ?? undefined)
           : undefined,
+        // Pass max quantity for cart stock enforcement
+        maxQuantity: maxQuantity < 99 ? maxQuantity : undefined,
       },
       quantity,
     )
@@ -201,33 +210,42 @@ export function BuyBox({
         )}
       </div>
 
-      {/* Quantity Selector */}
-      <div className="space-y-2" role="group" aria-labelledby={quantityLabelId}>
-        <span id={quantityLabelId} className="text-sm text-slate-700">
-          Quantity
-        </span>
-        <div className="flex items-center gap-3">
-          <QuantityButton
-            size="lg"
-            onClick={() => {
-              setQuantity(Math.max(1, quantity - 1))
-            }}
-            aria-label="Decrease quantity"
-          >
-            <Minus className="w-4 h-4 text-slate-600" aria-hidden="true" />
-          </QuantityButton>
-          <span className="w-12 text-center font-mono text-lg">{quantity}</span>
-          <QuantityButton
-            size="lg"
-            onClick={() => {
-              setQuantity(quantity + 1)
-            }}
-            aria-label="Increase quantity"
-          >
-            <Plus className="w-4 h-4 text-slate-600" aria-hidden="true" />
-          </QuantityButton>
+      {/* Quantity Selector - only show when in stock */}
+      {inStock && (
+        <div className="space-y-2" role="group" aria-labelledby={quantityLabelId}>
+          <span id={quantityLabelId} className="text-sm text-slate-700">
+            Quantity
+          </span>
+          <div className="flex items-center gap-3">
+            <QuantityButton
+              size="lg"
+              onClick={() => {
+                setQuantity(Math.max(1, quantity - 1))
+              }}
+              disabled={quantity <= 1}
+              aria-label="Decrease quantity"
+            >
+              <Minus className="w-4 h-4 text-slate-600" aria-hidden="true" />
+            </QuantityButton>
+            <span className="w-12 text-center font-mono text-lg">{quantity}</span>
+            <QuantityButton
+              size="lg"
+              onClick={() => {
+                setQuantity(Math.min(maxQuantity, quantity + 1))
+              }}
+              disabled={quantity >= maxQuantity}
+              aria-label="Increase quantity"
+            >
+              <Plus className="w-4 h-4 text-slate-600" aria-hidden="true" />
+            </QuantityButton>
+          </div>
+          {maxQuantity < 99 && maxQuantity > 0 && quantity >= maxQuantity && (
+            <p className="text-xs text-amber-600">
+              Maximum available quantity selected
+            </p>
+          )}
         </div>
-      </div>
+      )}
 
       {/* Add to Cart */}
       <Button

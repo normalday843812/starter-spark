@@ -31,6 +31,7 @@ function shouldSkipResend(to: string): boolean {
 
 function mockResendSend(to: string, subject: string) {
   const emailId = `skip_${randomUUID()}`
+  console.log(`[Email] SKIPPED (example.com): ${subject} to ${to}`)
   recordResendWebhookEvent({
     type: 'email.sent',
     data: {
@@ -63,7 +64,12 @@ export async function sendPurchaseConfirmation({
   licenses,
   isGuestPurchase,
 }: SendPurchaseConfirmationParams) {
-  const resend = new Resend(process.env.RESEND_API_KEY)
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) {
+    throw new Error('RESEND_API_KEY is not configured')
+  }
+
+  const resend = new Resend(apiKey)
   const licenseCount = licenses.length
   const licenseLabel = licenseCount === 1 ? 'license' : 'licenses'
   const subject = `Your StarterSpark Order is Confirmed! (${String(licenseCount)} ${licenseLabel})`
@@ -71,6 +77,8 @@ export async function sendPurchaseConfirmation({
   if (shouldSkipResend(to)) {
     return mockResendSend(to, subject)
   }
+
+  console.log(`[Email] Sending purchase confirmation to ${to.substring(0, 3)}***`)
 
   const { data, error } = await resend.emails.send({
     from: FROM_EMAIL,
@@ -107,7 +115,12 @@ export async function sendClaimLink({
   licenseCode,
   claimToken,
 }: SendClaimLinkParams) {
-  const resend = new Resend(process.env.RESEND_API_KEY)
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) {
+    throw new Error('RESEND_API_KEY is not configured')
+  }
+
+  const resend = new Resend(apiKey)
   const subject = `Claim Your ${productName} License - StarterSpark`
 
   if (shouldSkipResend(to)) {
@@ -144,7 +157,12 @@ export async function sendWelcomeEmail({
   to,
   userName,
 }: SendWelcomeEmailParams) {
-  const resend = new Resend(process.env.RESEND_API_KEY)
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) {
+    throw new Error('RESEND_API_KEY is not configured')
+  }
+
+  const resend = new Resend(apiKey)
   const subject = "Welcome to StarterSpark! Let's Build Something Amazing"
 
   if (shouldSkipResend(to)) {

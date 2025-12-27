@@ -222,37 +222,51 @@ export function Header({ user }: HeaderProps) {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1">
-            {/* Documentation Dropdown */}
-            <DropdownMenu modal={false}>
-              <DropdownMenuTrigger className={dropdownTriggerClass}>
+            {/* Documentation Dropdown - render after hydration to avoid ID mismatch */}
+            {isHydrated ? (
+              <DropdownMenu modal={false}>
+                <DropdownMenuTrigger className={dropdownTriggerClass}>
+                  {documentationNav.title}
+                  <ChevronDown className="h-4 w-4 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="start"
+                  className="w-[320px] bg-white border border-slate-200 shadow-lg p-1"
+                >
+                  {documentationNav.items.map((item) => (
+                    <NavDropdownItem key={item.href + item.title} item={item} />
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <span className={dropdownTriggerClass}>
                 {documentationNav.title}
-                <ChevronDown className="h-4 w-4 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="start"
-                className="w-[320px] bg-white border border-slate-200 shadow-lg p-1"
-              >
-                {documentationNav.items.map((item) => (
-                  <NavDropdownItem key={item.href + item.title} item={item} />
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                <ChevronDown className="h-4 w-4" />
+              </span>
+            )}
 
-            {/* Community Dropdown */}
-            <DropdownMenu modal={false}>
-              <DropdownMenuTrigger className={dropdownTriggerClass}>
+            {/* Community Dropdown - render after hydration to avoid ID mismatch */}
+            {isHydrated ? (
+              <DropdownMenu modal={false}>
+                <DropdownMenuTrigger className={dropdownTriggerClass}>
+                  {communityNav.title}
+                  <ChevronDown className="h-4 w-4 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="start"
+                  className="w-[280px] bg-white border border-slate-200 shadow-lg p-1"
+                >
+                  {communityNav.items.map((item) => (
+                    <NavDropdownItem key={item.href + item.title} item={item} />
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <span className={dropdownTriggerClass}>
                 {communityNav.title}
-                <ChevronDown className="h-4 w-4 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="start"
-                className="w-[280px] bg-white border border-slate-200 shadow-lg p-1"
-              >
-                {communityNav.items.map((item) => (
-                  <NavDropdownItem key={item.href + item.title} item={item} />
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                <ChevronDown className="h-4 w-4" />
+              </span>
+            )}
 
             {/* Workshop Link (no dropdown) */}
             <Link

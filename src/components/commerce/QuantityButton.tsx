@@ -45,15 +45,20 @@ export function QuantityButton({
   tone = 'neutral',
   className,
   type = 'button',
+  disabled,
   ...props
 }: QuantityButtonProps) {
   return (
     <button
       type={type}
+      disabled={disabled}
       className={cn(
-        'rounded border flex items-center justify-center transition-colors cursor-pointer',
+        'rounded border flex items-center justify-center transition-colors',
+        disabled
+          ? 'cursor-not-allowed opacity-40'
+          : 'cursor-pointer',
         getSizeClass(size),
-        getToneClass(tone),
+        !disabled && getToneClass(tone),
         className,
       )}
       {...props}

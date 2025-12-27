@@ -70,8 +70,9 @@ export function ProductCard({
     originalPrice &&
     (!discountExpiresAt || new Date(discountExpiresAt) > new Date())
 
-  // Sort tags by priority (higher = first) and limit to 3
+  // Sort tags by priority (higher = first), exclude out_of_stock (shown as badge), limit to 3
   const sortedTags = [...tags]
+    .filter((t) => t.tag !== 'out_of_stock')
     .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0))
     .slice(0, 3)
 
@@ -185,7 +186,7 @@ export function ProductCard({
                       : 'bg-amber-50 text-amber-700 border-amber-200'
                   }`}
                 >
-                  {effectiveInStock ? 'In Stock' : 'Pre-Order'}
+                  {effectiveInStock ? 'In Stock' : 'Out of Stock'}
                 </Badge>
               )}
             </div>

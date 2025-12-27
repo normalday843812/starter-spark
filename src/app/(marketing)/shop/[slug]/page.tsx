@@ -145,6 +145,7 @@ export default async function ProductDetailPage({
     discount_expires_at: string | null
     track_inventory: boolean | null
     stock_quantity: number | null
+    low_stock_threshold: number | null
     specs: Json | null
     product_media: {
       id?: string
@@ -326,7 +327,9 @@ export default async function ProductDetailPage({
                 stockQuantity={
                   product.track_inventory ? product.stock_quantity : null
                 }
-                isLimitedStock={hasLimitedTag}
+                lowStockThreshold={
+                  product.track_inventory ? product.low_stock_threshold : null
+                }
                 charityPercentage={charityPercentage}
               />
             </div>

@@ -535,8 +535,11 @@ export async function POST(request: Request) {
         }
       })
 
-      const shouldSendEmail = await claimOnce(session.id, 'email_sent_at')
-      if (shouldSendEmail) {
+      // Attempt to send email - only mark as sent if successful
+      const existingFulfillment = await loadFulfillment(session.id)
+      const emailAlreadySent = existingFulfillment?.email_sent_at != null
+
+      if (!emailAlreadySent) {
         try {
           await sendPurchaseConfirmation({
             to: customerEmail,
@@ -545,15 +548,24 @@ export async function POST(request: Request) {
             licenses: licenseInfoForEmail,
             isGuestPurchase: true,
           })
+          // Only mark as sent AFTER successful send
+          await claimOnce(session.id, 'email_sent_at')
           console.log(
             `Purchase confirmation email sent to ${maskEmail(customerEmail)}`,
           )
         } catch (emailError) {
-          // Log email error but don't fail the webhook
+          // Record the email error in the database for debugging
+          const errorMessage =
+            emailError instanceof Error ? emailError.message : 'Unknown error'
+          await supabaseAdmin
+            .from('stripe_checkout_fulfillments')
+            .update({ last_error: `Email failed: ${errorMessage}` })
+            .eq('stripe_session_id', session.id)
           console.error(
             'Failed to send purchase confirmation email:',
             emailError,
           )
+          // Don't fail the webhook - licenses are created, just email failed
         }
       }
 
