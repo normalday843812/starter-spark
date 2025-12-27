@@ -12,6 +12,8 @@ export interface CartItem {
   quantity: number
   image?: string
   originalPrice?: number
+  /** Max quantity available (from stock tracking). Undefined means unlimited. */
+  maxQuantity?: number
 }
 
 interface CartState {
@@ -61,16 +63,26 @@ export const useCartStore = create<CartStore>()(
         const existingItem = items.find((i) => i.slug === item.slug)
 
         if (existingItem) {
+          // Respect maxQuantity if set
+          const maxQty = item.maxQuantity ?? existingItem.maxQuantity
+          const newQuantity = existingItem.quantity + quantity
+          const clampedQuantity = maxQty ? Math.min(newQuantity, maxQty) : newQuantity
+
           set({
             items: items.map((i) =>
               i.slug === item.slug
-                ? { ...i, quantity: i.quantity + quantity }
+                ? { ...i, quantity: clampedQuantity, maxQuantity: maxQty }
                 : i,
             ),
           })
         } else {
+          // Respect maxQuantity on first add
+          const clampedQuantity = item.maxQuantity
+            ? Math.min(quantity, item.maxQuantity)
+            : quantity
+
           set({
-            items: [...items, { ...item, quantity }],
+            items: [...items, { ...item, quantity: clampedQuantity }],
           })
         }
 
@@ -89,9 +101,14 @@ export const useCartStore = create<CartStore>()(
           return
         }
 
+        const item = get().items.find((i) => i.slug === slug)
+        const clampedQuantity = item?.maxQuantity
+          ? Math.min(quantity, item.maxQuantity)
+          : quantity
+
         set({
           items: get().items.map((i) =>
-            i.slug === slug ? { ...i, quantity } : i,
+            i.slug === slug ? { ...i, quantity: clampedQuantity } : i,
           ),
         })
       },

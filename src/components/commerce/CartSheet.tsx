@@ -103,11 +103,15 @@ export function CartSheet() {
                         onClick={() => {
                           updateQuantity(item.slug, item.quantity + 1)
                         }}
+                        disabled={item.maxQuantity !== undefined && item.quantity >= item.maxQuantity}
                         aria-label="Increase quantity"
                       >
                         <Plus className="w-3 h-3 text-slate-600" />
                       </QuantityButton>
                     </div>
+                    {item.maxQuantity !== undefined && item.quantity >= item.maxQuantity && (
+                      <p className="text-xs text-amber-600 mt-1">Max available</p>
+                    )}
                   </div>
                 </div>
               ))}
