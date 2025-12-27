@@ -6,11 +6,16 @@ import { ClaimLinkEmail } from './templates/claim-link'
 import { WelcomeEmail } from './templates/welcome'
 import { recordResendWebhookEvent } from '@/lib/email/webhook-status'
 
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'StarterSpark <no-reply@starterspark.org>'
+const FROM_EMAIL =
+  process.env.RESEND_FROM_EMAIL || 'StarterSpark <no-reply@starterspark.org>'
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ||
-  (process.env.VERCEL_BRANCH_URL ? `https://${process.env.VERCEL_BRANCH_URL}` : null) ||
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
+  (process.env.VERCEL_BRANCH_URL
+    ? `https://${process.env.VERCEL_BRANCH_URL}`
+    : null) ||
+  (process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : 'http://localhost:3000')
 
 function extractEmailAddress(value: string): string {
   const trimmed = value.trim()
@@ -60,7 +65,7 @@ export async function sendPurchaseConfirmation({
 }: SendPurchaseConfirmationParams) {
   const resend = new Resend(process.env.RESEND_API_KEY)
   const licenseCount = licenses.length
-  const licenseLabel = licenseCount === 1 ? "license" : "licenses"
+  const licenseLabel = licenseCount === 1 ? 'license' : 'licenses'
   const subject = `Your StarterSpark Order is Confirmed! (${String(licenseCount)} ${licenseLabel})`
 
   if (shouldSkipResend(to)) {
@@ -135,7 +140,10 @@ interface SendWelcomeEmailParams {
   userName?: string
 }
 
-export async function sendWelcomeEmail({ to, userName }: SendWelcomeEmailParams) {
+export async function sendWelcomeEmail({
+  to,
+  userName,
+}: SendWelcomeEmailParams) {
   const resend = new Resend(process.env.RESEND_API_KEY)
   const subject = "Welcome to StarterSpark! Let's Build Something Amazing"
 

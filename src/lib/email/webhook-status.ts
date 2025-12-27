@@ -22,26 +22,26 @@ const emailStatusStore = new Map<string, ResendEmailStatus>()
 
 function normalizeStatus(type?: string): string {
   switch (type) {
-    case "email.sent":
-      return "sent"
-    case "email.delivered":
-      return "delivered"
-    case "email.delivery_delayed":
-      return "delivery_delayed"
-    case "email.failed":
-      return "failed"
-    case "email.bounced":
-      return "bounced"
-    case "email.complained":
-      return "complained"
-    case "email.opened":
-      return "opened"
-    case "email.clicked":
-      return "clicked"
-    case "email.received":
-      return "received"
+    case 'email.sent':
+      return 'sent'
+    case 'email.delivered':
+      return 'delivered'
+    case 'email.delivery_delayed':
+      return 'delivery_delayed'
+    case 'email.failed':
+      return 'failed'
+    case 'email.bounced':
+      return 'bounced'
+    case 'email.complained':
+      return 'complained'
+    case 'email.opened':
+      return 'opened'
+    case 'email.clicked':
+      return 'clicked'
+    case 'email.received':
+      return 'received'
     default:
-      return "unknown"
+      return 'unknown'
   }
 }
 
@@ -62,7 +62,7 @@ export function recordResendWebhookEvent(payload: ResendWebhookPayload) {
 
   emailStatusStore.set(emailId, {
     id: emailId,
-    type: payload.type || "unknown",
+    type: payload.type || 'unknown',
     status: normalizeStatus(payload.type),
     updatedAt: now,
     to: payload.data?.to,
