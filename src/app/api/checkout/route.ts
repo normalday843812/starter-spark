@@ -2,6 +2,7 @@ import { stripe } from '@/lib/stripe'
 import { NextResponse } from 'next/server'
 import { rateLimit } from '@/lib/rate-limit'
 import { createClient } from '@/lib/supabase/server'
+import { checkBotAndReject } from '@/lib/botid'
 
 interface CartItem {
   slug: string
@@ -15,6 +16,9 @@ export async function POST(request: Request) {
   // Rate limit: 10 requests per minute
   const rateLimitResponse = await rateLimit(request, 'checkout')
   if (rateLimitResponse) return rateLimitResponse
+
+  const botResponse = await checkBotAndReject()
+  if (botResponse) return botResponse
 
   try {
     const body: unknown = await request.json()

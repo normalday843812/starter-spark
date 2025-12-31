@@ -3,6 +3,7 @@
 import {
   useCallback,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -13,16 +14,20 @@ import {
   Background,
   Controls,
   MiniMap,
-  Handle,
-  Position,
   type Connection,
-  type Node,
+  type Edge,
   type NodeTypes,
   type OnSelectionChangeParams,
   useEdgesState,
   useNodesState,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -34,18 +39,11 @@ import {
   ChevronLeft,
   ChevronRight,
   Download,
+  Maximize2,
+  Minimize2,
   Undo2,
   Redo2,
   Upload,
-  Play,
-  Repeat,
-  GitBranch,
-  Clock,
-  Zap,
-  Settings,
-  Terminal,
-  Radio,
-  Gauge,
 } from 'lucide-react'
 import { reactFlowTokens } from '@/styles/reactflow-tokens'
 import { cn } from '@/lib/utils'
@@ -53,12 +51,16 @@ import { randomId } from '@/lib/random-id'
 import {
   type FlowState,
   type VisualBlockType,
-  type VisualNodeData,
-  generateArduinoCode,
+  type VisualEdgeKind,
+  buildArduinoProgramAstFromFlow,
+  emitArduinoFromAst,
   parseFlowState,
   parseArduinoToBlocks,
 } from './visual-programming'
 import { CodeEditor } from './CodeEditor'
+import { VisualBlockNode } from './visual-blocks/VisualBlockNode'
+import { VisualParamsEditor } from './visual-blocks/VisualParamsEditor'
+import { getVisualBlockDefaults, visualBlockPalette } from './visual-blocks/registry'
 
 type EditorMode = 'diagram' | 'visual'
 
@@ -68,214 +70,6 @@ interface FlowEditorProps {
   onChange: (next: FlowState) => void
   className?: string
   height?: number | string
-}
-
-// Custom node component for better visual blocks
-function VisualBlockNode({ data }: { data: VisualNodeData }) {
-  const blockType = data.blockType || 'default'
-  const params = data.params || {}
-
-  // Color schemes for different block types
-  const colorSchemes: Record<
-    string,
-    { bg: string; border: string; text: string; icon: React.ReactNode }
-  > = {
-    setup: {
-      bg: 'bg-cyan-100',
-      border: 'border-cyan-400',
-      text: 'text-cyan-800',
-      icon: <Play className="w-3.5 h-3.5" />,
-    },
-    loop: {
-      bg: 'bg-cyan-100',
-      border: 'border-cyan-400',
-      text: 'text-cyan-800',
-      icon: <Repeat className="w-3.5 h-3.5" />,
-    },
-    variable: {
-      bg: 'bg-violet-100',
-      border: 'border-violet-400',
-      text: 'text-violet-800',
-      icon: <Settings className="w-3.5 h-3.5" />,
-    },
-    servo_attach: {
-      bg: 'bg-blue-100',
-      border: 'border-blue-400',
-      text: 'text-blue-800',
-      icon: <Settings className="w-3.5 h-3.5" />,
-    },
-    servo_write: {
-      bg: 'bg-blue-100',
-      border: 'border-blue-400',
-      text: 'text-blue-800',
-      icon: <Gauge className="w-3.5 h-3.5" />,
-    },
-    delay: {
-      bg: 'bg-amber-100',
-      border: 'border-amber-400',
-      text: 'text-amber-800',
-      icon: <Clock className="w-3.5 h-3.5" />,
-    },
-    digital_write: {
-      bg: 'bg-green-100',
-      border: 'border-green-400',
-      text: 'text-green-800',
-      icon: <Zap className="w-3.5 h-3.5" />,
-    },
-    digital_read: {
-      bg: 'bg-green-100',
-      border: 'border-green-400',
-      text: 'text-green-800',
-      icon: <Radio className="w-3.5 h-3.5" />,
-    },
-    analog_write: {
-      bg: 'bg-orange-100',
-      border: 'border-orange-400',
-      text: 'text-orange-800',
-      icon: <Zap className="w-3.5 h-3.5" />,
-    },
-    analog_read: {
-      bg: 'bg-orange-100',
-      border: 'border-orange-400',
-      text: 'text-orange-800',
-      icon: <Gauge className="w-3.5 h-3.5" />,
-    },
-    serial_print: {
-      bg: 'bg-slate-100',
-      border: 'border-slate-400',
-      text: 'text-slate-800',
-      icon: <Terminal className="w-3.5 h-3.5" />,
-    },
-    if_condition: {
-      bg: 'bg-yellow-100',
-      border: 'border-yellow-500',
-      text: 'text-yellow-800',
-      icon: <GitBranch className="w-3.5 h-3.5" />,
-    },
-    if_else: {
-      bg: 'bg-yellow-100',
-      border: 'border-yellow-500',
-      text: 'text-yellow-800',
-      icon: <GitBranch className="w-3.5 h-3.5" />,
-    },
-    for_loop: {
-      bg: 'bg-purple-100',
-      border: 'border-purple-500',
-      text: 'text-purple-800',
-      icon: <Repeat className="w-3.5 h-3.5" />,
-    },
-    while_loop: {
-      bg: 'bg-purple-100',
-      border: 'border-purple-500',
-      text: 'text-purple-800',
-      icon: <Repeat className="w-3.5 h-3.5" />,
-    },
-    end_block: {
-      bg: 'bg-slate-200',
-      border: 'border-slate-400',
-      text: 'text-slate-600',
-      icon: null,
-    },
-  }
-
-  const scheme =
-    (Object.getOwnPropertyDescriptor(colorSchemes, blockType)?.value as
-      | {
-          bg: string
-          border: string
-          text: string
-          icon: React.ReactNode
-        }
-      | undefined) || {
-      bg: 'bg-slate-100',
-      border: 'border-slate-300',
-      text: 'text-slate-700',
-      icon: null,
-    }
-
-  // Helper to safely get string/number param
-  const getParam = (key: string, fallback: string | number): string => {
-    const val: unknown = Object.getOwnPropertyDescriptor(params, key)?.value
-    if (typeof val === 'string' || typeof val === 'number') return String(val)
-    return String(fallback)
-  }
-
-  // Get display value based on block type
-  const getDisplayValue = () => {
-    switch (blockType) {
-      case 'delay':
-        return `${getParam('ms', 500)}ms`
-      case 'digital_write':
-        return `Pin ${getParam('pin', 13)} → ${getParam('value', 'HIGH')}`
-      case 'digital_read':
-        return `Pin ${getParam('pin', 2)} → ${getParam('variable', 'val')}`
-      case 'analog_write':
-        return `Pin ${getParam('pin', 9)} → ${getParam('value', 128)}`
-      case 'analog_read':
-        return `${getParam('pin', 'A0')} → ${getParam('variable', 'val')}`
-      case 'servo_write':
-        return `${getParam('variable', 'servo')} → ${getParam('angle', 90)}°`
-      case 'servo_attach':
-        return `${getParam('variable', 'servo')} @ Pin ${getParam('pin', 9)}`
-      case 'serial_print': {
-        const msg = typeof params.message === 'string' ? params.message : 'Hello'
-        return `"${msg.slice(0, 12)}${msg.length > 12 ? '...' : ''}"`
-      }
-      case 'variable':
-        return `${getParam('varType', 'int')} ${getParam('name', 'x')} = ${getParam('value', 0)}`
-      case 'if_condition':
-      case 'if_else': {
-        const cond = typeof params.condition === 'string' ? params.condition : 'true'
-        return `(${cond.slice(0, 15)}${cond.length > 15 ? '...' : ''})`
-      }
-      case 'for_loop':
-        return `${getParam('variable', 'i')}: ${getParam('start', 0)} → ${getParam('end', 10)}`
-      case 'while_loop': {
-        const cond = typeof params.condition === 'string' ? params.condition : 'true'
-        return `(${cond.slice(0, 12)}${cond.length > 12 ? '...' : ''})`
-      }
-      default:
-        return null
-    }
-  }
-
-  const displayValue = getDisplayValue()
-  const isControlFlow = ['if_condition', 'if_else', 'for_loop', 'while_loop'].includes(blockType)
-  const isEndBlock = blockType === 'end_block'
-
-  return (
-    <div
-      className={cn(
-        'relative rounded border-2 transition-shadow hover:shadow-sm',
-        scheme.bg,
-        scheme.border,
-        isControlFlow ? 'min-w-[140px]' : 'min-w-[120px]',
-        isEndBlock && 'min-w-[60px]',
-      )}
-    >
-      <Handle
-        type="target"
-        position={Position.Top}
-        className="!bg-slate-400 !w-2.5 !h-2.5 !border-2 !border-white"
-      />
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        className="!bg-slate-400 !w-2.5 !h-2.5 !border-2 !border-white"
-      />
-      <div className={cn('px-3 py-2', isEndBlock && 'px-2 py-1')}>
-        <div className={cn('flex items-center gap-1.5', scheme.text)}>
-          {scheme.icon}
-          <span className="font-mono text-xs font-semibold">{data.label}</span>
-        </div>
-        {displayValue && (
-          <div className={cn('font-mono text-[10px] mt-0.5 opacity-75', scheme.text)}>
-            {displayValue}
-          </div>
-        )}
-      </div>
-    </div>
-  )
 }
 
 // Node types for visual mode
@@ -308,92 +102,11 @@ function getDefaultVisualNodes(): FlowState['nodes'] {
   ]
 }
 
-// Palette organized by category
-const visualPalette: { category: string; blocks: { type: VisualBlockType; label: string; icon: React.ReactNode }[] }[] = [
-  {
-    category: 'Variables',
-    blocks: [
-      { type: 'variable', label: 'Variable', icon: <Settings className="w-3 h-3" /> },
-    ],
-  },
-  {
-    category: 'Control Flow',
-    blocks: [
-      { type: 'if_condition', label: 'If', icon: <GitBranch className="w-3 h-3" /> },
-      { type: 'for_loop', label: 'For Loop', icon: <Repeat className="w-3 h-3" /> },
-      { type: 'while_loop', label: 'While', icon: <Repeat className="w-3 h-3" /> },
-      { type: 'end_block', label: 'End Block', icon: null },
-    ],
-  },
-  {
-    category: 'Timing',
-    blocks: [
-      { type: 'delay', label: 'Delay', icon: <Clock className="w-3 h-3" /> },
-    ],
-  },
-  {
-    category: 'Digital I/O',
-    blocks: [
-      { type: 'digital_write', label: 'Digital Write', icon: <Zap className="w-3 h-3" /> },
-      { type: 'digital_read', label: 'Digital Read', icon: <Radio className="w-3 h-3" /> },
-    ],
-  },
-  {
-    category: 'Analog I/O',
-    blocks: [
-      { type: 'analog_write', label: 'PWM Write', icon: <Zap className="w-3 h-3" /> },
-      { type: 'analog_read', label: 'Analog Read', icon: <Gauge className="w-3 h-3" /> },
-    ],
-  },
-  {
-    category: 'Servo',
-    blocks: [
-      { type: 'servo_attach', label: 'Servo Attach', icon: <Settings className="w-3 h-3" /> },
-      { type: 'servo_write', label: 'Servo Write', icon: <Gauge className="w-3 h-3" /> },
-    ],
-  },
-  {
-    category: 'Serial',
-    blocks: [
-      { type: 'serial_print', label: 'Serial Print', icon: <Terminal className="w-3 h-3" /> },
-    ],
-  },
-]
-
 function createVisualNode(
   blockType: VisualBlockType,
 ): FlowState['nodes'][number] {
   const id = randomId()
-
-  const blockConfigs: Record<
-    VisualBlockType,
-    { label: string; params: Record<string, unknown> }
-  > = {
-    setup: { label: 'setup()', params: {} },
-    loop: { label: 'loop()', params: {} },
-    variable: { label: 'Variable', params: { name: 'value', varType: 'int', value: 0 } },
-    servo_attach: { label: 'Servo Attach', params: { variable: 'servo', pin: 9 } },
-    servo_write: { label: 'Servo Write', params: { variable: 'servo', angle: 90 } },
-    delay: { label: 'Delay', params: { ms: 500 } },
-    digital_write: { label: 'Digital Write', params: { pin: 13, value: 'HIGH' } },
-    digital_read: { label: 'Digital Read', params: { pin: 2, variable: 'buttonState' } },
-    analog_write: { label: 'PWM Write', params: { pin: 9, value: 128 } },
-    analog_read: { label: 'Analog Read', params: { pin: 'A0', variable: 'sensorValue' } },
-    serial_print: { label: 'Serial Print', params: { message: 'Hello' } },
-    if_condition: { label: 'If', params: { condition: 'buttonState == HIGH' } },
-    if_else: { label: 'If/Else', params: { condition: 'buttonState == HIGH' } },
-    for_loop: { label: 'For Loop', params: { variable: 'i', start: 0, end: 10, step: 1 } },
-    while_loop: { label: 'While', params: { condition: 'true' } },
-    end_block: { label: 'End', params: {} },
-  }
-
-  const config =
-    (Object.getOwnPropertyDescriptor(blockConfigs, blockType)?.value as
-      | {
-          label: string
-          params: Record<string, unknown>
-        }
-      | undefined) || { label: 'Block', params: {} }
+  const config = getVisualBlockDefaults(blockType)
 
   return {
     id,
@@ -446,7 +159,7 @@ export function FlowEditor({
   className,
   height = 420,
 }: FlowEditorProps) {
-  const parsed = useMemo(() => parseFlowState(value), [value])
+  const parsed = useMemo(() => parseFlowState(value, { mode }), [mode, value])
   const parsedNodes = useMemo(() => {
     if (mode === 'visual') {
       return parsed.nodes.length ? parsed.nodes : getDefaultVisualNodes()
@@ -469,6 +182,20 @@ export function FlowEditor({
     ? nodes.find((n) => n.id === selectedId)
     : undefined
 
+  const variableNameDatalistId = useId()
+  const variableNames = useMemo(() => {
+    if (mode !== 'visual') return []
+    const names = new Set<string>()
+    for (const node of nodes) {
+      if (node.data?.blockType !== 'variable') continue
+      const params = node.data.params
+      const raw = typeof params?.name === 'string' ? params.name : null
+      const name = raw?.trim()
+      if (name) names.add(name)
+    }
+    return Array.from(names).sort((a, b) => a.localeCompare(b))
+  }, [mode, nodes])
+
   // Undo/redo state
   const [history, setHistory] = useState<{ past: FlowState[]; future: FlowState[] }>({
     past: [],
@@ -487,6 +214,52 @@ export function FlowEditor({
   const [paletteWidth, setPaletteWidth] = useState(208)
   const [inspectorWidth, setInspectorWidth] = useState(300)
   const [codeOpen, setCodeOpen] = useState(true)
+  const [fullscreen, setFullscreen] = useState(false)
+  const [paletteSearch, setPaletteSearch] = useState('')
+
+  const filteredVisualPalette = useMemo(() => {
+    const query = paletteSearch.trim().toLowerCase()
+    if (!query) return visualBlockPalette
+
+    return visualBlockPalette
+      .map((category) => ({
+        ...category,
+        blocks: category.blocks.filter((block) => {
+          const label = block.label.toLowerCase()
+          const type = block.type.toLowerCase()
+          return label.includes(query) || type.includes(query)
+        }),
+      }))
+      .filter((category) => category.blocks.length > 0)
+  }, [paletteSearch])
+
+  const [openPaletteCategories, setOpenPaletteCategories] = useState<string[]>([
+    'variables',
+    'control',
+    'io',
+  ])
+  const openPaletteCategoriesRef = useRef(openPaletteCategories)
+  const openPaletteSnapshotRef = useRef<string[] | null>(null)
+
+  useEffect(() => {
+    openPaletteCategoriesRef.current = openPaletteCategories
+  }, [openPaletteCategories])
+
+  useEffect(() => {
+    const query = paletteSearch.trim()
+    if (!query) {
+      if (openPaletteSnapshotRef.current) {
+        setOpenPaletteCategories(openPaletteSnapshotRef.current)
+        openPaletteSnapshotRef.current = null
+      }
+      return
+    }
+
+    if (!openPaletteSnapshotRef.current) {
+      openPaletteSnapshotRef.current = openPaletteCategoriesRef.current
+    }
+    setOpenPaletteCategories(filteredVisualPalette.map((c) => c.id))
+  }, [filteredVisualPalette, paletteSearch])
 
   type ResizeTarget = 'palette' | 'inspector'
   const [resizeTarget, setResizeTarget] = useState<ResizeTarget | null>(null)
@@ -574,8 +347,9 @@ export function FlowEditor({
     if (!importCode.trim()) return
     pushToHistory()
     const imported = parseArduinoToBlocks(importCode)
-    setNodes(imported.nodes)
-    setEdges(imported.edges)
+    const migrated = parseFlowState(imported, { mode: 'visual' })
+    setNodes(migrated.nodes)
+    setEdges(migrated.edges)
     setShowImportDialog(false)
     setImportCode('')
   }
@@ -612,11 +386,59 @@ export function FlowEditor({
     if (sig === lastSentSigRef.current) return
     lastSentSigRef.current = sig
 
-    onChangeRef.current({ nodes, edges })
-  }, [edges, nodes])
+    onChangeRef.current(mode === 'visual' ? { version: 2, nodes, edges } : { nodes, edges })
+  }, [edges, mode, nodes])
+
+  const isValidConnection = useCallback(
+    (connection: Connection | Edge) => {
+      if (mode !== 'visual') return true
+      if (!connection.source || !connection.target) return false
+      if (connection.source === connection.target) return false
+      if (connection.targetHandle !== 'in') return false
+      const sourceHandle = connection.sourceHandle
+      return sourceHandle === 'next' || sourceHandle === 'body' || sourceHandle === 'else'
+    },
+    [mode],
+  )
 
   const onConnect = useCallback(
     (connection: Connection) => {
+      if (mode === 'visual') {
+        if (!connection.source || !connection.target) return
+        if (connection.targetHandle !== 'in') return
+        const sourceHandle = connection.sourceHandle
+        if (sourceHandle !== 'next' && sourceHandle !== 'body' && sourceHandle !== 'else') return
+        if (connection.source === connection.target) return
+
+        const kind = sourceHandle as VisualEdgeKind
+        const style =
+          kind === 'body'
+            ? { stroke: '#0891b2', strokeWidth: 2, strokeDasharray: '6 3' }
+            : kind === 'else'
+              ? { stroke: '#d97706', strokeWidth: 2, strokeDasharray: '6 3' }
+              : { stroke: '#64748b', strokeWidth: 2 }
+
+        pushToHistory()
+        setEdges((eds) => {
+          const filtered = eds.filter((e) => {
+            if (e.source === connection.source && e.sourceHandle === sourceHandle) return false
+            if (e.target === connection.target && e.targetHandle === 'in') return false
+            return true
+          })
+          return addEdge(
+            {
+              ...connection,
+              id: randomId(),
+              data: { kind },
+              style,
+              type: 'smoothstep',
+            },
+            filtered,
+          )
+        })
+        return
+      }
+
       setEdges((eds) =>
         addEdge(
           {
@@ -628,13 +450,107 @@ export function FlowEditor({
         ),
       )
     },
-    [mode, setEdges],
+    [mode, pushToHistory, setEdges],
   )
+
+  const styleForVisualEdgeKind = (kind: VisualEdgeKind) => {
+    if (kind === 'body') {
+      return { stroke: '#0891b2', strokeWidth: 2, strokeDasharray: '6 3' }
+    }
+    if (kind === 'else') {
+      return { stroke: '#d97706', strokeWidth: 2, strokeDasharray: '6 3' }
+    }
+    return { stroke: '#64748b', strokeWidth: 2 }
+  }
+
+  const createVisualEdge = (options: {
+    source: string
+    target: string
+    kind: VisualEdgeKind
+  }): Edge => {
+    return {
+      id: randomId(),
+      source: options.source,
+      target: options.target,
+      sourceHandle: options.kind,
+      targetHandle: 'in',
+      data: { kind: options.kind },
+      style: styleForVisualEdgeKind(options.kind),
+      type: 'smoothstep',
+    }
+  }
 
   const addNode = (type: VisualBlockType | DiagramStyleKey) => {
     pushToHistory()
     if (mode === 'visual') {
-      setNodes((prev) => [...prev, createVisualNode(type as VisualBlockType)])
+      const blockType = type as VisualBlockType
+      const baseNode = createVisualNode(blockType)
+
+      const selectedBlockType = selectedNode?.data?.blockType
+      const isSelectedContainer =
+        selectedBlockType === 'if_condition' ||
+        selectedBlockType === 'if_else' ||
+        selectedBlockType === 'for_loop' ||
+        selectedBlockType === 'while_loop'
+
+      const canAutoConnect =
+        selectedId &&
+        selectedNode &&
+        selectedBlockType !== 'variable' &&
+        selectedBlockType !== 'pin_mode'
+
+      const existingBody =
+        canAutoConnect && isSelectedContainer
+          ? edges.some((e) => e.source === selectedId && (e.sourceHandle === 'body' || e.data?.kind === 'body'))
+          : false
+
+      const preferredKind: VisualEdgeKind | null = (() => {
+        if (!canAutoConnect) return null
+        if (selectedBlockType === 'setup' || selectedBlockType === 'loop') return 'body'
+        if (isSelectedContainer && !existingBody) return 'body'
+        return 'next'
+      })()
+
+      const position = (() => {
+        if (!selectedNode) return baseNode.position
+        if (preferredKind === 'body' && isSelectedContainer) {
+          return { x: selectedNode.position.x + 240, y: selectedNode.position.y }
+        }
+        return { x: selectedNode.position.x, y: selectedNode.position.y + 96 }
+      })()
+
+      const node = { ...baseNode, position }
+      setNodes((prev) => [...prev, node])
+      setSelectedId(node.id)
+
+      if (canAutoConnect && preferredKind) {
+        setEdges((prevEdges) => {
+          const existingOut = prevEdges.find(
+            (e) =>
+              e.source === selectedId &&
+              (e.sourceHandle === preferredKind || e.data?.kind === preferredKind),
+          )
+
+          const existingTarget = existingOut?.target
+          const filtered = prevEdges.filter((e) => {
+            if (e.source !== selectedId) return true
+            const kind = e.data?.kind ?? e.sourceHandle
+            if (kind === preferredKind) return false
+            return true
+          })
+
+          const nextEdges = [
+            ...filtered,
+            createVisualEdge({ source: selectedId, target: node.id, kind: preferredKind }),
+          ]
+
+          if (!existingTarget) return nextEdges
+          return [
+            ...nextEdges,
+            createVisualEdge({ source: node.id, target: existingTarget, kind: 'next' }),
+          ]
+        })
+      }
       return
     }
     setNodes((prev) => [...prev, createDiagramNode(type as DiagramStyleKey)])
@@ -665,6 +581,7 @@ export function FlowEditor({
 
   const deleteSelected = () => {
     if (!selectedId) return
+    if (selectedNode?.data?.blockType === 'setup' || selectedNode?.data?.blockType === 'loop') return
     pushToHistory()
     setNodes((prev) => prev.filter((n) => n.id !== selectedId))
     setEdges((prev) =>
@@ -673,10 +590,15 @@ export function FlowEditor({
     setSelectedId(null)
   }
 
-  const generatedCode = useMemo(() => {
+  const generatedAst = useMemo(() => {
     if (mode !== 'visual') return null
-    return generateArduinoCode(nodes, edges)
+    return buildArduinoProgramAstFromFlow({ nodes, edges })
   }, [edges, mode, nodes])
+
+  const generatedCode = useMemo(() => {
+    if (!generatedAst) return null
+    return emitArduinoFromAst(generatedAst)
+  }, [generatedAst])
 
   const [copied, setCopied] = useState(false)
 
@@ -738,11 +660,34 @@ export function FlowEditor({
     }
   }
 
+  useEffect(() => {
+    if (!fullscreen) return
+    const previous = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = previous
+    }
+  }, [fullscreen])
+
+  useEffect(() => {
+    if (!fullscreen) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setFullscreen(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [fullscreen])
+
+  const canvasHeight = fullscreen ? '100vh' : height
+
   return (
     <div
       className={cn(
-        'rounded border border-slate-200 bg-white overflow-hidden',
-        className,
+        'bg-white overflow-hidden',
+        fullscreen
+          ? 'fixed inset-0 z-50 border-0 rounded-none'
+          : 'rounded border border-slate-200',
+        !fullscreen && className,
       )}
     >
       <div
@@ -786,30 +731,68 @@ export function FlowEditor({
 
               <div className="mt-4 flex-1 min-h-0 overflow-y-auto pr-1 space-y-3">
                 {mode === 'visual' ? (
-                  visualPalette.map((category) => (
-                    <div key={category.category}>
-                      <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
-                        {category.category}
-                      </p>
-                      <div className="space-y-1">
-                        {category.blocks.map((block) => (
-                          <Button
-                            key={block.type}
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            className="w-full justify-start font-mono text-xs h-7 gap-1.5"
-                            onClick={() => {
-                              addNode(block.type)
-                            }}
-                          >
-                            {block.icon}
-                            {block.label}
-                          </Button>
-                        ))}
-                      </div>
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-slate-500">Search</Label>
+                      <Input
+                        value={paletteSearch}
+                        onChange={(e) => {
+                          setPaletteSearch(e.target.value)
+                        }}
+                        placeholder="Find a block…"
+                        className="h-8 font-mono text-xs"
+                      />
                     </div>
-                  ))
+
+                    {filteredVisualPalette.length === 0 ? (
+                      <p className="text-xs text-slate-500">
+                        No blocks match <span className="font-mono">{paletteSearch.trim()}</span>.
+                      </p>
+                    ) : (
+                      <Accordion
+                        type="multiple"
+                        value={openPaletteCategories}
+                        onValueChange={setOpenPaletteCategories}
+                        className="w-full"
+                      >
+                        {filteredVisualPalette.map((category) => (
+                          <AccordionItem
+                            key={category.id}
+                            value={category.id}
+                            className="border-b border-slate-200"
+                          >
+                            <AccordionTrigger
+                              className={cn(
+                                'py-2 text-[10px] uppercase tracking-wide font-semibold hover:no-underline',
+                                category.accentClassName,
+                              )}
+                            >
+                              {category.label}
+                            </AccordionTrigger>
+                            <AccordionContent className="pb-2">
+                              <div className="space-y-1">
+                                {category.blocks.map((block) => (
+                                  <Button
+                                    key={block.type}
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-full justify-start font-mono text-xs h-7 gap-1.5"
+                                    onClick={() => {
+                                      addNode(block.type)
+                                    }}
+                                  >
+                                    {block.icon}
+                                    {block.label}
+                                  </Button>
+                                ))}
+                              </div>
+                            </AccordionContent>
+                          </AccordionItem>
+                        ))}
+                      </Accordion>
+                    )}
+                  </div>
                 ) : (
                   <>
                     <Button
@@ -894,7 +877,7 @@ export function FlowEditor({
         {/* Canvas */}
         <div
           className="border-b lg:border-b-0 lg:border-r border-slate-200 relative"
-          style={{ height }}
+          style={{ height: canvasHeight }}
         >
           {/* Toolbar */}
           {mode === 'visual' && (
@@ -945,6 +928,22 @@ export function FlowEditor({
                 <Download className="h-3.5 w-3.5" />
                 PNG
               </Button>
+              <Separator orientation="vertical" className="h-5 mx-1" />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setFullscreen((prev) => !prev)}
+                className="h-7 w-7 p-0"
+                title={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+                aria-label={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+              >
+                {fullscreen ? (
+                  <Minimize2 className="h-3.5 w-3.5" />
+                ) : (
+                  <Maximize2 className="h-3.5 w-3.5" />
+                )}
+              </Button>
             </div>
           )}
           <ReactFlow<FlowState['nodes'][number]>
@@ -953,6 +952,7 @@ export function FlowEditor({
             nodeTypes={mode === 'visual' ? visualNodeTypes : undefined}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
+            isValidConnection={isValidConnection}
             onConnect={onConnect}
             onSelectionChange={(
               s: OnSelectionChangeParams<FlowState['nodes'][number]>,
@@ -1043,6 +1043,8 @@ export function FlowEditor({
                         <VisualParamsEditor
                           node={selectedNode}
                           onChange={updateSelectedParams}
+                          variableNames={variableNames}
+                          variableNameDatalistId={variableNameDatalistId}
                         />
                       </>
                     )}
@@ -1056,6 +1058,65 @@ export function FlowEditor({
                 {mode === 'visual' && generatedCode && (
                   <>
                     <Separator />
+                    {generatedAst &&
+                      (generatedAst.errors.length > 0 ||
+                        generatedAst.warnings.length > 0) && (
+                        <div className="rounded border border-slate-200 bg-slate-50 p-3 space-y-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="font-mono text-sm font-semibold text-slate-900">
+                              Problems
+                            </p>
+                            <p className="text-xs text-slate-500">
+                              {generatedAst.errors.length} error
+                              {generatedAst.errors.length === 1 ? '' : 's'},{' '}
+                              {generatedAst.warnings.length} warning
+                              {generatedAst.warnings.length === 1 ? '' : 's'}
+                            </p>
+                          </div>
+
+                          {generatedAst.errors.length > 0 && (
+                            <div>
+                              <p className="text-[11px] font-mono text-red-700">
+                                Errors
+                              </p>
+                              <ul className="mt-1 space-y-1 text-[11px] text-red-700">
+                                {generatedAst.errors.slice(0, 6).map((msg) => (
+                                  <li key={msg} className="flex gap-2">
+                                    <span aria-hidden="true">•</span>
+                                    <span className="min-w-0">{msg}</span>
+                                  </li>
+                                ))}
+                                {generatedAst.errors.length > 6 && (
+                                  <li className="text-[11px] text-red-700">
+                                    …and {generatedAst.errors.length - 6} more
+                                  </li>
+                                )}
+                              </ul>
+                            </div>
+                          )}
+
+                          {generatedAst.warnings.length > 0 && (
+                            <div>
+                              <p className="text-[11px] font-mono text-amber-700">
+                                Warnings
+                              </p>
+                              <ul className="mt-1 space-y-1 text-[11px] text-amber-700">
+                                {generatedAst.warnings.slice(0, 6).map((msg) => (
+                                  <li key={msg} className="flex gap-2">
+                                    <span aria-hidden="true">•</span>
+                                    <span className="min-w-0">{msg}</span>
+                                  </li>
+                                ))}
+                                {generatedAst.warnings.length > 6 && (
+                                  <li className="text-[11px] text-amber-700">
+                                    …and {generatedAst.warnings.length - 6} more
+                                  </li>
+                                )}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     <div className="space-y-2">
                       <div className="flex items-center justify-between gap-2">
                         <button
@@ -1111,6 +1172,7 @@ export function FlowEditor({
                       {codeOpen && (
                         <CodeEditor
                           initialCode={generatedCode}
+                          value={generatedCode}
                           language="cpp"
                           readOnly
                           hideReset
@@ -1229,344 +1291,4 @@ void loop() {
       )}
     </div>
   )
-}
-
-function VisualParamsEditor({
-  node,
-  onChange,
-}: {
-  node: Node<VisualNodeData>
-  onChange: (patch: Record<string, unknown>) => void
-}) {
-  const data = node.data
-  const blockType = data.blockType ?? ''
-  const params: Record<string, unknown> = data.params ?? {}
-
-  if (blockType === 'variable') {
-    return (
-      <div className="grid gap-3">
-        <div className="space-y-2">
-          <Label>Name</Label>
-          <Input
-            value={typeof params.name === 'string' ? params.name : ''}
-            onChange={(e) => {
-              onChange({ name: e.target.value })
-            }}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Type</Label>
-          <select
-            value={typeof params.varType === 'string' ? params.varType : 'int'}
-            onChange={(e) => {
-              onChange({ varType: e.target.value })
-            }}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
-          >
-            <option value="int">int</option>
-            <option value="float">float</option>
-            <option value="bool">bool</option>
-          </select>
-        </div>
-        <div className="space-y-2">
-          <Label>Value</Label>
-          <Input
-            value={
-              typeof params.value === 'string' ||
-              typeof params.value === 'number'
-                ? String(params.value)
-                : '0'
-            }
-            onChange={(e) => {
-              onChange({ value: e.target.value })
-            }}
-          />
-        </div>
-      </div>
-    )
-  }
-
-  if (blockType === 'servo_attach') {
-    return (
-      <div className="grid gap-3">
-        <div className="space-y-2">
-          <Label>Variable</Label>
-          <Input
-            value={
-              typeof params.variable === 'string' ? params.variable : 'servo'
-            }
-            onChange={(e) => {
-              onChange({ variable: e.target.value })
-            }}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Pin</Label>
-          <Input
-            type="number"
-            value={typeof params.pin === 'number' ? params.pin : 9}
-            onChange={(e) => {
-              onChange({ pin: Number(e.target.value) })
-            }}
-          />
-        </div>
-      </div>
-    )
-  }
-
-  if (blockType === 'servo_write') {
-    return (
-      <div className="grid gap-3">
-        <div className="space-y-2">
-          <Label>Variable</Label>
-          <Input
-            value={
-              typeof params.variable === 'string' ? params.variable : 'servo'
-            }
-            onChange={(e) => {
-              onChange({ variable: e.target.value })
-            }}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Angle</Label>
-          <Input
-            type="number"
-            value={typeof params.angle === 'number' ? params.angle : 90}
-            onChange={(e) => {
-              onChange({ angle: Number(e.target.value) })
-            }}
-          />
-        </div>
-      </div>
-    )
-  }
-
-  if (blockType === 'delay') {
-    return (
-      <div className="space-y-2">
-        <Label>Milliseconds</Label>
-        <Input
-          type="number"
-          value={typeof params.ms === 'number' ? params.ms : 500}
-          onChange={(e) => {
-            onChange({ ms: Number(e.target.value) })
-          }}
-        />
-      </div>
-    )
-  }
-
-  if (blockType === 'digital_write') {
-    return (
-      <div className="grid gap-3">
-        <div className="space-y-2">
-          <Label>Pin</Label>
-          <Input
-            type="number"
-            value={typeof params.pin === 'number' ? params.pin : 13}
-            onChange={(e) => {
-              onChange({ pin: Number(e.target.value) })
-            }}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Value</Label>
-          <select
-            value={typeof params.value === 'string' ? params.value : 'HIGH'}
-            onChange={(e) => {
-              onChange({ value: e.target.value })
-            }}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
-          >
-            <option value="HIGH">HIGH</option>
-            <option value="LOW">LOW</option>
-          </select>
-        </div>
-      </div>
-    )
-  }
-
-  if (blockType === 'analog_write') {
-    return (
-      <div className="grid gap-3">
-        <div className="space-y-2">
-          <Label>Pin</Label>
-          <Input
-            type="number"
-            value={typeof params.pin === 'number' ? params.pin : 9}
-            onChange={(e) => {
-              onChange({ pin: Number(e.target.value) })
-            }}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Value</Label>
-          <Input
-            type="number"
-            value={typeof params.value === 'number' ? params.value : 128}
-            onChange={(e) => {
-              onChange({ value: Number(e.target.value) })
-            }}
-          />
-        </div>
-      </div>
-    )
-  }
-
-  if (blockType === 'serial_print') {
-    return (
-      <div className="space-y-2">
-        <Label>Message</Label>
-        <Input
-          value={typeof params.message === 'string' ? params.message : ''}
-          onChange={(e) => {
-            onChange({ message: e.target.value })
-          }}
-        />
-      </div>
-    )
-  }
-
-  if (blockType === 'digital_read') {
-    return (
-      <div className="grid gap-3">
-        <div className="space-y-2">
-          <Label>Pin</Label>
-          <Input
-            type="number"
-            value={typeof params.pin === 'number' ? params.pin : 2}
-            onChange={(e) => {
-              onChange({ pin: Number(e.target.value) })
-            }}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Store in variable</Label>
-          <Input
-            value={typeof params.variable === 'string' ? params.variable : 'buttonState'}
-            onChange={(e) => {
-              onChange({ variable: e.target.value })
-            }}
-          />
-        </div>
-      </div>
-    )
-  }
-
-  if (blockType === 'analog_read') {
-    return (
-      <div className="grid gap-3">
-        <div className="space-y-2">
-          <Label>Pin</Label>
-          <Input
-            value={typeof params.pin === 'string' ? params.pin : 'A0'}
-            onChange={(e) => {
-              onChange({ pin: e.target.value })
-            }}
-            placeholder="A0, A1, etc."
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Store in variable</Label>
-          <Input
-            value={typeof params.variable === 'string' ? params.variable : 'sensorValue'}
-            onChange={(e) => {
-              onChange({ variable: e.target.value })
-            }}
-          />
-        </div>
-      </div>
-    )
-  }
-
-  if (blockType === 'if_condition' || blockType === 'if_else') {
-    return (
-      <div className="space-y-2">
-        <Label>Condition</Label>
-        <Input
-          value={typeof params.condition === 'string' ? params.condition : 'true'}
-          onChange={(e) => {
-            onChange({ condition: e.target.value })
-          }}
-          placeholder="e.g., buttonState == HIGH"
-        />
-        <p className="text-[10px] text-slate-500">
-          Examples: buttonState == HIGH, sensorValue &gt; 500, i &lt; 10
-        </p>
-      </div>
-    )
-  }
-
-  if (blockType === 'for_loop') {
-    return (
-      <div className="grid gap-3">
-        <div className="space-y-2">
-          <Label>Variable</Label>
-          <Input
-            value={typeof params.variable === 'string' ? params.variable : 'i'}
-            onChange={(e) => {
-              onChange({ variable: e.target.value })
-            }}
-          />
-        </div>
-        <div className="grid grid-cols-3 gap-2">
-          <div className="space-y-1">
-            <Label className="text-xs">Start</Label>
-            <Input
-              type="number"
-              value={typeof params.start === 'number' ? params.start : 0}
-              onChange={(e) => {
-                onChange({ start: Number(e.target.value) })
-              }}
-            />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">End</Label>
-            <Input
-              type="number"
-              value={typeof params.end === 'number' ? params.end : 10}
-              onChange={(e) => {
-                onChange({ end: Number(e.target.value) })
-              }}
-            />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">Step</Label>
-            <Input
-              type="number"
-              value={typeof params.step === 'number' ? params.step : 1}
-              onChange={(e) => {
-                onChange({ step: Number(e.target.value) })
-              }}
-            />
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (blockType === 'while_loop') {
-    return (
-      <div className="space-y-2">
-        <Label>Condition</Label>
-        <Input
-          value={typeof params.condition === 'string' ? params.condition : 'true'}
-          onChange={(e) => {
-            onChange({ condition: e.target.value })
-          }}
-          placeholder="e.g., sensorValue < 500"
-        />
-        <p className="text-[10px] text-slate-500">
-          Loop runs while condition is true
-        </p>
-      </div>
-    )
-  }
-
-  if (blockType === 'setup' || blockType === 'loop' || blockType === 'end_block') {
-    return <p className="text-sm text-slate-500">This block has no configurable parameters.</p>
-  }
-
-  return <p className="text-sm text-slate-500">No parameters for this block.</p>
 }

@@ -2,6 +2,7 @@
 
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { rateLimitAction } from '@/lib/rate-limit'
+import { checkBotId } from '@/lib/botid'
 import { headers } from 'next/headers'
 import type { Json } from '@/lib/supabase/database.types'
 
@@ -169,6 +170,19 @@ export async function submitContactForm(
         success: false,
         error: rate.error || 'Too many requests. Please try again later.',
       }
+    }
+
+    try {
+      const botResult = await checkBotId()
+      if (botResult.isBot && !botResult.isVerifiedBot) {
+        return {
+          success: false,
+          error: 'Access denied. Automated requests are not allowed.',
+        }
+      }
+    } catch (err) {
+      // Fail open to avoid blocking contact submissions if BotID is unavailable.
+      console.error('BotID check failed (contact form):', err)
     }
 
     const { error } = await supabaseAdmin.from('contact_submissions').insert({

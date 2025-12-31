@@ -278,7 +278,7 @@ export default async function LessonPage({
         </div>
 
         {/* Content Area */}
-        <div className="max-w-4xl mx-auto px-6 py-12">
+        <div className="max-w-6xl mx-auto px-6 py-12">
           {/* Breadcrumb */}
           <div className="hidden lg:flex items-center gap-2 text-sm text-slate-500 mb-8">
             <Link href="/learn" className="hover:text-cyan-700">

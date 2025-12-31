@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { rateLimit, rateLimitHeaders } from '@/lib/rate-limit'
 import { isUuid } from '@/lib/uuid'
+import { checkBotAndReject } from '@/lib/botid'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
@@ -10,6 +11,9 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 export async function POST(request: NextRequest) {
   const rateLimitResponse = await rateLimit(request, 'supportFeedback')
   if (rateLimitResponse) return rateLimitResponse
+
+  const botResponse = await checkBotAndReject()
+  if (botResponse) return botResponse
 
   try {
     const body: unknown = await request.json()

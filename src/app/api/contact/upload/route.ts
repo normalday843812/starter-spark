@@ -3,6 +3,7 @@ import { fileTypeFromBuffer } from 'file-type'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import crypto from 'node:crypto'
 import { rateLimit, rateLimitHeaders } from '@/lib/rate-limit'
+import { checkBotAndReject } from '@/lib/botid'
 
 // Allowed file types with their magic byte signatures
 const ALLOWED_TYPES = {
@@ -107,6 +108,9 @@ function generateSecurePath(
 export async function POST(request: NextRequest) {
   const rateLimitResponse = await rateLimit(request, 'contactUpload')
   if (rateLimitResponse) return rateLimitResponse
+
+  const botResponse = await checkBotAndReject()
+  if (botResponse) return botResponse
 
   try {
     const uploadSession = crypto.randomBytes(16).toString('hex')

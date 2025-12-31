@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { resend, NEWSLETTER_AUDIENCE_ID } from '@/lib/resend'
 import { z } from 'zod'
 import { rateLimit, rateLimitHeaders } from '@/lib/rate-limit'
+import { checkBotAndReject } from '@/lib/botid'
 
 const subscribeSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -10,6 +11,9 @@ const subscribeSchema = z.object({
 export async function POST(request: Request) {
   const rateLimitResponse = await rateLimit(request, 'newsletter')
   if (rateLimitResponse) return rateLimitResponse
+
+  const botResponse = await checkBotAndReject()
+  if (botResponse) return botResponse
 
   try {
     const body: unknown = await request.json()

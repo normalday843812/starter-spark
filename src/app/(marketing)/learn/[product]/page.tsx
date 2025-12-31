@@ -359,22 +359,55 @@ export default async function CoursePage({
                   {module.lessons.map((lesson) => {
                     const isAccessible = isOwned
                     const isCompleted = completedLessonIds.includes(lesson.id)
+                    const href = `/learn/${product.slug}/${lesson.slug}`
+
+                    if (isAccessible) {
+                      return (
+                        <Link
+                          key={lesson.id}
+                          href={href}
+                          aria-label={`Open lesson: ${lesson.title}`}
+                          className="group flex items-center gap-4 p-4 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600/20 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                        >
+                          {/* Status Icon */}
+                          <div className="flex-shrink-0">
+                            {isCompleted ? (
+                              <CheckCircle2 className="w-5 h-5 text-green-500" />
+                            ) : (
+                              <div className="w-5 h-5 rounded-full border-2 border-slate-300" />
+                            )}
+                          </div>
+
+                          {/* Lesson Info */}
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-slate-900 group-hover:text-cyan-700 transition-colors">
+                              {lesson.title}
+                            </h4>
+                            <p className="text-sm text-slate-500 line-clamp-1">
+                              {lesson.description}
+                            </p>
+                          </div>
+
+                          {/* Duration */}
+                          <div className="flex-shrink-0 text-sm text-slate-500 font-mono">
+                            {lesson.duration_minutes} min
+                          </div>
+
+                          {/* Arrow */}
+                          <ChevronRight className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                        </Link>
+                      )
+                    }
 
                     return (
                       <div
                         key={lesson.id}
-                        className={`flex items-center gap-4 p-4 ${
-                          isAccessible
-                            ? 'hover:bg-slate-50 cursor-pointer'
-                            : 'opacity-60'
-                        }`}
+                        className="flex items-center gap-4 p-4 opacity-60"
                       >
                         {/* Status Icon */}
                         <div className="flex-shrink-0">
                           {isCompleted ? (
                             <CheckCircle2 className="w-5 h-5 text-green-500" />
-                          ) : isAccessible ? (
-                            <div className="w-5 h-5 rounded-full border-2 border-slate-300" />
                           ) : (
                             <Lock className="w-5 h-5 text-slate-500" />
                           )}
@@ -382,28 +415,12 @@ export default async function CoursePage({
 
                         {/* Lesson Info */}
                         <div className="flex-1 min-w-0">
-                          {isAccessible ? (
-                            <Link
-                              href={`/learn/${product.slug}/${lesson.slug}`}
-                              className="block"
-                            >
-                              <h4 className="font-medium text-slate-900 hover:text-cyan-700 transition-colors">
-                                {lesson.title}
-                              </h4>
-                              <p className="text-sm text-slate-500 line-clamp-1">
-                                {lesson.description}
-                              </p>
-                            </Link>
-                          ) : (
-                            <>
-                              <h4 className="font-medium text-slate-900">
-                                {lesson.title}
-                              </h4>
-                              <p className="text-sm text-slate-500 line-clamp-1">
-                                {lesson.description}
-                              </p>
-                            </>
-                          )}
+                          <h4 className="font-medium text-slate-900">
+                            {lesson.title}
+                          </h4>
+                          <p className="text-sm text-slate-500 line-clamp-1">
+                            {lesson.description}
+                          </p>
                         </div>
 
                         {/* Duration */}
@@ -412,9 +429,6 @@ export default async function CoursePage({
                         </div>
 
                         {/* Arrow */}
-                        {isAccessible && (
-                          <ChevronRight className="w-4 h-4 text-slate-500 flex-shrink-0" />
-                        )}
                       </div>
                     )
                   })}
