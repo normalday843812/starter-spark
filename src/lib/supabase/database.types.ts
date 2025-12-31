@@ -1037,6 +1037,121 @@ export type Database = {
           },
         ]
       }
+      product_review_reports: {
+        Row: {
+          created_at: string
+          id: string
+          reason: string | null
+          reporter_id: string
+          review_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reason?: string | null
+          reporter_id: string
+          review_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reason?: string | null
+          reporter_id?: string
+          review_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_review_reports_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_review_reports_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "product_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_reviews: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          edited_at: string | null
+          id: string
+          incentive_disclosure: string | null
+          is_verified_purchase: boolean
+          moderated_at: string | null
+          moderated_by: string | null
+          moderation_reason: string | null
+          product_id: string
+          rating: number
+          status: Database["public"]["Enums"]["product_review_status"]
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          edited_at?: string | null
+          id?: string
+          incentive_disclosure?: string | null
+          is_verified_purchase?: boolean
+          moderated_at?: string | null
+          moderated_by?: string | null
+          moderation_reason?: string | null
+          product_id: string
+          rating: number
+          status?: Database["public"]["Enums"]["product_review_status"]
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          edited_at?: string | null
+          id?: string
+          incentive_disclosure?: string | null
+          is_verified_purchase?: boolean
+          moderated_at?: string | null
+          moderated_by?: string | null
+          moderation_reason?: string | null
+          product_id?: string
+          rating?: number
+          status?: Database["public"]["Enums"]["product_review_status"]
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_reviews_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_reviews_moderated_by_fkey"
+            columns: ["moderated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           created_at: string | null
@@ -1623,6 +1738,7 @@ export type Database = {
     }
     Enums: {
       license_status: "pending" | "claimed" | "rejected" | "claimed_by_other"
+      product_review_status: "published" | "flagged" | "hidden" | "pending"
       product_status: "active" | "coming_soon" | "draft"
       product_tag_type:
         | "featured"
@@ -1761,6 +1877,7 @@ export const Constants = {
   public: {
     Enums: {
       license_status: ["pending", "claimed", "rejected", "claimed_by_other"],
+      product_review_status: ["published", "flagged", "hidden", "pending"],
       product_status: ["active", "coming_soon", "draft"],
       product_tag_type: [
         "featured",

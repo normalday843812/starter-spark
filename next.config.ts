@@ -1,5 +1,6 @@
 import type { NextConfig } from 'next'
 import { withSentryConfig } from '@sentry/nextjs'
+import { withBotId } from 'botid/next/config'
 
 const nextConfig: NextConfig = {
   // Enable React strict mode for better development experience
@@ -184,8 +185,11 @@ const nextConfig: NextConfig = {
   },
 }
 
+// Apply BotId configuration for bot protection
+const botIdConfig = withBotId(nextConfig)
+
 // Sentry configuration for error monitoring
-const sentryConfig = withSentryConfig(nextConfig, {
+const sentryConfig = withSentryConfig(botIdConfig, {
   // For all available options, see:
   // https://github.com/getsentry/sentry-webpack-plugin#options
 

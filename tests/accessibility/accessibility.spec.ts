@@ -87,16 +87,19 @@ test.describe('Shop Page Accessibility', () => {
 
   test('should have accessible product cards', async ({ page }) => {
     await page.goto('/shop')
+    await page.getByRole('heading', { level: 1 }).waitFor()
 
     // Product links should have accessible names
     const productLinks = page.locator('main a[href^="/shop/"]')
-    if ((await productLinks.count()) === 0) {
+    const linkCount = await productLinks.count()
+    if (linkCount === 0) {
       return
     }
     await expect(productLinks.first()).toBeVisible()
-    const links = await productLinks.all()
 
-    for (const link of links.slice(0, 5)) {
+    const sampleCount = Math.min(linkCount, 5)
+    for (let i = 0; i < sampleCount; i += 1) {
+      const link = productLinks.nth(i)
       const ariaLabel = await link.getAttribute('aria-label')
       const text = (await link.textContent())?.trim()
       const accessibleName = (ariaLabel || text || '').trim()

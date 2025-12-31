@@ -260,16 +260,32 @@ test.describe('Product Page - Tabs', () => {
     const opened = await openFirstProductFromShop(page)
     if (!opened) return
 
-    const tabs = page.getByRole('tab')
-    const tabCount = await tabs.count()
+    const tabList = page.getByRole('tablist', { name: /product details/i })
+    await expect(tabList).toBeVisible()
 
-    if (tabCount > 1) {
-      // Click second tab
-      await tabs.nth(1).click()
+    const includedTab = page.getByRole('tab', { name: /what's included/i })
 
-      // Tab should be selected
-      await expect(tabs.nth(1)).toHaveAttribute('data-state', 'active')
+    // In Firefox, hydration timing can cause the first click to be ignored.
+    // Retry the click+assert until the tab is actually activated.
+    let isActive = false
+    for (let attempt = 0; attempt < 5; attempt++) {
+      await includedTab.scrollIntoViewIfNeeded()
+      await includedTab.click()
+
+      try {
+        await expect(includedTab).toHaveAttribute('data-state', 'active', {
+          timeout: 1500,
+        })
+        isActive = true
+        break
+      } catch {
+        await page.waitForTimeout(100)
+      }
     }
+
+    expect(isActive).toBe(true)
+
+    await expect(page.getByText('Knolling Photo')).toBeVisible()
   })
 })
 

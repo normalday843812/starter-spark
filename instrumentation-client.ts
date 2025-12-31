@@ -1,4 +1,19 @@
 import * as Sentry from '@sentry/nextjs'
+import { initBotId } from 'botid/client/core'
+
+// Initialize BotID for bot protection on sensitive routes
+initBotId({
+  protect: [
+    // High-value, browser-initiated actions (must match server-side `checkBotId()` usage)
+    { path: '/api/checkout', method: 'POST' },
+    { path: '/api/newsletter', method: 'POST' },
+    { path: '/api/contact/upload', method: 'POST' },
+    { path: '/api/support/feedback', method: 'POST' },
+
+    // Server Actions (Next.js posts back to the route path)
+    { path: '/contact', method: 'POST' },
+  ],
+})
 
 const isLocalHost =
   typeof window !== 'undefined' &&

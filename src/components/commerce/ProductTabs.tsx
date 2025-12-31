@@ -11,15 +11,12 @@ import {
 } from '@/components/ui/table'
 import { FileDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { ProductReviewsTab } from '@/features/reviews/components/ProductReviewsTab'
+import type { ReviewListItem, UserReview } from '@/features/reviews/types'
+import { useEffect, useState } from 'react'
 
 const tabTriggerClassName =
   'cursor-pointer font-mono text-sm data-[state=active]:text-cyan-700 data-[state=active]:border-b-2 data-[state=active]:border-cyan-700 rounded-none px-6 py-3 data-[state=active]:shadow-none flex-none sm:flex-1 whitespace-normal sm:whitespace-nowrap text-center'
-
-const tabItems = [
-  { value: 'overview', label: 'Overview' },
-  { value: 'included', label: "What's Included" },
-  { value: 'specs', label: 'Technical Specs' },
-]
 
 interface ProductTabsProps {
   description: string
@@ -34,6 +31,15 @@ interface ProductTabsProps {
     value: string
   }[]
   datasheetUrl?: string
+  reviews?: {
+    productId: string
+    productSlug: string
+    items: ReviewListItem[]
+    isAuthenticated: boolean
+    viewerUserId: string | null
+    canReview: boolean
+    userReview: UserReview | null
+  }
 }
 
 export function ProductTabs({
@@ -42,6 +48,7 @@ export function ProductTabs({
   includedItems,
   specs,
   datasheetUrl,
+  reviews,
 }: ProductTabsProps) {
   const quickStats = [
     { label: 'Build Time', value: '~3 hours' },
@@ -49,8 +56,51 @@ export function ProductTabs({
     { label: 'Age Range', value: '10+' },
   ]
 
+  const hasReviewsTab = Boolean(reviews)
+  const [tab, setTab] = useState('overview')
+  const reviewsCount = reviews?.items.length ?? 0
+
+  useEffect(() => {
+    if (!hasReviewsTab) return
+
+    const syncFromHash = () => {
+      if (globalThis.location.hash === '#reviews') {
+        setTab('reviews')
+      }
+    }
+
+    syncFromHash()
+    globalThis.addEventListener('hashchange', syncFromHash)
+    return () => {
+      globalThis.removeEventListener('hashchange', syncFromHash)
+    }
+  }, [hasReviewsTab])
+
+  const tabItems = [
+    { value: 'overview', label: 'Overview' },
+    { value: 'included', label: "What's Included" },
+    { value: 'specs', label: 'Technical Specs' },
+    ...(hasReviewsTab
+      ? [
+          {
+            value: 'reviews',
+            label: reviewsCount > 0 ? `Reviews (${reviewsCount})` : 'Reviews',
+          },
+        ]
+      : []),
+  ]
+
   return (
-    <Tabs defaultValue="overview" className="w-full">
+    <Tabs
+      value={tab}
+      onValueChange={(next) => {
+        setTab(next)
+        if (next === 'reviews') {
+          globalThis.history.replaceState(null, '', '#reviews')
+        }
+      }}
+      className="w-full"
+    >
       <TabsList
         aria-label="Product details"
         className="w-full justify-start border-b border-slate-200 bg-transparent h-auto p-0 rounded-none flex-wrap gap-2"
@@ -171,6 +221,23 @@ export function ProductTabs({
           </Table>
         </div>
       </TabsContent>
+
+      {/* Reviews Tab */}
+      {reviews && (
+        <TabsContent value="reviews" className="pt-8">
+          <div className="max-w-4xl">
+            <ProductReviewsTab
+              productId={reviews.productId}
+              productSlug={reviews.productSlug}
+              reviews={reviews.items}
+              isAuthenticated={reviews.isAuthenticated}
+              viewerUserId={reviews.viewerUserId}
+              canReview={reviews.canReview}
+              userReview={reviews.userReview}
+            />
+          </div>
+        </TabsContent>
+      )}
 
       {/* Technical Specs Tab */}
       <TabsContent value="specs" className="pt-8">

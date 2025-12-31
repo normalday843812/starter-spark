@@ -122,6 +122,26 @@ export async function FeaturedProduct() {
     inStock: true,
   })
 
+  let reviewSummary: { average: number; total: number } | null = null
+  try {
+    const { data: ratingRows, error: ratingsError } = await supabase
+      .from('product_reviews')
+      .select('rating')
+      .eq('product_id', product.id)
+      .in('status', ['published', 'flagged'])
+      .limit(200)
+
+    if (ratingsError) {
+      console.error('Failed to fetch featured product reviews:', ratingsError)
+    } else {
+      const total = ratingRows?.length ?? 0
+      const sum = (ratingRows ?? []).reduce((acc, row) => acc + (row.rating ?? 0), 0)
+      reviewSummary = total > 0 ? { total, average: sum / total } : { total: 0, average: 0 }
+    }
+  } catch (error) {
+    console.error('Failed to fetch featured product review summary:', error)
+  }
+
   return (
     <>
       {/* Product Schema JSON-LD for SEO */}
@@ -137,6 +157,7 @@ export async function FeaturedProduct() {
           specs: normalizeSpecs(product.specs),
           images,
         }}
+        reviewSummary={reviewSummary}
       />
     </>
   )
