@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard,
   Package,
+  Star,
   KeyRound,
   CreditCard,
   MessageSquare,
@@ -27,6 +28,7 @@ import { Separator } from '@/components/ui/separator'
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/products', label: 'Products', icon: Package },
+  { href: '/admin/reviews', label: 'Reviews', icon: Star },
   { href: '/admin/learn', label: 'Learn', icon: GraduationCap },
   { href: '/admin/licenses', label: 'Licenses', icon: KeyRound },
   { href: '/admin/orders', label: 'Orders', icon: CreditCard },

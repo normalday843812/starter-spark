@@ -2,7 +2,7 @@
 
 import { Handle, Position } from '@xyflow/react'
 import { cn } from '@/lib/utils'
-import type { VisualBlockType, VisualNodeData } from '../visual-programming'
+import type { VisualNodeData } from '../visual-programming'
 import { visualBlockScheme } from './registry'
 
 function getParam(params: Record<string, unknown>, key: string, fallback: string | number): string {
@@ -18,13 +18,12 @@ function truncate(text: string, max: number): string {
 
 export function VisualBlockNode({ data }: { data: VisualNodeData }) {
   const blockType = data.blockType
-  const params = (data.params ?? {}) as Record<string, unknown>
+  const params: Record<string, unknown> = data.params ?? {}
 
   const scheme = visualBlockScheme(blockType)
 
   const displayValue = (() => {
-    const type = blockType as VisualBlockType | undefined
-    switch (type) {
+    switch (blockType) {
       case 'delay':
         return `${getParam(params, 'ms', 500)}ms`
       case 'pin_mode':

@@ -15,6 +15,7 @@ import { useCartStore } from '@/store/cart'
 import { trackAddToCart } from '@/lib/analytics'
 import { cn } from '@/lib/utils'
 import { QuantityButton } from '@/components/commerce/QuantityButton'
+import { StarRating } from '@/features/reviews/components/StarRating'
 
 interface BuyBoxProps {
   id: string
@@ -34,6 +35,7 @@ interface BuyBoxProps {
   maxQuantityPerOrder?: number | null
   // Charity percentage from site content
   charityPercentage?: string
+  reviewSummary?: { average: number; total: number } | null
 }
 
 const trustSignals = [
@@ -108,6 +110,7 @@ export function BuyBox({
   lowStockThreshold,
   maxQuantityPerOrder,
   charityPercentage = '67%',
+  reviewSummary,
 }: BuyBoxProps) {
   const [quantity, setQuantity] = useState(1)
   const [shiftHeld, setShiftHeld] = useState(false)
@@ -193,6 +196,20 @@ export function BuyBox({
     setQuantity(1) // Reset quantity after adding
   }
 
+  const goToReviews = () => {
+    try {
+      globalThis.location.hash = '#reviews'
+      setTimeout(() => {
+        document.getElementById('reviews')?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        })
+      }, 0)
+    } catch {
+      // Ignore.
+    }
+  }
+
   return (
     <div className="lg:sticky lg:top-24 bg-white rounded border border-slate-200 shadow-md p-6 space-y-6">
       {/* Title */}
@@ -206,6 +223,33 @@ export function BuyBox({
         >
           {stockBadge.label}
         </Badge>
+
+        {reviewSummary && (
+          <div className="mt-3 flex items-center gap-2 flex-wrap">
+            {reviewSummary.total > 0 ? (
+              <>
+                <StarRating value={reviewSummary.average} size="sm" />
+                <button
+                  type="button"
+                  onClick={goToReviews}
+                  className="text-sm text-cyan-700 hover:text-cyan-600 underline-offset-2 hover:underline"
+                  aria-label="Read reviews"
+                >
+                  {reviewSummary.total} review
+                  {reviewSummary.total === 1 ? '' : 's'}
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={goToReviews}
+                className="text-sm text-cyan-700 hover:text-cyan-600 underline-offset-2 hover:underline"
+              >
+                Write the first review
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Price */}

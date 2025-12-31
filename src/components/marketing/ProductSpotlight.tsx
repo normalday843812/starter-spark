@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils'
 import { ProductImageLightbox } from '@/components/commerce/ProductImageLightbox'
 import { SectionIntro } from './SectionIntro'
 import { ctaPrimaryCompact } from './cta-classes'
+import { StarRating } from '@/features/reviews/components/StarRating'
 
 // Default specs shown when product.specs is not available
 const defaultSpecs = [
@@ -30,9 +31,13 @@ interface ProductSpotlightProps {
     specs: Record<string, string> | null
     images?: string[]
   }
+  reviewSummary?: { average: number; total: number } | null
 }
 
-export function ProductSpotlightSection({ product }: ProductSpotlightProps) {
+export function ProductSpotlightSection({
+  product,
+  reviewSummary,
+}: ProductSpotlightProps) {
   const [selectedImage, setSelectedImage] = useState(0)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const images = useMemo(() => product.images ?? [], [product.images])
@@ -175,6 +180,23 @@ export function ProductSpotlightSection({ product }: ProductSpotlightProps) {
             viewport={{ once: true }}
             className="w-full lg:w-2/5"
           >
+            {reviewSummary && reviewSummary.total > 0 && (
+              <div className="flex items-center gap-2 mb-3 flex-wrap">
+                <StarRating
+                  value={reviewSummary.average}
+                  size="sm"
+                  label={`${reviewSummary.average.toFixed(1)} out of 5 stars`}
+                />
+                <Link
+                  href={`/shop/${product.slug}#reviews`}
+                  className="text-sm text-cyan-700 hover:text-cyan-600 underline-offset-2 hover:underline"
+                >
+                  {reviewSummary.average.toFixed(1)} · {reviewSummary.total}{' '}
+                  review{reviewSummary.total === 1 ? '' : 's'}
+                </Link>
+              </div>
+            )}
+
             <h3 className="font-mono text-xl text-slate-900 mb-4">
               Your First Real Robot
             </h3>

@@ -242,6 +242,7 @@ const DEFAULTS: Partial<Record<VisualBlockType, VisualBlockDefaults>> = {
 }
 
 export function getVisualBlockDefaults(blockType: VisualBlockType): VisualBlockDefaults {
+  // eslint-disable-next-line security/detect-object-injection -- blockType is a closed union key
   const config = DEFAULTS[blockType]
   if (config) return config
   return { label: 'Block', params: {} }
@@ -261,7 +262,7 @@ const FALLBACK_SCHEME: VisualBlockColorScheme = {
   icon: null,
 }
 
-const COLOR_SCHEMES: Record<string, VisualBlockColorScheme> = {
+const COLOR_SCHEMES: Partial<Record<VisualBlockType, VisualBlockColorScheme>> = {
   setup: {
     bg: 'bg-cyan-100',
     border: 'border-cyan-400',
@@ -408,8 +409,14 @@ const COLOR_SCHEMES: Record<string, VisualBlockColorScheme> = {
   },
 }
 
-export function visualBlockScheme(blockType: VisualBlockType | string | undefined): VisualBlockColorScheme {
+export function visualBlockScheme(
+  blockType: VisualBlockType | undefined,
+): VisualBlockColorScheme {
   if (!blockType) return FALLBACK_SCHEME
+  if (!Object.prototype.hasOwnProperty.call(COLOR_SCHEMES, blockType)) {
+    return FALLBACK_SCHEME
+  }
+  // eslint-disable-next-line security/detect-object-injection -- blockType is a closed union key
   const scheme = COLOR_SCHEMES[blockType]
   return scheme ?? FALLBACK_SCHEME
 }

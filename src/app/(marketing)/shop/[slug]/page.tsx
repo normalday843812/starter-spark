@@ -1,4 +1,6 @@
 import { createPublicClient } from '@/lib/supabase/public'
+import { createClient } from '@/lib/supabase/server'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import { ProductGallery, BuyBox, ProductTabs } from '@/components/commerce'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
@@ -14,6 +16,8 @@ import { siteConfig } from '@/config/site'
 import { getContent } from '@/lib/content'
 import { resolveParams, type MaybePromise } from '@/lib/next-params'
 import type { Json } from '@/lib/supabase/database.types'
+import type { ReviewAuthor, ReviewListItem, UserReview } from '@/features/reviews/types'
+import { computeReviewSummary } from '@/features/reviews/summary'
 
 // Type for product specs JSONB
 interface ProductSpecs {
@@ -262,6 +266,103 @@ export default async function ProductDetailPage({
   )
   const datasheetUrl = datasheetMedia?.url
 
+  // ---------------------------------------------------------------------------
+  // Reviews (public list + current user's review)
+  // ---------------------------------------------------------------------------
+
+  const reviewsClient = await createClient()
+  const {
+    data: { user },
+  } = await reviewsClient.auth.getUser()
+
+  const isAuthenticated = Boolean(user)
+  const viewerUserId = user?.id ?? null
+
+  let canReview = false
+  let userReview: UserReview | null = null
+
+  if (user) {
+    const { data: ownsProduct } = await reviewsClient.rpc('user_owns_product', {
+      p_product_id: product.id,
+    })
+    canReview = ownsProduct === true
+
+    if (!canReview && user.email) {
+      const emails = Array.from(new Set([user.email, user.email.toLowerCase()]))
+      for (const email of emails) {
+        const { data: pendingPurchase, error: pendingError } = await supabaseAdmin
+          .from('licenses')
+          .select('id')
+          .eq('product_id', product.id)
+          .eq('source', 'online_purchase')
+          .eq('status', 'pending')
+          .is('owner_id', null)
+          .eq('customer_email', email)
+          .limit(1)
+
+        if (pendingError) {
+          console.error('Error checking pending purchase license:', pendingError)
+          continue
+        }
+        if (pendingPurchase && pendingPurchase.length > 0) {
+          canReview = true
+          break
+        }
+      }
+    }
+
+    const { data: myReview, error: myReviewError } = await reviewsClient
+      .from('product_reviews')
+      .select(
+        'id, rating, title, body, status, created_at, edited_at, incentive_disclosure, is_verified_purchase',
+      )
+      .eq('product_id', product.id)
+      .eq('author_id', user.id)
+      .maybeSingle()
+
+    if (myReviewError) {
+      console.error('Error fetching user review:', myReviewError)
+    }
+
+    if (myReview) {
+      userReview = myReview
+    }
+  }
+
+  const { data: reviewRows, error: reviewsError } = await reviewsClient
+    .from('product_reviews')
+    .select(
+      // eslint-disable-next-line no-secrets/no-secrets
+      'id, author_id, rating, title, body, created_at, edited_at, incentive_disclosure, is_verified_purchase, status, author:profiles!product_reviews_author_id_fkey(full_name, avatar_url, avatar_seed)',
+    )
+    .eq('product_id', product.id)
+    .in('status', ['published', 'flagged'])
+    .order('created_at', { ascending: false })
+    .limit(50)
+
+  if (reviewsError) {
+    console.error('Error fetching reviews:', reviewsError)
+  }
+
+  const reviews: ReviewListItem[] = (reviewRows || []).map((row) => {
+    const author = (row as unknown as { author?: ReviewAuthor | null }).author ?? null
+
+    return {
+      id: row.id,
+      author_id: row.author_id,
+      rating: row.rating,
+      title: row.title,
+      body: row.body,
+      created_at: row.created_at,
+      edited_at: row.edited_at,
+      incentive_disclosure: row.incentive_disclosure,
+      is_verified_purchase: row.is_verified_purchase,
+      status: row.status,
+      author,
+    }
+  })
+  const reviewSummary = computeReviewSummary(reviews)
+
   // Generate structured data for SEO
   const productSchema = getProductSchema({
     name: product.name,
@@ -332,6 +433,10 @@ export default async function ProductDetailPage({
                 }
                 maxQuantityPerOrder={product.max_quantity_per_order}
                 charityPercentage={charityPercentage}
+                reviewSummary={{
+                  average: reviewSummary.average,
+                  total: reviewSummary.total,
+                }}
               />
             </div>
           </div>
@@ -347,6 +452,15 @@ export default async function ProductDetailPage({
             includedItems={includedItems}
             specs={technicalSpecs}
             datasheetUrl={datasheetUrl}
+            reviews={{
+              productId: product.id,
+              productSlug: slug,
+              items: reviews,
+              isAuthenticated,
+              viewerUserId,
+              canReview,
+              userReview,
+            }}
           />
         </div>
       </section>

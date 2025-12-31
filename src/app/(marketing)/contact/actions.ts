@@ -172,17 +172,12 @@ export async function submitContactForm(
       }
     }
 
-    try {
-      const botResult = await checkBotId()
-      if (botResult.isBot && !botResult.isVerifiedBot) {
-        return {
-          success: false,
-          error: 'Access denied. Automated requests are not allowed.',
-        }
+    const botResult = await checkBotId()
+    if (botResult.isBot && !botResult.isVerifiedBot) {
+      return {
+        success: false,
+        error: 'Access denied. Automated requests are not allowed.',
       }
-    } catch (err) {
-      // Fail open to avoid blocking contact submissions if BotID is unavailable.
-      console.error('BotID check failed (contact form):', err)
     }
 
     const { error } = await supabaseAdmin.from('contact_submissions').insert({

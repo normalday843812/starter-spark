@@ -1,27 +1,21 @@
 import { supabaseAnalyticsAdmin } from '@/lib/supabase/analytics-admin'
 import { type Json } from '@/lib/supabase/database.types'
-import { parseJsonOrNdjson, stableEventId, verifyVercelSignature } from '@/lib/vercel/drains'
+import { parseJsonOrNdjson, stableEventId } from '@/lib/vercel/drains'
+import { guardVercelDrainRequest } from '@/lib/vercel/drains-guard'
 import { NextResponse } from 'next/server'
 
 export const runtime = 'nodejs'
 
 export function GET() {
-  return NextResponse.json(
-    {
-      ok: true,
-      endpoint: 'vercel-drains-logs',
-      note: 'Send a POST request from Vercel Drains with x-vercel-signature.',
-    },
-    { status: 200 },
-  )
+  return new NextResponse(null, { status: 404 })
 }
 
 export function HEAD() {
-  return new NextResponse(null, { status: 200 })
+  return new NextResponse(null, { status: 404 })
 }
 
 export function OPTIONS() {
-  return new NextResponse(null, { status: 204 })
+  return new NextResponse(null, { status: 404 })
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -52,29 +46,17 @@ function chunk<T>(items: T[], size: number): T[][] {
 }
 
 export async function POST(request: Request) {
-  const secret = process.env.VERCEL_DRAIN_LOGS_SECRET
-  if (!secret) {
-    return NextResponse.json(
-      { error: 'Drain not configured. Set VERCEL_DRAIN_LOGS_SECRET.' },
-      { status: 500 },
-    )
-  }
+  const guarded = await guardVercelDrainRequest(request, {
+    secret: process.env.VERCEL_DRAIN_LOGS_SECRET,
+    allowedContentType: /json|ndjson|text\/plain/i,
+    requireAuthHeader: true,
+  })
+  if (!guarded.ok) return guarded.response
 
-  const body = Buffer.from(await request.arrayBuffer())
-  if (body.length > 5_000_000) {
-    return NextResponse.json({ error: 'Payload too large.' }, { status: 413 })
-  }
-
-  const signatureHeader = request.headers.get('x-vercel-signature')
-  const ok = verifyVercelSignature({ body, signatureHeader, secret })
-  if (!ok) {
-    return NextResponse.json({ error: 'Invalid signature.' }, { status: 401 })
-  }
-
-  const text = body.toString('utf8')
+  const text = guarded.body.toString('utf8')
   const events = parseJsonOrNdjson(text)
   if (events.length === 0) {
-    return NextResponse.json({ ok: true, inserted: 0 })
+    return new NextResponse(null, { status: 204 })
   }
 
   // Map events to rows and deduplicate by ID (Postgres can't handle duplicate IDs in same upsert)
@@ -141,9 +123,9 @@ export async function POST(request: Request) {
       .upsert(batch, { onConflict: 'id' })
     if (error) {
       console.error('Vercel logs drain insert failed:', error)
-      return NextResponse.json({ error: 'Insert failed.' }, { status: 500 })
+      return new NextResponse(null, { status: 500 })
     }
   }
 
-  return NextResponse.json({ ok: true, inserted: rows.length })
+  return new NextResponse(null, { status: 204 })
 }

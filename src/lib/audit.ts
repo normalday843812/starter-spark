@@ -29,6 +29,9 @@ export type AuditAction =
   | 'post.status_changed'
   | 'comment.deleted'
   | 'comment.verified'
+  // Reviews
+  | 'review.status_changed'
+  | 'review.deleted'
   // Content
   | 'content.updated'
   | 'content.published'
@@ -83,6 +86,7 @@ export type AuditResourceType =
   | 'event'
   | 'post'
   | 'comment'
+  | 'review'
   | 'content'
   | 'settings'
   | 'stats'

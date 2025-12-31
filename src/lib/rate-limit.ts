@@ -29,6 +29,9 @@ export const rateLimitConfigs = {
   communityReport: { requests: 5 * multiplier, window: '10 m' as const },
   communityPost: { requests: 3 * multiplier, window: '10 m' as const },
   communityAnswer: { requests: 10 * multiplier, window: '10 m' as const },
+  // Reviews
+  productReview: { requests: 10 * multiplier, window: '10 m' as const },
+  productReviewReport: { requests: 5 * multiplier, window: '10 m' as const },
   // Assets
   certificate: { requests: 10 * multiplier, window: '10 m' as const },
   learnAsset: { requests: 120 * multiplier, window: '1 m' as const },
@@ -75,6 +78,10 @@ function getRateLimitConfig(configKey: RateLimitConfig) {
       return rateLimitConfigs.communityPost
     case 'communityAnswer':
       return rateLimitConfigs.communityAnswer
+    case 'productReview':
+      return rateLimitConfigs.productReview
+    case 'productReviewReport':
+      return rateLimitConfigs.productReviewReport
     case 'certificate':
       return rateLimitConfigs.certificate
     case 'learnAsset':
