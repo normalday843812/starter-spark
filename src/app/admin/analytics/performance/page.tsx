@@ -29,7 +29,7 @@ export default function PerformanceAnalyticsPage() {
           <ChevronLeft className="h-4 w-4" />
           Back to Analytics
         </Link>
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="font-mono text-2xl font-bold text-slate-900">
               Performance Analytics
@@ -38,12 +38,12 @@ export default function PerformanceAnalyticsPage() {
               Real user performance and observability via Vercel Drains
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <a
               href="https://vercel.com/docs/drains"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              className="inline-flex w-full items-center justify-center gap-2 rounded border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 sm:w-auto"
             >
               <Zap className="h-4 w-4" />
               Drains docs
@@ -53,7 +53,7 @@ export default function PerformanceAnalyticsPage() {
               href={appUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              className="inline-flex w-full items-center justify-center gap-2 rounded border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 sm:w-auto"
             >
               Open site
               <ExternalLink className="h-3 w-3" />
@@ -66,4 +66,3 @@ export default function PerformanceAnalyticsPage() {
     </div>
   )
 }
-

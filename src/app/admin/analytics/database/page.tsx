@@ -158,7 +158,7 @@ export default async function DatabaseAnalyticsPage() {
           <ChevronLeft className="h-4 w-4" />
           Back to Analytics
         </Link>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="font-mono text-2xl font-bold text-slate-900">
               Database Analytics
@@ -172,7 +172,7 @@ export default async function DatabaseAnalyticsPage() {
               href={`https://supabase.com/dashboard/project/${projectRef}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 sm:w-auto"
             >
               <Database className="h-4 w-4" />
               Open Supabase Dashboard

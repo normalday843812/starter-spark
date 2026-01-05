@@ -49,9 +49,9 @@ export default async function AdminDocsPage() {
     ) || 0
 
   return (
-    <div className="p-6 lg:p-10 max-w-7xl mx-auto">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-mono text-2xl font-bold text-slate-900">
             Documentation
@@ -60,14 +60,14 @@ export default async function AdminDocsPage() {
             Manage documentation pages and categories
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" asChild>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+          <Button variant="outline" asChild className="w-full sm:w-auto">
             <Link href="/admin/docs/categories">
               <FolderOpen className="w-4 h-4 mr-2" />
               Categories
             </Link>
           </Button>
-          <Button asChild>
+          <Button asChild className="w-full sm:w-auto">
             <Link href="/admin/docs/new">
               <Plus className="w-4 h-4 mr-2" />
               New Page
@@ -77,7 +77,7 @@ export default async function AdminDocsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="p-4 bg-white rounded border border-slate-200">
           <p className="text-sm text-slate-500">Categories</p>
           <p className="font-mono text-2xl text-slate-900">
@@ -101,7 +101,7 @@ export default async function AdminDocsPage() {
             key={category.id}
             className="bg-white rounded border border-slate-200 overflow-hidden"
           >
-            <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+            <div className="p-4 bg-slate-50 border-b border-slate-200 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-2">
                 <FolderOpen className="w-5 h-5 text-slate-500" />
                 <span className="font-mono text-slate-900">
@@ -134,7 +134,7 @@ export default async function AdminDocsPage() {
                   .map((page) => (
                     <div
                       key={page.id}
-                      className="p-4 flex items-center justify-between hover:bg-slate-50"
+                      className="p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between hover:bg-slate-50"
                     >
                       <div className="flex items-center gap-3">
                         <FileText className="w-4 h-4 text-slate-400" />
@@ -147,7 +147,7 @@ export default async function AdminDocsPage() {
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                         <TogglePublishButton
                           pageId={page.id}
                           isPublished={page.is_published ?? false}

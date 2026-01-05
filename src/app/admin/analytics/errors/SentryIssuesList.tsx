@@ -483,7 +483,7 @@ export function SentryIssuesList() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 <div className="rounded-lg bg-red-50 p-3 text-center">
                   <p className="font-mono text-lg font-bold text-red-700">
                     {stats.levelBreakdown.fatal}

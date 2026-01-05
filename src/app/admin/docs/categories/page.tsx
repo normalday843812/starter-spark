@@ -162,9 +162,9 @@ export default function AdminDocCategoriesPage() {
   }
 
   return (
-    <div className="p-6 lg:p-10 max-w-4xl mx-auto">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Link
             href="/admin/docs"
@@ -178,7 +178,7 @@ export default function AdminDocCategoriesPage() {
           </h1>
         </div>
         {!isCreating && !editingId && (
-          <Button onClick={startCreate}>
+          <Button onClick={startCreate} className="w-full sm:w-auto">
             <Plus className="w-4 h-4 mr-2" />
             New Category
           </Button>
@@ -192,7 +192,7 @@ export default function AdminDocCategoriesPage() {
             {isCreating ? 'Create Category' : 'Edit Category'}
           </h2>
           <div className="grid gap-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <Label>Name</Label>
                 <Input
@@ -231,7 +231,7 @@ export default function AdminDocCategoriesPage() {
                 rows={2}
               />
             </div>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <div>
                 <Label>Icon</Label>
                 <select
@@ -258,7 +258,7 @@ export default function AdminDocCategoriesPage() {
                   }
                 />
               </div>
-              <div className="flex items-center gap-2 pt-6">
+              <div className="flex items-center gap-2 pt-0 sm:col-span-2 sm:pt-6 lg:col-span-1">
                 <Switch
                   checked={formData.is_published}
                   onCheckedChange={(checked) =>
@@ -294,7 +294,7 @@ export default function AdminDocCategoriesPage() {
           <p className="text-sm text-slate-500 mb-4">
             Create your first category to organize documentation.
           </p>
-          <Button onClick={startCreate}>
+          <Button onClick={startCreate} className="w-full sm:w-auto">
             <Plus className="w-4 h-4 mr-2" />
             Create Category
           </Button>
@@ -304,7 +304,7 @@ export default function AdminDocCategoriesPage() {
           {categories.map((category) => (
             <div
               key={category.id}
-              className="p-4 flex items-center justify-between hover:bg-slate-50"
+              className="p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between hover:bg-slate-50"
             >
               <div className="flex items-center gap-3">
                 <FolderOpen className="w-5 h-5 text-slate-400" />
@@ -320,7 +320,7 @@ export default function AdminDocCategoriesPage() {
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 sm:justify-end">
                 <span className="text-sm text-slate-400 mr-2">
                   #{category.sort_order}
                 </span>

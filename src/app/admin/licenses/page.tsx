@@ -118,14 +118,14 @@ export default async function LicensesPage({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-mono text-2xl font-bold text-slate-900">
             Licenses
           </h1>
           <p className="text-slate-600">Manage license codes and assignments</p>
         </div>
-        <Button asChild className="bg-cyan-700 hover:bg-cyan-600">
+        <Button asChild className="bg-cyan-700 hover:bg-cyan-600 w-full sm:w-auto">
           <Link href="/admin/licenses/generate">
             <Plus className="mr-2 h-4 w-4" />
             Generate Licenses
@@ -135,7 +135,7 @@ export default async function LicensesPage({
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-4">
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {filters.map((filter) => {
             // Preserve product filter when changing status filter
             const href = filter.value
@@ -162,11 +162,11 @@ export default async function LicensesPage({
         </div>
 
         {/* Product Filter */}
-        <ProductFilterClient
-          products={products}
-          currentProduct={params.product}
-          currentFilter={params.filter}
-        />
+      <ProductFilterClient
+        products={products}
+        currentProduct={params.product}
+        currentFilter={params.filter}
+      />
       </div>
 
       {/* Licenses Table */}

@@ -107,7 +107,7 @@ export default async function BannersPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-mono text-2xl font-bold text-slate-900">
             Banners
@@ -116,7 +116,7 @@ export default async function BannersPage() {
             Manage site-wide announcements and promotions
           </p>
         </div>
-        <Button asChild className="bg-cyan-700 hover:bg-cyan-600">
+        <Button asChild className="bg-cyan-700 hover:bg-cyan-600 w-full sm:w-auto">
           <Link href="/admin/banners/new">
             <Plus className="mr-2 h-4 w-4" />
             Create Banner

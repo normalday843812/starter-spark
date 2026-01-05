@@ -50,7 +50,7 @@ export default function ErrorAnalyticsPage() {
           <ChevronLeft className="h-4 w-4" />
           Back to Analytics
         </Link>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="font-mono text-2xl font-bold text-slate-900">
               Error Analytics
@@ -63,7 +63,7 @@ export default function ErrorAnalyticsPage() {
             href="https://sentry.io"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 sm:w-auto"
           >
             <Shield className="h-4 w-4" />
             Open Sentry Dashboard
@@ -83,7 +83,7 @@ export default function ErrorAnalyticsPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            <div className="flex items-center justify-between rounded-lg border border-slate-200 p-4">
+            <div className="flex flex-col gap-3 rounded-lg border border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100">
                   <AlertTriangle className="h-5 w-5 text-slate-600" />
@@ -107,7 +107,7 @@ export default function ErrorAnalyticsPage() {
               </Badge>
             </div>
 
-            <div className="flex items-center justify-between rounded-lg border border-slate-200 p-4">
+            <div className="flex flex-col gap-3 rounded-lg border border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100">
                   <Settings className="h-5 w-5 text-slate-600" />

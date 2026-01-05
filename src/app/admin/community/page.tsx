@@ -145,7 +145,7 @@ export default async function CommunityPage({
       </div>
 
       {/* Filters */}
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {filters.map((filter) => {
           const href =
             filter.value === 'all'

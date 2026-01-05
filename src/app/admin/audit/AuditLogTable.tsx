@@ -990,11 +990,11 @@ export function AuditLogTable({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-slate-600">
             Page {currentPage} of {totalPages}
           </p>
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
             <Button
               variant="outline"
               size="sm"
@@ -1002,6 +1002,7 @@ export function AuditLogTable({
                 goToPage(currentPage - 1)
               }}
               disabled={currentPage <= 1}
+              className="w-full sm:w-auto"
             >
               <ChevronLeft className="h-4 w-4 mr-1" />
               Previous
@@ -1013,6 +1014,7 @@ export function AuditLogTable({
                 goToPage(currentPage + 1)
               }}
               disabled={currentPage >= totalPages}
+              className="w-full sm:w-auto"
             >
               Next
               <ChevronRight className="h-4 w-4 ml-1" />

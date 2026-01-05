@@ -212,7 +212,7 @@ export function NewProductForm() {
       {/* Specs */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <CardTitle>Specifications</CardTitle>
               <CardDescription>
@@ -224,6 +224,7 @@ export function NewProductForm() {
               variant="outline"
               size="sm"
               onClick={handleAddSpec}
+              className="w-full sm:w-auto"
             >
               <Plus className="mr-2 h-4 w-4" />
               Add Spec
@@ -274,19 +275,20 @@ export function NewProductForm() {
 
       {/* Actions */}
       <Separator />
-      <div className="flex justify-end gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
         <Button
           type="button"
           variant="outline"
           onClick={() => {
             router.push('/admin/products')
           }}
+          className="w-full sm:w-auto"
         >
           Cancel
         </Button>
         <Button
           type="submit"
-          className="bg-cyan-700 hover:bg-cyan-600"
+          className="bg-cyan-700 hover:bg-cyan-600 w-full sm:w-auto"
           disabled={isPending}
         >
           {isPending ? (

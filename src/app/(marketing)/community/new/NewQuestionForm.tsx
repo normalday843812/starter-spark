@@ -280,15 +280,7 @@ export function NewQuestionForm({ products }: NewQuestionFormProps) {
           onChange={(e) => {
             setContent(e.target.value)
           }}
-          placeholder="Describe your question in detail...
-
-Include:
-• What you're trying to do
-• What you've already tried
-• Any error messages you're seeing
-• Relevant code snippets
-
-The more detail you provide, the better we can help!"
+          placeholder={`Describe your question in detail...\n\nInclude:\n• What you're trying to do\n• What you've already tried\n• Any error messages you're seeing\n• Relevant code snippets\n\nThe more detail you provide, the better we can help!`}
           rows={12}
           className="w-full px-4 py-3 bg-white border border-slate-200 rounded-b text-slate-700 placeholder:text-slate-500 focus:outline-none focus:border-cyan-700 resize-y min-h-[250px]"
         />

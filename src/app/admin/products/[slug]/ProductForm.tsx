@@ -890,12 +890,13 @@ export function ProductForm({
 
       {/* Actions */}
       <Separator />
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Button
           type="button"
           variant="destructive"
           onClick={() => setShowDeleteDialog(true)}
           disabled={isDeleting}
+          className="w-full sm:w-auto"
         >
           {isDeleting ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -904,20 +905,21 @@ export function ProductForm({
           )}
           Delete Product
         </Button>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
           <Button
             type="button"
             variant="outline"
             onClick={() => {
               router.push('/admin/products')
             }}
+            className="w-full sm:w-auto"
           >
             Cancel
           </Button>
           <Button
             type="submit"
-            className="bg-cyan-700 hover:bg-cyan-600"
             disabled={isPending}
+            className="bg-cyan-700 hover:bg-cyan-600 w-full sm:w-auto"
           >
             {isPending ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -30,7 +30,7 @@ export default function CourseEditorLoading() {
             <LoadingBlock className="h-4 w-20 mb-2" tone="soft" />
             <LoadingBlock className="h-24 w-full" tone="soft" />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <LoadingBlock className="h-4 w-20 mb-2" tone="soft" />
               <LoadingBlock className="h-10 w-full" tone="strong" />

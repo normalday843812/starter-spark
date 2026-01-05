@@ -223,7 +223,7 @@ export function SupportActions({ submission }: SupportActionsProps) {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <p className="text-sm font-medium text-slate-500">From</p>
                 <p className="text-slate-900">{submission.name}</p>

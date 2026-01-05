@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
-import { AdminSidebar } from '@/components/admin/AdminSidebar'
+import { AdminShell } from '@/components/admin/AdminShell'
 
 export const metadata = {
   title: 'Admin Dashboard',
@@ -52,16 +52,15 @@ export default async function AdminLayout({
       className="admin-layout flex h-screen min-h-0 bg-slate-50"
       data-csp-nonce={nonce || undefined}
     >
-      <AdminSidebar
+      <AdminShell
         user={{
           email: user.email || '',
           name: profile.full_name,
           role: profile.role,
         }}
-      />
-      <main className="flex-1 min-h-0 overflow-y-auto">
-        <div className="container mx-auto p-6">{children}</div>
-      </main>
+      >
+        {children}
+      </AdminShell>
     </div>
   )
 }

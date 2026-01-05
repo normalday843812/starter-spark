@@ -203,17 +203,17 @@ export default async function ReviewsAdminPage({
       ) : (
         <div className="rounded-lg border border-slate-200 bg-white">
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Product</TableHead>
-                <TableHead>Author</TableHead>
-                <TableHead>Rating</TableHead>
-                <TableHead>Review</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead className="w-[70px]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
+	            <TableHeader>
+	              <TableRow>
+	                <TableHead>Product</TableHead>
+	                <TableHead>Author</TableHead>
+	                <TableHead>Rating</TableHead>
+	                <TableHead className="hidden lg:table-cell">Review</TableHead>
+	                <TableHead>Status</TableHead>
+	                <TableHead className="hidden md:table-cell">Created</TableHead>
+	                <TableHead className="w-[70px]">Actions</TableHead>
+	              </TableRow>
+	            </TableHeader>
             <TableBody>
               {reviews.map((review) => {
                 const author = (review as unknown as { author?: unknown }).author as {
@@ -231,19 +231,23 @@ export default async function ReviewsAdminPage({
                 const status = String(review.status || 'unknown')
 
                 return (
-                  <TableRow key={review.id}>
-                    <TableCell className="max-w-[180px]">
-                      {product?.slug ? (
-                        <Link
-                          href={`/shop/${product.slug}`}
-                          className="font-medium text-slate-900 hover:text-cyan-700 transition-colors"
-                        >
-                          {product.name || product.slug}
-                        </Link>
-                      ) : (
-                        <span className="text-slate-600">Unknown</span>
-                      )}
-                    </TableCell>
+	                  <TableRow key={review.id}>
+	                    <TableCell className="max-w-[240px] lg:max-w-[180px]">
+	                      {product?.slug ? (
+	                        <Link
+	                          href={`/shop/${product.slug}`}
+	                          className="block truncate font-medium text-slate-900 transition-colors hover:text-cyan-700"
+	                        >
+	                          {product.name || product.slug}
+	                        </Link>
+	                      ) : (
+	                        <span className="text-slate-600">Unknown</span>
+	                      )}
+	                      <p className="mt-1 text-xs text-slate-600 line-clamp-2 whitespace-normal lg:hidden">
+	                        {review.title ? `${review.title} — ` : ''}
+	                        {review.body}
+	                      </p>
+	                    </TableCell>
                     <TableCell>
                       {author ? (
                         <div className="flex items-center gap-2">
@@ -271,12 +275,12 @@ export default async function ReviewsAdminPage({
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell className="max-w-[340px]">
-                      <p className="truncate text-sm text-slate-700">
-                        {review.title ? `${review.title} — ` : ''}
-                        {review.body}
-                      </p>
-                    </TableCell>
+	                    <TableCell className="hidden lg:table-cell max-w-[340px]">
+	                      <p className="truncate text-sm text-slate-700">
+	                        {review.title ? `${review.title} — ` : ''}
+	                        {review.body}
+	                      </p>
+	                    </TableCell>
                     <TableCell>
                       <Badge
                         variant="outline"
@@ -295,11 +299,11 @@ export default async function ReviewsAdminPage({
                         {status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-sm text-slate-500 whitespace-nowrap">
-                      {review.created_at
-                        ? new Date(review.created_at).toLocaleDateString()
-                        : '—'}
-                    </TableCell>
+	                    <TableCell className="hidden md:table-cell text-sm text-slate-500 whitespace-nowrap">
+	                      {review.created_at
+	                        ? new Date(review.created_at).toLocaleDateString()
+	                        : '—'}
+	                    </TableCell>
                     <TableCell>
                       <ReviewActions reviewId={review.id} status={status} />
                     </TableCell>

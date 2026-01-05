@@ -226,11 +226,11 @@ export function ContentEditor({ page }: ContentEditorProps) {
 
   const liveUrlInfo = getLiveUrl()
 
-  return (
+      return (
     <>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-4">
           <Button asChild variant="ghost" size="sm">
             <Link href="/admin/content">
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -539,8 +539,8 @@ export function ContentEditor({ page }: ContentEditorProps) {
       </Card>
 
       {/* Actions */}
-      <div className="flex items-center justify-between">
-        <div className="flex gap-2">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap gap-2">
           {/* Custom pages only (system pages stay published) */}
           {isPublished && isCustomPage && (
             <Button
@@ -550,7 +550,7 @@ export function ContentEditor({ page }: ContentEditorProps) {
                 setShowUnpublishDialog(true)
               }}
               disabled={isPending}
-              className="text-amber-600 border-amber-300 hover:bg-amber-50"
+              className="text-amber-600 border-amber-300 hover:bg-amber-50 w-full sm:w-auto"
             >
               <EyeOff className="h-4 w-4 mr-2" />
               Unpublish
@@ -564,14 +564,14 @@ export function ContentEditor({ page }: ContentEditorProps) {
                 setShowDeleteDialog(true)
               }}
               disabled={isPending}
-              className="text-red-600 border-red-300 hover:bg-red-50"
+              className="text-red-600 border-red-300 hover:bg-red-50 w-full sm:w-auto"
             >
               <Trash2 className="h-4 w-4 mr-2" />
               Delete
             </Button>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
           <Button
             type="button"
             variant="outline"
@@ -579,6 +579,7 @@ export function ContentEditor({ page }: ContentEditorProps) {
               handleSave(false)
             }}
             disabled={isPending}
+            className="w-full sm:w-auto"
           >
             {isPending ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -593,7 +594,7 @@ export function ContentEditor({ page }: ContentEditorProps) {
               handleSave(true)
             }}
             disabled={isPending}
-            className="bg-cyan-700 hover:bg-cyan-600"
+            className="bg-cyan-700 hover:bg-cyan-600 w-full sm:w-auto"
           >
             {isPending ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />

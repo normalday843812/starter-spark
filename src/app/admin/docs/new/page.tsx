@@ -90,16 +90,14 @@ export default function NewDocPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 lg:p-10 max-w-4xl mx-auto">
-        <div className="text-center text-slate-500">Loading...</div>
-      </div>
+      <div className="py-12 text-center text-slate-500">Loading...</div>
     )
   }
 
   return (
-    <div className="p-6 lg:p-10 max-w-4xl mx-auto">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Link
             href="/admin/docs"
@@ -115,7 +113,7 @@ export default function NewDocPage() {
         <Button
           variant="outline"
           onClick={() => setShowPreview(!showPreview)}
-          className="gap-2"
+          className="gap-2 w-full sm:w-auto"
         >
           {showPreview ? (
             <EyeOff className="w-4 h-4" />
@@ -127,9 +125,9 @@ export default function NewDocPage() {
       </div>
 
       <form onSubmit={(e) => void handleSubmit(e)}>
-        <div className="bg-white rounded border border-slate-200 p-6 space-y-6">
+          <div className="bg-white rounded border border-slate-200 p-6 space-y-6">
           {/* Category and Title */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label>Category</Label>
               <select
@@ -165,7 +163,7 @@ export default function NewDocPage() {
           </div>
 
           {/* Slug and Sort Order */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label>Slug</Label>
               <Input
@@ -226,7 +224,7 @@ export default function NewDocPage() {
           </div>
 
           {/* Published Toggle */}
-          <div className="flex items-center justify-between pt-4 border-t border-slate-200">
+          <div className="flex flex-col gap-4 pt-4 border-t border-slate-200 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <Switch
                 checked={formData.is_published}
@@ -243,7 +241,7 @@ export default function NewDocPage() {
                 </p>
               </div>
             </div>
-            <Button type="submit" disabled={isSaving}>
+            <Button type="submit" disabled={isSaving} className="w-full sm:w-auto">
               <Save className="w-4 h-4 mr-2" />
               {isSaving ? 'Creating...' : 'Create Page'}
             </Button>

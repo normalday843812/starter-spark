@@ -117,9 +117,9 @@ export default async function OrdersPage({
             <TableHeader>
               <TableRow>
                 <TableHead>Order Date</TableHead>
-                <TableHead>License Code</TableHead>
+                <TableHead className="hidden sm:table-cell">License Code</TableHead>
                 <TableHead>Product</TableHead>
-                <TableHead>Price</TableHead>
+                <TableHead className="hidden md:table-cell">Price</TableHead>
                 <TableHead>Customer</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
@@ -130,50 +130,65 @@ export default async function OrdersPage({
                   name: string
                   price_cents: number
                 } | null
-                const owner = order.profiles as unknown as {
-                  id: string
-                  email: string
-                  full_name: string | null
-                  avatar_url: string | null
-                  avatar_seed: string | null
-                } | null
+	                const owner = order.profiles as unknown as {
+	                  id: string
+	                  email: string
+	                  full_name: string | null
+	                  avatar_url: string | null
+	                  avatar_seed: string | null
+	                } | null
 
-                return (
-                  <TableRow key={order.id}>
-                    <TableCell className="text-sm text-slate-500">
+                  const priceDollars = ((product?.price_cents || 0) / 100).toFixed(
+                    2,
+                  )
+                  const mobileCode =
+                    order.code.length > 12
+                      ? `${order.code.slice(0, 4)}…${order.code.slice(-4)}`
+                      : order.code
+
+	                return (
+	                  <TableRow key={order.id}>
+	                    <TableCell className="text-sm text-slate-500">
                       {order.created_at
-                        ? new Date(order.created_at).toLocaleDateString()
-                        : '-'}
-                    </TableCell>
-                    <TableCell>
-                      <code className="rounded bg-slate-100 px-2 py-1 font-mono text-xs">
-                        {order.code}
-                      </code>
-                    </TableCell>
-                    <TableCell className="text-sm text-slate-900">
-                      {product?.name || 'Unknown'}
-                    </TableCell>
-                    <TableCell className="font-mono text-sm text-slate-900">
-                      ${((product?.price_cents || 0) / 100).toFixed(2)}
-                    </TableCell>
-                    <TableCell>
-                      {owner ? (
-                        <div className="flex items-center gap-2">
-                          <UserAvatar
-                            user={{
-                              id: owner.id,
-                              full_name: owner.full_name,
+	                        ? new Date(order.created_at).toLocaleDateString()
+	                        : '-'}
+	                    </TableCell>
+	                    <TableCell className="hidden sm:table-cell">
+	                      <code className="rounded bg-slate-100 px-2 py-1 font-mono text-xs">
+	                        {order.code}
+	                      </code>
+	                    </TableCell>
+	                    <TableCell className="text-sm text-slate-900">
+	                      <div className="min-w-0">
+	                        <p className="truncate">{product?.name || 'Unknown'}</p>
+	                        <p className="mt-1 text-xs text-slate-500 sm:hidden">
+	                          <span className="font-mono">{mobileCode}</span>
+	                          <span className="mx-1">•</span>
+	                          <span className="font-mono">${priceDollars}</span>
+	                        </p>
+	                      </div>
+	                    </TableCell>
+	                    <TableCell className="hidden md:table-cell font-mono text-sm text-slate-900">
+	                      ${priceDollars}
+	                    </TableCell>
+	                    <TableCell>
+	                      {owner ? (
+	                        <div className="flex min-w-0 items-center gap-2">
+	                          <UserAvatar
+	                            user={{
+	                              id: owner.id,
+	                              full_name: owner.full_name,
                               email: owner.email,
                               avatar_url: owner.avatar_url,
                               avatar_seed: owner.avatar_seed,
-                            }}
-                            size="sm"
-                          />
-                          <span className="text-sm text-slate-900">
-                            {owner.full_name || owner.email}
-                          </span>
-                        </div>
-                      ) : (
+	                            }}
+	                            size="sm"
+	                          />
+	                          <span className="min-w-0 truncate text-sm text-slate-900">
+	                            {owner.full_name || owner.email}
+	                          </span>
+	                        </div>
+	                      ) : (
                         <span className="text-sm text-slate-400">
                           Unclaimed
                         </span>
